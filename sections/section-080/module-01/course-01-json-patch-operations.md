@@ -19,6 +19,25 @@ Two more things it struggles with:
 
 Each of those is a one-line JSON Patch operation.
 
+## Not the same thing: `kyverno-json`
+
+Before going further, one disambiguation that costs nothing now and saves confusion later.
+
+Search for "Kyverno JSON" and you will find **`kyverno-json`** — a separate project in the Kyverno GitHub organisation, with its own binary of that name. It is not what this module teaches, and the two are unrelated beyond sharing a policy engine.
+
+| | `mutate.patchesJson6902` *(this module)* | `kyverno-json` *(the other project)* |
+| :--- | :--- | :--- |
+| What it is | a rule body inside a `ClusterPolicy` | a standalone CLI, web service, or Go library |
+| What it acts on | a Kubernetes resource passing through admission | any JSON or YAML payload — Terraform plans, Dockerfiles, cloud configuration, authorization requests |
+| Needs a cluster | yes, it runs in the admission path | no, it runs anywhere |
+| What "JSON" refers to | the RFC 6902 **patch format** | the **payload format** being validated |
+| Maturity | stable, part of Kyverno proper | early development; the project warns that changes may not be backward compatible |
+
+The collision is purely one of naming. This module's subject is a *patch format* — RFC 6902, the thing that describes a change as a list of operations. `kyverno-json`'s subject is the *kind of data* Kyverno's engine can be pointed at, extending it past Kubernetes resources entirely.
+
+> [!NOTE]
+> This matters for exam preparation because at least one widely-circulated KCA study guide maps the "JSON Patches" competency to `kyverno-json` rather than to `patchesJson6902`. The official curriculum lists only the bare heading, so neither reading can be proven from it — but "JSON Patches" sits among ten other *rule-authoring* competencies, which makes `patchesJson6902` the reading this course takes. `kyverno-json` is a tool you point at files from a terminal, which places it much closer to the separate Kyverno CLI domain. Know that both exist and what each one is, and a question framed either way will not catch you out.
+
 ## The operation set
 
 RFC 6902 defines six operations. A `patchesJson6902` block is a YAML list of them, applied **in the order written**:

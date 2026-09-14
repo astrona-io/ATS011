@@ -91,3 +91,16 @@ No. A JSON Pointer is a literal walk to exactly one location; it has no wildcard
 
 The container that was originally at index 0 — because the first operation inserted *before* index 0 and shifted everything down by one. RFC 6902 operations apply in order against a document already modified by the preceding operations, so array indices are positions at that moment in the patch, not positions in the resource as submitted. Ordering in a `patchesJson6902` list is semantic, not cosmetic.
 </details>
+
+---
+
+**10.** A study guide points you at `kyverno-json` for the "JSON Patches" competency. What is `kyverno-json`, and is it what `mutate.patchesJson6902` does?
+
+<details>
+<summary>Show Answer</summary>
+
+No — they are unrelated beyond sharing a policy engine, and the names simply collide. `mutate.patchesJson6902` is a **rule body inside a `ClusterPolicy`** that applies an RFC 6902 patch to a Kubernetes resource passing through admission; "JSON" there refers to the *patch format*. `kyverno-json` is a **separate project and binary** in the Kyverno GitHub organisation that applies Kyverno-style policies to any JSON or YAML payload — Terraform plans, Dockerfiles, cloud configuration — with no cluster involved; "JSON" there refers to the *payload being validated*. It is also in early development and warns that changes may not be backward compatible.
+
+Since the official curriculum lists only the bare heading "JSON Patches", neither reading can be proven from it. But the heading sits among ten other rule-authoring competencies, which makes `patchesJson6902` the reading this course takes — and `kyverno-json`, being a tool you point at files from a terminal, sits much closer to the separate Kyverno CLI domain. Know both exist and what each operates on.
+</details>
+

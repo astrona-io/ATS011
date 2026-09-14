@@ -15,6 +15,9 @@ For those jobs Kyverno exposes a second mutation mechanism: **`mutate.patchesJso
 
 That precision comes with strictness. `patchStrategicMerge` mostly degrades gracefully when reality doesn't match your fragment; a JSON Patch operation aimed at a path that doesn't resolve can reject the whole admission request. Knowing exactly which operations are lenient about a missing path and which are not — and how to stop caring either way — is the real skill this module builds.
 
+> [!NOTE]
+> "JSON Patches" here means **RFC 6902 JSON Patch inside a `mutate` rule** — not `kyverno-json`, a separate project that applies Kyverno policies to arbitrary JSON and YAML payloads outside Kubernetes. Part 1 sets the two side by side, because the names collide and at least one popular study guide maps this competency to the other one.
+
 ## How this module is organised
 
 1. **[Part 1 — RFC 6902 Operations and Pointer Paths](./course-01-json-patch-operations.md)** — the operation set, how a JSON Pointer addresses nested fields and array elements, the `-` append index, and a working `patchesJson6902` rule proven against real Pods.
@@ -25,7 +28,7 @@ That precision comes with strictness. `patchStrategicMerge` mostly degrades grac
 
 After this module you can:
 
-- Explain when `patchesJson6902` is the right tool and when `patchStrategicMerge` is, in terms of what each one can and cannot express.
+- Explain when `patchesJson6902` is the right tool and when `patchStrategicMerge` is, and distinguish both from the separate `kyverno-json` project.
 - Write a `mutate.patchesJson6902` rule using `add`, `remove`, and `replace` against correctly-formed JSON Pointer paths.
 - Address an array element by index and the append position with `/-`, and predict what happens when the parent array is absent.
 - Escape a literal `/` in an annotation or label key as `~1` (and `~` as `~0`) inside a JSON Pointer.
