@@ -413,6 +413,18 @@ modules:
         path: sections/section-060/module-01/labs/lab-01
 
       - type: reading
+        title: "Module 2: Attestors, Digests and Registry Access"
+        path: sections/section-060/module-02/course.md
+
+      - type: reading
+        title: "Module 2.1: Attestor Structures and Trust Material"
+        path: sections/section-060/module-02/course-01-attestor-structures.md
+
+      - type: reading
+        title: "Module 2.2: Digests, Scope and Registry Access"
+        path: sections/section-060/module-02/course-02-digests-scope-and-registry-access.md
+
+      - type: reading
         title: "Section 060 Knowledge Check: VerifyImage Rules"
         path: sections/section-060/quiz.md
 

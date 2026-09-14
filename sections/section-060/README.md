@@ -36,6 +36,17 @@ This section has one module, paired with hands-on practice against a real `kind`
     astrona destroy ats-011-playground-060
     ```
 
+### 2. Attestors, Digests, and Registry Access
+
+* **Module Reader:** **[Module 2: Attestors, Digests, and Registry Access](./module-02/course.md)**
+    1. [Attestor Structures and Trust Material](./module-02/course-01-attestor-structures.md)
+    2. [Digests, Scope, and Registry Access](./module-02/course-02-digests-scope-and-registry-access.md)
+* **Free-Exploration Playground:** an ungraded sandbox with the same `kind` cluster and Kyverno already running, and no policies on it.
+    ```bash
+    astrona run --git git@github.com:astrona-io/ATS011.git -c sections/section-060/module-02/playground
+    astrona destroy ats-011-playground-0602
+    ```
+
 ---
 
 ## Ready for Assessment?
