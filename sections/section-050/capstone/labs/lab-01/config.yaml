@@ -1,0 +1,22 @@
+metadata:
+  name: "ats-011-lab-050"
+  docs:
+    solution: "solution.md"
+    question: "question.md"
+
+bootstrap:
+  init:
+    - name: "lab-050-setup"
+      description: "Installs Kyverno, waits for its controllers to be ready, and pre-creates the central platform-config namespace with a source ConfigMap"
+      type: "file"
+      source: "bootstrap/01-install-kyverno.sh"
+
+validation:
+  scripts:
+    - name: "verify-generation-capstone"
+      description: "Confirms data-based and clone-based generation both fire on Namespace creation, and that synchronize:true keeps the clone in sync with its source and self-heals direct tampering"
+      type: "file"
+      source: "validation/validate-completed.sh"
+
+teardown:
+  keepCluster: false

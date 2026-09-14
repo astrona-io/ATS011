@@ -1,0 +1,22 @@
+metadata:
+  name: "ats-011-lab-101"
+  docs:
+    solution: "solution.md"
+    question: "question.md"
+
+bootstrap:
+  init:
+    - name: "lab-101-setup"
+      description: "Installs Kyverno and waits for its controllers to be ready"
+      type: "file"
+      source: "bootstrap/01-install-kyverno.sh"
+
+validation:
+  scripts:
+    - name: "verify-cleanup-policy"
+      description: "Confirms the ClusterCleanupPolicy deletes ephemeral-labelled Pods on schedule and leaves other Pods alone"
+      type: "file"
+      source: "validation/validate-completed.sh"
+
+teardown:
+  keepCluster: false

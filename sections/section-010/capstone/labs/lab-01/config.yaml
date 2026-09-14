@@ -1,0 +1,22 @@
+metadata:
+  name: "ats-011-lab-010"
+  docs:
+    solution: "solution.md"
+    question: "question.md"
+
+bootstrap:
+  init:
+    - name: "lab-010-setup"
+      description: "Installs Kyverno and waits for its controllers to be ready"
+      type: "file"
+      source: "bootstrap/01-install-kyverno.sh"
+
+validation:
+  scripts:
+    - name: "verify-baseline-policy"
+      description: "Confirms the ownership anyPattern and the per-container foreach checks both hold, across five scenarios"
+      type: "file"
+      source: "validation/validate-completed.sh"
+
+teardown:
+  keepCluster: false

@@ -1,0 +1,22 @@
+metadata:
+  name: "ats-011-lab-060"
+  docs:
+    solution: "solution.md"
+    question: "question.md"
+
+bootstrap:
+  init:
+    - name: "lab-060-setup"
+      description: "Installs Kyverno and waits for its controllers to be ready"
+      type: "file"
+      source: "bootstrap/01-install-kyverno.sh"
+
+validation:
+  scripts:
+    - name: "verify-signature-and-limits"
+      description: "Confirms one policy enforces both image signature verification and per-container resource limits, across four scenarios"
+      type: "file"
+      source: "validation/validate-completed.sh"
+
+teardown:
+  keepCluster: false

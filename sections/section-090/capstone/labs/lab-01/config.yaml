@@ -1,0 +1,22 @@
+metadata:
+  name: "ats-011-lab-090"
+  docs:
+    solution: "solution.md"
+    question: "question.md"
+
+bootstrap:
+  init:
+    - name: "lab-090-setup"
+      description: "Installs Kyverno and waits for its controllers to be ready"
+      type: "file"
+      source: "bootstrap/01-install-kyverno.sh"
+
+validation:
+  scripts:
+    - name: "verify-scoped-autogen"
+      description: "Confirms autogen is scoped to Deployment only: non-compliant Deployments are rejected, non-compliant Jobs and CronJobs are not, and Pods and compliant Deployments behave correctly"
+      type: "file"
+      source: "validation/validate-completed.sh"
+
+teardown:
+  keepCluster: false

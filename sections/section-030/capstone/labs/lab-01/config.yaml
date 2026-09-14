@@ -1,0 +1,26 @@
+metadata:
+  name: "ats-011-lab-030"
+  docs:
+    solution: "solution.md"
+    question: "question.md"
+
+bootstrap:
+  init:
+    - name: "lab-030-install-kyverno"
+      description: "Installs Kyverno and waits for its controllers to be ready"
+      type: "file"
+      source: "bootstrap/01-install-kyverno.sh"
+    - name: "lab-030-seed-legacy-services"
+      description: "Creates a namespace with three Pods, one on an unpinned ':latest' image, before any policy exists"
+      type: "file"
+      source: "bootstrap/02-seed-legacy-services.sh"
+
+validation:
+  scripts:
+    - name: "verify-mixed-background-behavior"
+      description: "Confirms one rule scans pre-existing Pods normally while a request-context-gated rule skips them during the scan"
+      type: "file"
+      source: "validation/validate-completed.sh"
+
+teardown:
+  keepCluster: false

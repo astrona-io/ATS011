@@ -1,0 +1,26 @@
+metadata:
+  name: "ats-011-lab-110"
+  docs:
+    solution: "solution.md"
+    question: "question.md"
+
+bootstrap:
+  init:
+    - name: "lab-110-setup"
+      description: "Installs Kyverno and waits for its controllers to be ready"
+      type: "file"
+      source: "bootstrap/01-install-kyverno.sh"
+    - name: "lab-110-seed-exempt-namespace"
+      description: "Creates the cel-exempt namespace the policy must skip"
+      type: "file"
+      source: "bootstrap/02-seed-exempt-namespace.sh"
+
+validation:
+  scripts:
+    - name: "verify-validatingpolicy-and-vap"
+      description: "Confirms the ValidatingPolicy enforces both CEL checks, skips the exempt namespace, and generates a native ValidatingAdmissionPolicy"
+      type: "file"
+      source: "validation/validate-completed.sh"
+
+teardown:
+  keepCluster: false

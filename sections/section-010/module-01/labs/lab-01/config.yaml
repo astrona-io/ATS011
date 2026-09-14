@@ -1,0 +1,22 @@
+metadata:
+  name: "ats-011-lab-011"
+  docs:
+    solution: "solution.md"
+    question: "question.md"
+
+bootstrap:
+  init:
+    - name: "lab-011-setup"
+      description: "Installs Kyverno and waits for its controllers to be ready"
+      type: "file"
+      source: "bootstrap/01-install-kyverno.sh"
+
+validation:
+  scripts:
+    - name: "verify-validation-rule"
+      description: "Confirms the ClusterPolicy blocks non-compliant Pods and admits a compliant one"
+      type: "file"
+      source: "validation/validate-completed.sh"
+
+teardown:
+  keepCluster: false

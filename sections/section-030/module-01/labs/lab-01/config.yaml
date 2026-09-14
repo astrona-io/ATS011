@@ -1,0 +1,26 @@
+metadata:
+  name: "ats-011-lab-031"
+  docs:
+    solution: "solution.md"
+    question: "question.md"
+
+bootstrap:
+  init:
+    - name: "lab-031-install-kyverno"
+      description: "Installs Kyverno and waits for its controllers to be ready"
+      type: "file"
+      source: "bootstrap/01-install-kyverno.sh"
+    - name: "lab-031-seed-legacy-pods"
+      description: "Creates a namespace with compliant and non-compliant Pods before any policy exists"
+      type: "file"
+      source: "bootstrap/02-seed-legacy-pods.sh"
+
+validation:
+  scripts:
+    - name: "verify-background-scan"
+      description: "Confirms an Audit-mode background-scanning policy reports on Pods that predate it, without blocking or deleting them"
+      type: "file"
+      source: "validation/validate-completed.sh"
+
+teardown:
+  keepCluster: false

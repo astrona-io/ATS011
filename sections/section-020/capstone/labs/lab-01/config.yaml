@@ -1,0 +1,22 @@
+metadata:
+  name: "ats-011-lab-020"
+  docs:
+    solution: "solution.md"
+    question: "question.md"
+
+bootstrap:
+  init:
+    - name: "lab-020-setup"
+      description: "Installs Kyverno and waits for its controllers to be ready"
+      type: "file"
+      source: "bootstrap/01-install-kyverno.sh"
+
+validation:
+  scripts:
+    - name: "verify-and-preconditions"
+      description: "Confirms the rule fires only when both preconditions hold (CREATE and non-exempt namespace), across four scenarios"
+      type: "file"
+      source: "validation/validate-completed.sh"
+
+teardown:
+  keepCluster: false
