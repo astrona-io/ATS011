@@ -121,3 +121,86 @@ By the webhook name and the message framing. `admission webhook "validate.kyvern
 
 No. `ClusterPolicy` is fully functional on Kyverno v1.19.1, is what the Writing Policies domain asks you to author, and is what essentially every existing policy repository contains. The warning signposts the direction of the API — the `policies.kyverno.io` family of `ValidatingPolicy`, `MutatingPolicy`, `GeneratingPolicy`, `ImageValidatingPolicy`, and `DeletingPolicy`, one kind per job instead of one kind holding five rule types. Know what it is, be able to read one, and keep authoring `ClusterPolicy`.
 </details>
+
+---
+
+## Module 2 — The CEL-Native Policy Family
+
+**M2.1** Name the five kinds in the `policies.kyverno.io` family and the classic construct each replaces.
+
+<details>
+<summary>Show Answer</summary>
+
+`ValidatingPolicy` ← `rules[].validate`; `MutatingPolicy` ← `rules[].mutate`; `GeneratingPolicy` ← `rules[].generate`; `ImageValidatingPolicy` ← `rules[].verifyImages`; `DeletingPolicy` ← `ClusterCleanupPolicy` / `CleanupPolicy`. Each also has a `Namespaced*` counterpart, which replaces the `ClusterPolicy`/`Policy` scoping pair with a naming convention rather than a shared spec.
+</details>
+
+---
+
+**M2.2** How do you tell, from a policy YAML alone and before reading any rule, which family it belongs to?
+
+<details>
+<summary>Show Answer</summary>
+
+The `apiVersion`. `kyverno.io/v1` or `kyverno.io/v2` is the classic family; `policies.kyverno.io/*` is CEL-native. That also predicts the rejection message shape — classic policies are enforced by `validate.kyverno.svc-fail` with the multi-line "resource … was blocked" block, while the CEL family uses `vpol.validate.kyverno.svc-fail` with a one-line `Policy <name> failed:`.
+</details>
+
+---
+
+**M2.3** A `MutatingPolicy` has `patchType: ApplyConfiguration` and the expression `Object{ metadata: Object.metadata{ labels: {"managed-by": "x"} } }`. What is that, and what is it the equivalent of?
+
+<details>
+<summary>Show Answer</summary>
+
+CEL **object initialization** — you construct the fragment to merge rather than writing it as YAML. `Object` is the root of the resource being mutated and `Object.metadata` is its typed `metadata` sub-object, so the nesting mirrors the path being patched. It is the CEL spelling of a `patchStrategicMerge` fragment. The other patch type, `JSONPatch`, is the RFC 6902 analogue from Section 080.
+</details>
+
+---
+
+**M2.4** You split a classic `ClusterPolicy` — which held a mutate rule supplying a default and a validate rule requiring it — into a `MutatingPolicy` and a `ValidatingPolicy`. What did you lose?
+
+<details>
+<summary>Show Answer</summary>
+
+Co-location. The rule-type ordering guarantee survives — mutation still runs before validation, because that guarantee is about rule *types*, not policy objects. What is gone is that the two were one object: reviewed as one change, deleted together. Split apart, nothing binds them, so deleting the `MutatingPolicy` leaves the `ValidatingPolicy` rejecting every resource the mutation used to fix, with no tooling to warn you. Name and label paired policies so the relationship is visible to whoever deletes one.
+</details>
+
+---
+
+**M2.5** Translating a `ClusterCleanupPolicy` into a `DeletingPolicy`, the schedule and `deletionPropagationPolicy` carry over unchanged. Name two things that do not.
+
+<details>
+<summary>Show Answer</summary>
+
+`match` becomes `matchConstraints` (with lowercase plural resource names and explicit `operations`), and `conditions` go from JMESPath `key`/`operator`/`value` triples to **named CEL expressions**. The trap inside that second change: classic cleanup conditions evaluate against **`target`**, while a `DeletingPolicy`'s expressions read **`object`** — consistent with the rest of the CEL family, and easy to miss when translating line by line. The `has()` guard is also needed, since a resource without the field would otherwise error rather than evaluate false.
+</details>
+
+---
+
+**M2.6** Does migrating from `ClusterCleanupPolicy` to `DeletingPolicy` change the RBAC you need?
+
+<details>
+<summary>Show Answer</summary>
+
+No. The same cleanup controller does the deleting, so it still needs a `ClusterRole` labelled `rbac.kyverno.io/aggregate-to-cleanup-controller: "true"` granting `get`/`list`/`watch`/`delete` on the target resource. Verified on v1.19.1: the Section 100 grant worked unchanged for a `DeletingPolicy`. One observable difference, though — `status` came back empty after a sweep that demonstrably ran, where the classic kind reported `lastExecutionTime` on a cron boundary, so confirm a schedule is firing by observing resources rather than by reading status.
+</details>
+
+---
+
+**M2.7** What changes about attestors in an `ImageValidatingPolicy` compared with a classic `verifyImages` rule?
+
+<details>
+<summary>Show Answer</summary>
+
+They are **named rather than positional**. Section 060's errors identify trust material by index — `.attestors[1].entries[0]` — whereas here each attestor carries a `name` that `validations` expressions refer to, so a rule with three signers reads as three names and a failure names the one that mattered. The verification backend also becomes an explicit choice between `cosign` and `notary`, which the classic Sigstore-shaped entries did not offer. And `images` is a list of named CEL expressions rather than glob strings, so which images get checked can be computed rather than pattern-matched.
+</details>
+
+---
+
+**M2.8** Should you author CEL-native policies for the KCA?
+
+<details>
+<summary>Show Answer</summary>
+
+No — keep authoring classic ones. The Writing Policies competencies are framed in classic terms and `ClusterPolicy` is fully functional on v1.19.1; the deprecation warnings signpost direction, not removal. What this family buys you for the exam is the ability to *read* such a policy and say what it does. For a real cluster, adopt deliberately: the family is still moving (`MutatingPolicy` served at both a deprecated `v1alpha1` and `v1` on the same cluster), and a field carrying its classic name does not guarantee it carries its classic behaviour — the `target` → `object` change is the concrete example.
+</details>
+

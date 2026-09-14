@@ -720,6 +720,18 @@ modules:
         path: sections/section-110/module-01/labs/lab-01
 
       - type: reading
+        title: "Module 2: The CEL-Native Policy Family"
+        path: sections/section-110/module-02/course.md
+
+      - type: reading
+        title: "Module 2.1: MutatingPolicy and GeneratingPolicy"
+        path: sections/section-110/module-02/course-01-mutating-and-generating-policies.md
+
+      - type: reading
+        title: "Module 2.2: ImageValidatingPolicy and DeletingPolicy"
+        path: sections/section-110/module-02/course-02-imagevalidating-and-deletingpolicy.md
+
+      - type: reading
         title: "Section 110 Knowledge Check: Common Expression Language (CEL)"
         path: sections/section-110/quiz.md
 

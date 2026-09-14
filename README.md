@@ -88,6 +88,7 @@ Sections are deliberately *not* all the same size. Validation Rules is the heavi
 | **100: Cleanup Policies** | [M1: Cleanup Policies](sections/section-100/module-01/course.md) | [lab](sections/section-100/module-01/labs/lab-01) | `astrona run --git git@github.com:astrona-io/ATS011.git -c sections/section-100/module-01/labs/lab-01` |
 | | **Section Capstone Challenge** | **[capstone](sections/section-100/capstone/labs/lab-01)** | `astrona run --git git@github.com:astrona-io/ATS011.git -c sections/section-100/capstone/labs/lab-01` |
 | **110: Common Expression Language (CEL)** | [M1: CEL in Kyverno Policies](sections/section-110/module-01/course.md) | [lab](sections/section-110/module-01/labs/lab-01) | `astrona run --git git@github.com:astrona-io/ATS011.git -c sections/section-110/module-01/labs/lab-01` |
+| | [M2: The CEL-Native Policy Family](sections/section-110/module-02/course.md) | *(reading + playground)* | `astrona run --git git@github.com:astrona-io/ATS011.git -c sections/section-110/module-02/playground` |
 | | **Section Capstone Challenge** | **[capstone](sections/section-110/capstone/labs/lab-01)** | `astrona run --git git@github.com:astrona-io/ATS011.git -c sections/section-110/capstone/labs/lab-01` |
 
 ---
