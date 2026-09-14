@@ -42,6 +42,17 @@ This section has one module, paired with hands-on practice against a real `kind`
     astrona destroy ats-011-playground-110
     ```
 
+### 2. The CEL-Native Policy Family
+
+* **Module Reader:** **[Module 2: The CEL-Native Policy Family](./module-02/course.md)**
+    1. [MutatingPolicy and GeneratingPolicy](./module-02/course-01-mutating-and-generating-policies.md)
+    2. [ImageValidatingPolicy and DeletingPolicy](./module-02/course-02-imagevalidating-and-deletingpolicy.md)
+* **Free-Exploration Playground:** an ungraded sandbox with the same `kind` cluster and Kyverno already running, and no policies on it.
+    ```bash
+    astrona run --git git@github.com:astrona-io/ATS011.git -c sections/section-110/module-02/playground
+    astrona destroy ats-011-playground-1102
+    ```
+
 ---
 
 ## Ready for Assessment?
