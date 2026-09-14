@@ -1,0 +1,22 @@
+metadata:
+  name: "ats-011-lab-080"
+  docs:
+    solution: "solution.md"
+    question: "question.md"
+
+bootstrap:
+  init:
+    - name: "lab-080-setup"
+      description: "Installs Kyverno and waits for its controllers to be ready"
+      type: "file"
+      source: "bootstrap/01-install-kyverno.sh"
+
+validation:
+  scripts:
+    - name: "verify-json-patch-add-remove"
+      description: "Confirms the combined add + guarded-remove JSON Patch rules behave correctly across annotated and unannotated Pods"
+      type: "file"
+      source: "validation/validate-completed.sh"
+
+teardown:
+  keepCluster: false

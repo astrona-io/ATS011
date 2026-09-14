@@ -1,0 +1,22 @@
+metadata:
+  name: "ats-011-lab-091"
+  docs:
+    solution: "solution.md"
+    question: "question.md"
+
+bootstrap:
+  init:
+    - name: "lab-091-setup"
+      description: "Installs Kyverno and waits for its controllers to be ready"
+      type: "file"
+      source: "bootstrap/01-install-kyverno.sh"
+
+validation:
+  scripts:
+    - name: "verify-autogen-rule"
+      description: "Confirms a Pod-only rule rejects a non-compliant Pod AND a non-compliant Deployment (via autogen), and admits a compliant Deployment"
+      type: "file"
+      source: "validation/validate-completed.sh"
+
+teardown:
+  keepCluster: false

@@ -1,0 +1,22 @@
+metadata:
+  name: "ats-011-lab-041"
+  docs:
+    solution: "solution.md"
+    question: "question.md"
+
+bootstrap:
+  init:
+    - name: "lab-041-setup"
+      description: "Installs Kyverno and waits for its controllers to be ready"
+      type: "file"
+      source: "bootstrap/01-install-kyverno.sh"
+
+validation:
+  scripts:
+    - name: "verify-mutation-rule"
+      description: "Confirms the mutate rule injects the label and container default on every Pod, across every container, and wins over conflicting incoming values"
+      type: "file"
+      source: "validation/validate-completed.sh"
+
+teardown:
+  keepCluster: false

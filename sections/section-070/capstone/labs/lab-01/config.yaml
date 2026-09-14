@@ -1,0 +1,26 @@
+metadata:
+  name: "ats-011-lab-070"
+  docs:
+    solution: "solution.md"
+    question: "question.md"
+
+bootstrap:
+  init:
+    - name: "lab-070-setup"
+      description: "Installs Kyverno and waits for its controllers to be ready"
+      type: "file"
+      source: "bootstrap/01-install-kyverno.sh"
+    - name: "lab-070-seed-pods"
+      description: "Creates namespace cap-a with two Pods already running, so the policy starts near its limit"
+      type: "file"
+      source: "bootstrap/02-seed-cap-a-pods.sh"
+
+validation:
+  scripts:
+    - name: "verify-apicall-and-variable-context"
+      description: "Confirms a ClusterPolicy combines a live context.apiCall Pod count with a resource-derived context.variable, and that the rejection message echoes the offending Pod's own name"
+      type: "file"
+      source: "validation/validate-completed.sh"
+
+teardown:
+  keepCluster: false

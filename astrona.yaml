@@ -1,0 +1,748 @@
+training:
+  id: ATS011
+  title: "KCA: Writing Policies"
+  description: >
+    Training material covering the Kyverno Certified Associate (KCA)
+    Writing Policies domain, with hands-on labs for each competency.
+
+  certification:
+    name: Kyverno Certified Associate
+    code: KCA
+    provider: CNCF / Linux Foundation
+    domain: Writing Policies
+    weight: 32
+
+modules:
+  - id: module-000
+    title: "Section 000: Policy Objects and Rule Anatomy (Primer)"
+    description: >
+      Primer, not one of the eleven Writing Policies competencies. Covers the
+      policy object itself: ClusterPolicy versus namespaced Policy, the fields
+      every rule shares, validationFailureAction and per-rule failureAction,
+      validationFailureActionOverrides for per-namespace rollout, the fixed
+      order Kyverno runs rule types in, and choosing between exclude,
+      preconditions and a PolicyException.
+
+    content:
+      - type: reading
+        title: Section Overview
+        path: sections/section-000/README.md
+
+      - type: reading
+        title: "Module 1: Policy Objects and Rule Anatomy"
+        path: sections/section-000/module-01/course.md
+
+      - type: reading
+        title: "Module 1.1: Policy Objects and Rule Anatomy"
+        path: sections/section-000/module-01/course-01-policy-objects-and-rule-anatomy.md
+
+      - type: reading
+        title: "Module 1.2: Failure Actions and Staged Rollout"
+        path: sections/section-000/module-01/course-02-failure-actions-and-rollout.md
+
+      - type: reading
+        title: "Module 1.3: Rule Ordering and Carving Out Exceptions"
+        path: sections/section-000/module-01/course-03-rule-ordering-and-exceptions.md
+
+      - type: reading
+        title: "Section 000 Knowledge Check: Policy Objects and Rule Anatomy"
+        path: sections/section-000/quiz.md
+
+  - id: module-010
+    title: "Section 010: Validation Rules"
+    description: >
+      Write ClusterPolicy validate rules that check the shape of an incoming
+      resource with pattern, anyPattern, and foreach, and choose between
+      Enforce and Audit failure actions.
+
+    content:
+      - type: reading
+        title: Section Overview
+        path: sections/section-010/README.md
+
+      - type: reading
+        title: "Module 1: Pattern-Based Validation"
+        path: sections/section-010/module-01/course.md
+
+      - type: reading
+        title: "Module 1.1: The ClusterPolicy Object and Its Audience"
+        path: sections/section-010/module-01/course-01-the-clusterpolicy-object.md
+
+      - type: reading
+        title: "Module 1.2: The Pattern Block and What Failure Costs"
+        path: sections/section-010/module-01/course-02-the-pattern-block-and-failure-actions.md
+
+      - type: reading
+        title: "Module 1.3: anyPattern, foreach & Failure Messages"
+        path: sections/section-010/module-01/course-03-anypattern-foreach-and-messages.md
+
+      - type: reading
+        title: Question
+        path: sections/section-010/module-01/labs/lab-01/question.md
+
+      - type: reading
+        title: Solution Walkthrough
+        path: sections/section-010/module-01/labs/lab-01/solution.md
+
+      - type: lab
+        title: "Pattern-Based Validation Lab"
+        path: sections/section-010/module-01/labs/lab-01
+
+      - type: reading
+        title: "Module 2: Deny Rules and the Condition Vocabulary"
+        path: sections/section-010/module-02/course.md
+
+      - type: reading
+        title: "Module 2.1: Deny Rules and the Inversion"
+        path: sections/section-010/module-02/course-01-deny-rules-and-the-inversion.md
+
+      - type: reading
+        title: "Module 2.2: The Condition Operator Vocabulary"
+        path: sections/section-010/module-02/course-02-condition-operator-vocabulary.md
+
+      - type: reading
+        title: "Module 3: Validation Anchors"
+        path: sections/section-010/module-03/course.md
+
+      - type: reading
+        title: "Module 3.1: Conditional and Equality Anchors"
+        path: sections/section-010/module-03/course-01-conditional-and-equality-anchors.md
+
+      - type: reading
+        title: "Module 3.2: Existence, Negation & Global Anchors"
+        path: sections/section-010/module-03/course-02-existence-negation-and-global-anchors.md
+
+      - type: reading
+        title: "Module 4: The podSecurity Subrule"
+        path: sections/section-010/module-04/course.md
+
+      - type: reading
+        title: "Module 4.1: Profiles, Levels and Versions"
+        path: sections/section-010/module-04/course-01-podsecurity-profiles-and-levels.md
+
+      - type: reading
+        title: "Module 4.2: Excluding Controls, and PSS vs PSA"
+        path: sections/section-010/module-04/course-02-excluding-controls-and-psa.md
+
+      - type: reading
+        title: "Section 010 Knowledge Check: Validation Rules"
+        path: sections/section-010/quiz.md
+
+      - type: reading
+        title: Question
+        path: sections/section-010/capstone/labs/lab-01/question.md
+
+      - type: reading
+        title: Solution Walkthrough
+        path: sections/section-010/capstone/labs/lab-01/solution.md
+
+      - type: lab
+        title: "Validation Rules Capstone Lab"
+        path: sections/section-010/capstone/labs/lab-01
+
+  - id: module-020
+    title: "Section 020: Preconditions"
+    description: >
+      Write ClusterPolicy preconditions that gate a validate rule with any/all
+      conditions over request.operation and resource fields, and know when a
+      condition requires preconditions instead of match/exclude.
+
+    content:
+      - type: reading
+        title: Section Overview
+        path: sections/section-020/README.md
+
+      - type: reading
+        title: "Module 1: Preconditions"
+        path: sections/section-020/module-01/course.md
+
+      - type: reading
+        title: "Module 1.1: The Preconditions Block and Its Operators"
+        path: sections/section-020/module-01/course-01-preconditions-and-operators.md
+
+      - type: reading
+        title: "Module 1.2: Preconditions vs. match/exclude, and all vs. any"
+        path: sections/section-020/module-01/course-02-preconditions-vs-match.md
+
+      - type: reading
+        title: Question
+        path: sections/section-020/module-01/labs/lab-01/question.md
+
+      - type: reading
+        title: Solution Walkthrough
+        path: sections/section-020/module-01/labs/lab-01/solution.md
+
+      - type: lab
+        title: "Preconditions Lab"
+        path: sections/section-020/module-01/labs/lab-01
+
+      - type: reading
+        title: "Section 020 Knowledge Check: Preconditions"
+        path: sections/section-020/quiz.md
+
+      - type: reading
+        title: Question
+        path: sections/section-020/capstone/labs/lab-01/question.md
+
+      - type: reading
+        title: Solution Walkthrough
+        path: sections/section-020/capstone/labs/lab-01/solution.md
+
+      - type: lab
+        title: "Preconditions Capstone Lab"
+        path: sections/section-020/capstone/labs/lab-01
+
+  - id: module-030
+    title: "Section 030: Background Scans"
+    description: >
+      Configure spec.background on a ClusterPolicy so validate rules are
+      periodically re-evaluated against resources that already exist, read
+      the resulting PolicyReport/ClusterPolicyReport objects, and recognize
+      when a rule's use of request-only context (like request.operation or
+      request.userInfo) changes how it behaves during a scan.
+
+    content:
+      - type: reading
+        title: Section Overview
+        path: sections/section-030/README.md
+
+      - type: reading
+        title: "Module 1: Background Scanning"
+        path: sections/section-030/module-01/course.md
+
+      - type: reading
+        title: "Module 1.1: What Background Scanning Actually Does"
+        path: sections/section-030/module-01/course-01-what-background-scans-do.md
+
+      - type: reading
+        title: "Module 1.2: Request Context and the Limits of a Scan"
+        path: sections/section-030/module-01/course-02-request-context-and-limits.md
+
+      - type: reading
+        title: Question
+        path: sections/section-030/module-01/labs/lab-01/question.md
+
+      - type: reading
+        title: Solution Walkthrough
+        path: sections/section-030/module-01/labs/lab-01/solution.md
+
+      - type: lab
+        title: "Background Scanning Lab"
+        path: sections/section-030/module-01/labs/lab-01
+
+      - type: reading
+        title: "Section 030 Knowledge Check: Background Scans"
+        path: sections/section-030/quiz.md
+
+      - type: reading
+        title: Question
+        path: sections/section-030/capstone/labs/lab-01/question.md
+
+      - type: reading
+        title: Solution Walkthrough
+        path: sections/section-030/capstone/labs/lab-01/solution.md
+
+      - type: lab
+        title: "Background Scans Capstone Lab"
+        path: sections/section-030/capstone/labs/lab-01
+
+  - id: module-040
+    title: "Section 040: Mutation Rules"
+    description: >
+      Write ClusterPolicy mutate rules that rewrite an incoming resource with
+      patchStrategicMerge before validation ever sees it, and use
+      mutateExistingOnPolicyUpdate with a targets block to retroactively
+      patch resources that already existed before the policy did.
+
+    content:
+      - type: reading
+        title: Section Overview
+        path: sections/section-040/README.md
+
+      - type: reading
+        title: "Module 1: Mutation Rules"
+        path: sections/section-040/module-01/course.md
+
+      - type: reading
+        title: "Module 1.1: patchStrategicMerge and Ordering"
+        path: sections/section-040/module-01/course-01-patchstrategicmerge-mechanics.md
+
+      - type: reading
+        title: "Module 1.2: Mutating Existing Resources"
+        path: sections/section-040/module-01/course-02-mutating-existing-resources.md
+
+      - type: reading
+        title: Question
+        path: sections/section-040/module-01/labs/lab-01/question.md
+
+      - type: reading
+        title: Solution Walkthrough
+        path: sections/section-040/module-01/labs/lab-01/solution.md
+
+      - type: lab
+        title: "Mutation Rules Lab"
+        path: sections/section-040/module-01/labs/lab-01
+
+      - type: reading
+        title: "Module 2: Per-Element Mutation and Idempotency"
+        path: sections/section-040/module-02/course.md
+
+      - type: reading
+        title: "Module 2.1: foreach in a Mutate Rule"
+        path: sections/section-040/module-02/course-01-foreach-in-mutate.md
+
+      - type: reading
+        title: "Module 2.2: Idempotency and Rule Interaction"
+        path: sections/section-040/module-02/course-02-idempotency-and-rule-interaction.md
+
+      - type: reading
+        title: "Section 040 Knowledge Check: Mutation Rules"
+        path: sections/section-040/quiz.md
+
+      - type: reading
+        title: Question
+        path: sections/section-040/capstone/labs/lab-01/question.md
+
+      - type: reading
+        title: Solution Walkthrough
+        path: sections/section-040/capstone/labs/lab-01/solution.md
+
+      - type: lab
+        title: "Mutation Rules Capstone Lab"
+        path: sections/section-040/capstone/labs/lab-01
+
+  - id: module-050
+    title: "Section 050: Generation Rules"
+    description: >
+      Write ClusterPolicy generate rules that create downstream resources on
+      Namespace creation using literal generate.data and generate.clone, and
+      know the exact synchronize:true semantics for source propagation, clone
+      edit reversion, and clone self-healing.
+
+    content:
+      - type: reading
+        title: Section Overview
+        path: sections/section-050/README.md
+
+      - type: reading
+        title: "Module 1: Generation Rules"
+        path: sections/section-050/module-01/course.md
+
+      - type: reading
+        title: "Module 1.1: Generating from Literal Data"
+        path: sections/section-050/module-01/course-01-generate-rule-anatomy-and-data.md
+
+      - type: reading
+        title: "Module 1.2: Cloning Resources and synchronize"
+        path: sections/section-050/module-01/course-02-clone-and-synchronize.md
+
+      - type: reading
+        title: Question
+        path: sections/section-050/module-01/labs/lab-01/question.md
+
+      - type: reading
+        title: Solution Walkthrough
+        path: sections/section-050/module-01/labs/lab-01/solution.md
+
+      - type: lab
+        title: "Data-Based Generation Lab"
+        path: sections/section-050/module-01/labs/lab-01
+
+      - type: reading
+        title: "Module 2: Generating for What Already Exists"
+        path: sections/section-050/module-02/course.md
+
+      - type: reading
+        title: "Module 2.1: generateExisting and Retroactive Creation"
+        path: sections/section-050/module-02/course-01-generate-existing.md
+
+      - type: reading
+        title: "Module 2.2: Lifecycle, Policy Deletion and Orphaning"
+        path: sections/section-050/module-02/course-02-lifecycle-and-orphaning.md
+
+      - type: reading
+        title: "Section 050 Knowledge Check: Generation Rules"
+        path: sections/section-050/quiz.md
+
+      - type: reading
+        title: Question
+        path: sections/section-050/capstone/labs/lab-01/question.md
+
+      - type: reading
+        title: Solution Walkthrough
+        path: sections/section-050/capstone/labs/lab-01/solution.md
+
+      - type: lab
+        title: "Generation Rules Capstone Lab"
+        path: sections/section-050/capstone/labs/lab-01
+
+  - id: module-060
+    title: "Section 060: VerifyImage Rules"
+    description: >
+      Write ClusterPolicy verifyImages rules that check a real Cosign
+      signature against imageReferences and attestors, verify attestations
+      beyond a bare signature, and understand mutateDigest pinning.
+
+    content:
+      - type: reading
+        title: Section Overview
+        path: sections/section-060/README.md
+
+      - type: reading
+        title: "Module 1: Image Signature & Attestation Verification"
+        path: sections/section-060/module-01/course.md
+
+      - type: reading
+        title: "Module 1.1: Signature Verification with verifyImages"
+        path: sections/section-060/module-01/course-01-signature-verification-and-attestors.md
+
+      - type: reading
+        title: "Module 1.2: Attestations & Digest Pinning"
+        path: sections/section-060/module-01/course-02-attestations-and-digest-pinning.md
+
+      - type: reading
+        title: Question
+        path: sections/section-060/module-01/labs/lab-01/question.md
+
+      - type: reading
+        title: Solution Walkthrough
+        path: sections/section-060/module-01/labs/lab-01/solution.md
+
+      - type: lab
+        title: "VerifyImage Rules Lab"
+        path: sections/section-060/module-01/labs/lab-01
+
+      - type: reading
+        title: "Module 2: Attestors, Digests and Registry Access"
+        path: sections/section-060/module-02/course.md
+
+      - type: reading
+        title: "Module 2.1: Attestor Structures and Trust Material"
+        path: sections/section-060/module-02/course-01-attestor-structures.md
+
+      - type: reading
+        title: "Module 2.2: Digests, Scope and Registry Access"
+        path: sections/section-060/module-02/course-02-digests-scope-and-registry-access.md
+
+      - type: reading
+        title: "Section 060 Knowledge Check: VerifyImage Rules"
+        path: sections/section-060/quiz.md
+
+      - type: reading
+        title: Question
+        path: sections/section-060/capstone/labs/lab-01/question.md
+
+      - type: reading
+        title: Solution Walkthrough
+        path: sections/section-060/capstone/labs/lab-01/solution.md
+
+      - type: lab
+        title: "VerifyImage Rules Capstone Lab"
+        path: sections/section-060/capstone/labs/lab-01
+
+  - id: module-070
+    title: "Section 070: Variables & API Calls in Policies"
+    description: >
+      Write ClusterPolicy rules that use {{ }} JMESPath variables and
+      context.apiCall to make admission decisions from live cluster data
+      fetched at evaluation time, instead of values hardcoded in the policy.
+
+    content:
+      - type: reading
+        title: Section Overview
+        path: sections/section-070/README.md
+
+      - type: reading
+        title: "Module 1: Variables & API Calls in Policies"
+        path: sections/section-070/module-01/course.md
+
+      - type: reading
+        title: "Module 1.1: JMESPath, Variables & Built-in Context"
+        path: sections/section-070/module-01/course-01-jmespath-variables-and-context.md
+
+      - type: reading
+        title: "Module 1.2: context.apiCall & Live Cluster Data"
+        path: sections/section-070/module-01/course-02-apicall-and-live-cluster-data.md
+
+      - type: reading
+        title: Question
+        path: sections/section-070/module-01/labs/lab-01/question.md
+
+      - type: reading
+        title: Solution Walkthrough
+        path: sections/section-070/module-01/labs/lab-01/solution.md
+
+      - type: lab
+        title: "Live Pod-Quota Lab"
+        path: sections/section-070/module-01/labs/lab-01
+
+      - type: reading
+        title: "Module 2: Context Beyond apiCall"
+        path: sections/section-070/module-02/course.md
+
+      - type: reading
+        title: "Module 2.1: configMap and variable Context"
+        path: sections/section-070/module-02/course-01-configmap-and-variable-context.md
+
+      - type: reading
+        title: "Module 2.2: imageRegistry and globalReference"
+        path: sections/section-070/module-02/course-02-imageregistry-and-globalreference.md
+
+      - type: reading
+        title: "Section 070 Knowledge Check: Variables & API Calls in Policies"
+        path: sections/section-070/quiz.md
+
+      - type: reading
+        title: Question
+        path: sections/section-070/capstone/labs/lab-01/question.md
+
+      - type: reading
+        title: Solution Walkthrough
+        path: sections/section-070/capstone/labs/lab-01/solution.md
+
+      - type: lab
+        title: "Variables & API Calls Capstone Lab"
+        path: sections/section-070/capstone/labs/lab-01
+
+  - id: module-080
+    title: "Section 080: JSON Patches"
+    description: >
+      Write ClusterPolicy mutate rules with patchesJson6902 (RFC 6902 JSON Patch) when
+      strategic merge cannot express the change, addressing exact array elements and
+      the append position with JSON Pointer paths, escaping a literal / in a key as ~1,
+      and guarding a destructive operation with preconditions so it behaves the same
+      whether the underlying operation is lenient or strict about a missing path.
+
+    content:
+      - type: reading
+        title: Section Overview
+        path: sections/section-080/README.md
+
+      - type: reading
+        title: "Module 1: JSON Patches"
+        path: sections/section-080/module-01/course.md
+
+      - type: reading
+        title: "Module 1.1: RFC 6902 Operations and Pointer Paths"
+        path: sections/section-080/module-01/course-01-json-patch-operations.md
+
+      - type: reading
+        title: "Module 1.2: Pointer Escaping and Missing Paths"
+        path: sections/section-080/module-01/course-02-pointer-escaping-and-missing-paths.md
+
+      - type: reading
+        title: "Module 1.3: Guarded Removal and Safe Patch Design"
+        path: sections/section-080/module-01/course-03-guarded-removal-and-safe-patches.md
+
+      - type: reading
+        title: Question
+        path: sections/section-080/module-01/labs/lab-01/question.md
+
+      - type: reading
+        title: Solution Walkthrough
+        path: sections/section-080/module-01/labs/lab-01/solution.md
+
+      - type: lab
+        title: "JSON Patches Lab"
+        path: sections/section-080/module-01/labs/lab-01
+
+      - type: reading
+        title: "Section 080 Knowledge Check: JSON Patches"
+        path: sections/section-080/quiz.md
+
+      - type: reading
+        title: Question
+        path: sections/section-080/capstone/labs/lab-01/question.md
+
+      - type: reading
+        title: Solution Walkthrough
+        path: sections/section-080/capstone/labs/lab-01/solution.md
+
+      - type: lab
+        title: "JSON Patches Capstone Lab"
+        path: sections/section-080/capstone/labs/lab-01
+
+  - id: module-090
+    title: "Section 090: Autogen Rules"
+    description: >
+      Understand how Kyverno automatically clones a rule matching only kind: Pod and
+      rewrites its field paths for Deployment, DaemonSet, StatefulSet, Job, ReplicaSet,
+      ReplicationController and CronJob, find the generated rules under
+      status.autogen.rules, and scope or disable autogen with the
+      pod-policies.kyverno.io/autogen-controllers annotation.
+
+    content:
+      - type: reading
+        title: Section Overview
+        path: sections/section-090/README.md
+
+      - type: reading
+        title: "Module 1: Autogen Rules"
+        path: sections/section-090/module-01/course.md
+
+      - type: reading
+        title: "Module 1.1: What Autogen Actually Generates"
+        path: sections/section-090/module-01/course-01-what-autogen-generates.md
+
+      - type: reading
+        title: "Module 1.2: Controlling Autogen's Scope"
+        path: sections/section-090/module-01/course-02-controlling-autogen-scope.md
+
+      - type: reading
+        title: "Module 1.3: When Autogen Declines, and When It Gets It Wrong"
+        path: sections/section-090/module-01/course-03-when-autogen-declines.md
+
+      - type: reading
+        title: Question
+        path: sections/section-090/module-01/labs/lab-01/question.md
+
+      - type: reading
+        title: Solution Walkthrough
+        path: sections/section-090/module-01/labs/lab-01/solution.md
+
+      - type: lab
+        title: "Autogen Rules Lab"
+        path: sections/section-090/module-01/labs/lab-01
+
+      - type: reading
+        title: "Section 090 Knowledge Check: Autogen Rules"
+        path: sections/section-090/quiz.md
+
+      - type: reading
+        title: Question
+        path: sections/section-090/capstone/labs/lab-01/question.md
+
+      - type: reading
+        title: Solution Walkthrough
+        path: sections/section-090/capstone/labs/lab-01/solution.md
+
+      - type: lab
+        title: "Autogen Rules Capstone Lab"
+        path: sections/section-090/capstone/labs/lab-01
+
+  - id: module-100
+    title: "Section 100: Cleanup Policies"
+    description: >
+      Write CleanupPolicy and ClusterCleanupPolicy resources that delete resources on a
+      cron schedule, grant the cleanup controller the RBAC it needs through an
+      aggregating ClusterRole, narrow the sweep with a conditions block over the target
+      variable, and choose between a policy and the per-resource cleanup.kyverno.io/ttl
+      label.
+
+    content:
+      - type: reading
+        title: Section Overview
+        path: sections/section-100/README.md
+
+      - type: reading
+        title: "Module 1: Cleanup Policies"
+        path: sections/section-100/module-01/course.md
+
+      - type: reading
+        title: "Module 1.1: Schedules, Matching & the RBAC Requirement"
+        path: sections/section-100/module-01/course-01-schedules-matching-and-rbac.md
+
+      - type: reading
+        title: "Module 1.2: Conditions, TTL Labels & Deletion Semantics"
+        path: sections/section-100/module-01/course-02-conditions-ttl-and-deletion-semantics.md
+
+      - type: reading
+        title: Question
+        path: sections/section-100/module-01/labs/lab-01/question.md
+
+      - type: reading
+        title: Solution Walkthrough
+        path: sections/section-100/module-01/labs/lab-01/solution.md
+
+      - type: lab
+        title: "Cleanup Policies Lab"
+        path: sections/section-100/module-01/labs/lab-01
+
+      - type: reading
+        title: "Section 100 Knowledge Check: Cleanup Policies"
+        path: sections/section-100/quiz.md
+
+      - type: reading
+        title: Question
+        path: sections/section-100/capstone/labs/lab-01/question.md
+
+      - type: reading
+        title: Solution Walkthrough
+        path: sections/section-100/capstone/labs/lab-01/solution.md
+
+      - type: lab
+        title: "Cleanup Policies Capstone Lab"
+        path: sections/section-100/capstone/labs/lab-01
+
+  - id: module-110
+    title: "Section 110: Common Expression Language (CEL)"
+    description: >
+      Write validate.cel expressions inside a ClusterPolicy and author CEL-native
+      ValidatingPolicy resources from the policies.kyverno.io API group, using
+      matchConstraints, matchConditions, variables and validationActions, and have
+      Kyverno compile a policy into a native Kubernetes ValidatingAdmissionPolicy.
+
+    content:
+      - type: reading
+        title: Section Overview
+        path: sections/section-110/README.md
+
+      - type: reading
+        title: "Module 1: CEL in Kyverno Policies"
+        path: sections/section-110/module-01/course.md
+
+      - type: reading
+        title: "Module 1.1: CEL as a Language"
+        path: sections/section-110/module-01/course-01-cel-as-a-language.md
+
+      - type: reading
+        title: "Module 1.2: Writing a validate.cel Rule Safely"
+        path: sections/section-110/module-01/course-02-writing-validate-cel-safely.md
+
+      - type: reading
+        title: "Module 1.3: The ValidatingPolicy Type"
+        path: sections/section-110/module-01/course-03-the-validatingpolicy-type.md
+
+      - type: reading
+        title: "Module 1.4: Autogen & Native Admission Policies"
+        path: sections/section-110/module-01/course-04-autogen-and-native-admission-policies.md
+
+      - type: reading
+        title: Question
+        path: sections/section-110/module-01/labs/lab-01/question.md
+
+      - type: reading
+        title: Solution Walkthrough
+        path: sections/section-110/module-01/labs/lab-01/solution.md
+
+      - type: lab
+        title: "CEL Validation Lab"
+        path: sections/section-110/module-01/labs/lab-01
+
+      - type: reading
+        title: "Section 110 Knowledge Check: Common Expression Language (CEL)"
+        path: sections/section-110/quiz.md
+
+      - type: reading
+        title: Question
+        path: sections/section-110/capstone/labs/lab-01/question.md
+
+      - type: reading
+        title: Solution Walkthrough
+        path: sections/section-110/capstone/labs/lab-01/solution.md
+
+      - type: lab
+        title: "CEL Capstone Lab"
+        path: sections/section-110/capstone/labs/lab-01
+
+  - id: module-120
+    title: "KCA Writing Policies Domain Certification Quiz"
+    description: >
+      A comprehensive, scenario-based final assessment covering all 11
+      sections of the Writing Policies domain, simulating actual KCA exam
+      pressure.
+
+    content:
+      - type: reading
+        title: "Final Domain Certification Quiz"
+        path: sections/final-domain-quiz.md

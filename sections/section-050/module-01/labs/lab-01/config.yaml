@@ -1,0 +1,22 @@
+metadata:
+  name: "ats-011-lab-051"
+  docs:
+    solution: "solution.md"
+    question: "question.md"
+
+bootstrap:
+  init:
+    - name: "lab-051-setup"
+      description: "Installs Kyverno and waits for its controllers to be ready"
+      type: "file"
+      source: "bootstrap/01-install-kyverno.sh"
+
+validation:
+  scripts:
+    - name: "verify-generation-rule"
+      description: "Confirms a new Namespace automatically receives a generated NetworkPolicy with the exact required content"
+      type: "file"
+      source: "validation/validate-completed.sh"
+
+teardown:
+  keepCluster: false

@@ -1,0 +1,23 @@
+# Local environment / secrets
+.env
+.env-*
+*.local
+
+# Astrona lab run artefacts
+report.xml
+*.report.xml
+kubeconfig
+kubeconfig-*
+
+# Editor / OS noise
+.DS_Store
+Thumbs.db
+*.swp
+*~
+.idea/
+.vscode/
+
+# Scratch
+*.tmp
+tmp/
+scratch/

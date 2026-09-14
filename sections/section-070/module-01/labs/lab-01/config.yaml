@@ -1,0 +1,26 @@
+metadata:
+  name: "ats-011-lab-071"
+  docs:
+    solution: "solution.md"
+    question: "question.md"
+
+bootstrap:
+  init:
+    - name: "lab-071-setup"
+      description: "Installs Kyverno and waits for its controllers to be ready"
+      type: "file"
+      source: "bootstrap/01-install-kyverno.sh"
+    - name: "lab-071-seed-pods"
+      description: "Creates namespace team-a with two Pods already running, so the policy starts near its limit"
+      type: "file"
+      source: "bootstrap/02-seed-team-a-pods.sh"
+
+validation:
+  scripts:
+    - name: "verify-apicall-quota"
+      description: "Confirms a ClusterPolicy uses a live context.apiCall Pod count, per namespace, to enforce a 3-Pod quota"
+      type: "file"
+      source: "validation/validate-completed.sh"
+
+teardown:
+  keepCluster: false

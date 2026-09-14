@@ -1,0 +1,26 @@
+metadata:
+  name: "ats-011-lab-100"
+  docs:
+    solution: "solution.md"
+    question: "question.md"
+
+bootstrap:
+  init:
+    - name: "lab-100-setup"
+      description: "Installs Kyverno and waits for its controllers to be ready"
+      type: "file"
+      source: "bootstrap/01-install-kyverno.sh"
+    - name: "lab-100-seed-namespaces"
+      description: "Creates the capstone-cleanup and capstone-keep namespaces"
+      type: "file"
+      source: "bootstrap/02-seed-namespaces.sh"
+
+validation:
+  scripts:
+    - name: "verify-scoped-conditional-cleanup"
+      description: "Confirms the cleanup policy sweeps only labelled, non-retained ConfigMaps in the target namespace"
+      type: "file"
+      source: "validation/validate-completed.sh"
+
+teardown:
+  keepCluster: false

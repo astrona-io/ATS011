@@ -1,0 +1,22 @@
+metadata:
+  name: "ats-011-lab-021"
+  docs:
+    solution: "solution.md"
+    question: "question.md"
+
+bootstrap:
+  init:
+    - name: "lab-021-setup"
+      description: "Installs Kyverno and waits for its controllers to be ready"
+      type: "file"
+      source: "bootstrap/01-install-kyverno.sh"
+
+validation:
+  scripts:
+    - name: "verify-precondition-exemption"
+      description: "Confirms the precondition skips the rule only for tier=exempt Pods, while still enforcing and still admitting compliant Pods"
+      type: "file"
+      source: "validation/validate-completed.sh"
+
+teardown:
+  keepCluster: false

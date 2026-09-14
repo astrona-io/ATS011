@@ -1,0 +1,30 @@
+metadata:
+  name: "ats-011-lab-040"
+  docs:
+    solution: "solution.md"
+    question: "question.md"
+
+bootstrap:
+  init:
+    - name: "lab-040-install-kyverno"
+      description: "Installs Kyverno and waits for its controllers to be ready"
+      type: "file"
+      source: "bootstrap/01-install-kyverno.sh"
+    - name: "lab-040-grant-background-controller-rbac"
+      description: "Grants the Kyverno background controller permission to update Pods, required by mutateExistingOnPolicyUpdate"
+      type: "file"
+      source: "bootstrap/02-grant-background-controller-rbac.sh"
+    - name: "lab-040-seed-legacy-pods"
+      description: "Creates a namespace with two Pods -- one with no managed-by label, one with a conflicting one -- before any mutating policy exists"
+      type: "file"
+      source: "bootstrap/03-seed-legacy-pods.sh"
+
+validation:
+  scripts:
+    - name: "verify-mutate-existing-and-admission-paths"
+      description: "Confirms pre-existing Pods are retroactively patched when the policy is created, and that newly created Pods still get the same defaults at admission time"
+      type: "file"
+      source: "validation/validate-completed.sh"
+
+teardown:
+  keepCluster: false
