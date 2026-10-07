@@ -87,6 +87,7 @@ modules:
       - type: lab
         title: "Pattern-Based Validation Lab"
         path: sections/section-010/module-01/labs/lab-01
+        difficulty: intermediate
 
       - type: reading
         title: "Module 2: Deny Rules and the Condition Vocabulary"
@@ -139,6 +140,7 @@ modules:
       - type: lab
         title: "Validation Rules Capstone Lab"
         path: sections/section-010/capstone/labs/lab-01
+        difficulty: advanced
 
   - id: module-020
     title: "Section 020: Preconditions"
@@ -175,6 +177,7 @@ modules:
       - type: lab
         title: "Preconditions Lab"
         path: sections/section-020/module-01/labs/lab-01
+        difficulty: intermediate
 
       - type: reading
         title: "Section 020 Knowledge Check: Preconditions"
@@ -191,6 +194,7 @@ modules:
       - type: lab
         title: "Preconditions Capstone Lab"
         path: sections/section-020/capstone/labs/lab-01
+        difficulty: advanced
 
   - id: module-030
     title: "Section 030: Background Scans"
@@ -229,6 +233,7 @@ modules:
       - type: lab
         title: "Background Scanning Lab"
         path: sections/section-030/module-01/labs/lab-01
+        difficulty: intermediate
 
       - type: reading
         title: "Section 030 Knowledge Check: Background Scans"
@@ -245,6 +250,7 @@ modules:
       - type: lab
         title: "Background Scans Capstone Lab"
         path: sections/section-030/capstone/labs/lab-01
+        difficulty: advanced
 
   - id: module-040
     title: "Section 040: Mutation Rules"
@@ -282,6 +288,7 @@ modules:
       - type: lab
         title: "Mutation Rules Lab"
         path: sections/section-040/module-01/labs/lab-01
+        difficulty: intermediate
 
       - type: reading
         title: "Module 2: Per-Element Mutation and Idempotency"
@@ -310,6 +317,7 @@ modules:
       - type: lab
         title: "Mutation Rules Capstone Lab"
         path: sections/section-040/capstone/labs/lab-01
+        difficulty: advanced
 
   - id: module-050
     title: "Section 050: Generation Rules"
@@ -347,6 +355,7 @@ modules:
       - type: lab
         title: "Data-Based Generation Lab"
         path: sections/section-050/module-01/labs/lab-01
+        difficulty: intermediate
 
       - type: reading
         title: "Module 2: Generating for What Already Exists"
@@ -375,6 +384,7 @@ modules:
       - type: lab
         title: "Generation Rules Capstone Lab"
         path: sections/section-050/capstone/labs/lab-01
+        difficulty: advanced
 
   - id: module-060
     title: "Section 060: VerifyImage Rules"
@@ -411,6 +421,7 @@ modules:
       - type: lab
         title: "VerifyImage Rules Lab"
         path: sections/section-060/module-01/labs/lab-01
+        difficulty: intermediate
 
       - type: reading
         title: "Module 2: Attestors, Digests and Registry Access"
@@ -439,6 +450,7 @@ modules:
       - type: lab
         title: "VerifyImage Rules Capstone Lab"
         path: sections/section-060/capstone/labs/lab-01
+        difficulty: advanced
 
   - id: module-070
     title: "Section 070: Variables & API Calls in Policies"
@@ -475,6 +487,7 @@ modules:
       - type: lab
         title: "Live Pod-Quota Lab"
         path: sections/section-070/module-01/labs/lab-01
+        difficulty: intermediate
 
       - type: reading
         title: "Module 2: Context Beyond apiCall"
@@ -503,6 +516,7 @@ modules:
       - type: lab
         title: "Variables & API Calls Capstone Lab"
         path: sections/section-070/capstone/labs/lab-01
+        difficulty: advanced
 
   - id: module-080
     title: "Section 080: JSON Patches"
@@ -545,6 +559,7 @@ modules:
       - type: lab
         title: "JSON Patches Lab"
         path: sections/section-080/module-01/labs/lab-01
+        difficulty: intermediate
 
       - type: reading
         title: "Section 080 Knowledge Check: JSON Patches"
@@ -561,6 +576,7 @@ modules:
       - type: lab
         title: "JSON Patches Capstone Lab"
         path: sections/section-080/capstone/labs/lab-01
+        difficulty: advanced
 
   - id: module-090
     title: "Section 090: Autogen Rules"
@@ -603,6 +619,7 @@ modules:
       - type: lab
         title: "Autogen Rules Lab"
         path: sections/section-090/module-01/labs/lab-01
+        difficulty: intermediate
 
       - type: reading
         title: "Section 090 Knowledge Check: Autogen Rules"
@@ -619,6 +636,7 @@ modules:
       - type: lab
         title: "Autogen Rules Capstone Lab"
         path: sections/section-090/capstone/labs/lab-01
+        difficulty: advanced
 
   - id: module-100
     title: "Section 100: Cleanup Policies"
@@ -657,6 +675,7 @@ modules:
       - type: lab
         title: "Cleanup Policies Lab"
         path: sections/section-100/module-01/labs/lab-01
+        difficulty: intermediate
 
       - type: reading
         title: "Section 100 Knowledge Check: Cleanup Policies"
@@ -673,6 +692,7 @@ modules:
       - type: lab
         title: "Cleanup Policies Capstone Lab"
         path: sections/section-100/capstone/labs/lab-01
+        difficulty: advanced
 
   - id: module-110
     title: "Section 110: Common Expression Language (CEL)"
@@ -718,6 +738,7 @@ modules:
       - type: lab
         title: "CEL Validation Lab"
         path: sections/section-110/module-01/labs/lab-01
+        difficulty: intermediate
 
       - type: reading
         title: "Module 2: The CEL-Native Policy Family"
@@ -746,6 +767,7 @@ modules:
       - type: lab
         title: "CEL Capstone Lab"
         path: sections/section-110/capstone/labs/lab-01
+        difficulty: advanced
 
   - id: module-120
     title: "KCA Writing Policies Domain Certification Quiz"
