@@ -55,6 +55,7 @@ modules:
       - type: lab
         title: "Policy Objects and Rule Anatomy Lab"
         path: sections/section-000/module-01/labs/lab-01
+        difficulty: intermediate
 
       - type: reading
         title: "Summary"
@@ -71,6 +72,7 @@ modules:
       - type: lab
         title: "Policy Objects Capstone Lab"
         path: sections/section-000/capstone/labs/lab-01
+        difficulty: advanced
 
       - type: quiz
         title: "Section 000 Knowledge Check: Policy Objects and Rule Anatomy"
@@ -145,6 +147,7 @@ modules:
       - type: lab
         title: "Deny Rules Lab"
         path: sections/section-010/module-02/labs/lab-01
+        difficulty: intermediate
 
       - type: reading
         title: "Summary"
@@ -173,6 +176,7 @@ modules:
       - type: lab
         title: "Validation Anchors Lab"
         path: sections/section-010/module-03/labs/lab-01
+        difficulty: intermediate
 
       - type: reading
         title: "Summary"
@@ -201,6 +205,7 @@ modules:
       - type: lab
         title: "podSecurity Lab"
         path: sections/section-010/module-04/labs/lab-01
+        difficulty: intermediate
 
       - type: reading
         title: "Summary"
@@ -229,6 +234,7 @@ modules:
       - type: lab
         title: "Assertion Trees Lab"
         path: sections/section-010/module-05/labs/lab-01
+        difficulty: intermediate
 
       - type: reading
         title: "Summary"
@@ -437,6 +443,7 @@ modules:
       - type: lab
         title: "Per-Element Mutation Lab"
         path: sections/section-040/module-02/labs/lab-01
+        difficulty: intermediate
 
       - type: reading
         title: "Summary"
@@ -465,6 +472,7 @@ modules:
       - type: lab
         title: "Mutation Anchors Lab"
         path: sections/section-040/module-03/labs/lab-01
+        difficulty: intermediate
 
       - type: reading
         title: "Summary"
@@ -553,6 +561,7 @@ modules:
       - type: lab
         title: "Generate Existing Lab"
         path: sections/section-050/module-02/labs/lab-01
+        difficulty: intermediate
 
       - type: reading
         title: "Summary"
@@ -581,6 +590,7 @@ modules:
       - type: lab
         title: "cloneList and generate foreach Lab"
         path: sections/section-050/module-03/labs/lab-01
+        difficulty: intermediate
 
       - type: reading
         title: "Summary"
@@ -668,6 +678,7 @@ modules:
       - type: lab
         title: "Attestors and Digests Lab"
         path: sections/section-060/module-02/labs/lab-01
+        difficulty: intermediate
 
       - type: reading
         title: "Summary"
@@ -696,6 +707,7 @@ modules:
       - type: lab
         title: "Image Extraction Lab"
         path: sections/section-060/module-03/labs/lab-01
+        difficulty: intermediate
 
       - type: reading
         title: "Summary"
@@ -783,6 +795,7 @@ modules:
       - type: lab
         title: "Context Entries Lab"
         path: sections/section-070/module-02/labs/lab-01
+        difficulty: intermediate
 
       - type: reading
         title: "Summary"
@@ -811,6 +824,7 @@ modules:
       - type: lab
         title: "JMESPath Functions Lab"
         path: sections/section-070/module-03/labs/lab-01
+        difficulty: intermediate
 
       - type: reading
         title: "Summary"
@@ -1101,6 +1115,7 @@ modules:
       - type: lab
         title: "CEL-Native Policy Family Lab"
         path: sections/section-110/module-02/labs/lab-01
+        difficulty: intermediate
 
       - type: reading
         title: "Summary"
