@@ -177,3 +177,22 @@ The label ends up identical either way. What differs is what caused it: one path
 runs because a request arrived, the other because a policy changed. Keeping those
 two triggers distinct in your head is what stops "why did this Pod change when
 nobody deployed anything?" from being a mystery.
+
+## Your mission: Mutation Rules Lab
+
+You can now write `patchStrategicMerge` rules and mutate resources that already exist. The mission asks you to write a mutation that injects labels and container fields into every incoming Pod.
+
+Pause the playground, start the lab, and submit your work as often as you like:
+
+```sh
+astrona stop ats-011-playground-040
+astrona run --git ssh://git@github.com/astrona-io/ATS011.git -c sections/section-040/module-01/labs/lab-01
+astrona submit -c sections/section-040/module-01/labs/lab-01
+```
+
+When the lab passes, remove it and return to the playground:
+
+```sh
+astrona destroy ats-011-lab-041
+astrona start ats-011-playground-040
+```

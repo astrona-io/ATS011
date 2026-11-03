@@ -138,6 +138,21 @@ By the end of this section you have seen three distinct rejection messages, and 
 >
 > **Expecting a generated VAP to do everything the policy did.** Only what the API server's CEL environment supports translates. Anything needing live cluster lookups or registry access stays with Kyverno.
 
-## Section recap
+## Your mission: CEL Validation Lab
 
-Autogen is a Kyverno feature rather than a `ClusterPolicy` feature, so a `ValidatingPolicy` matching only `pods` still governs Pod controllers — with the path rewriting performed inside the CEL expression strings and reported under `status.autogen.configs`. Enabling `autogen.validatingAdmissionPolicy` makes Kyverno compile the policy into a native `ValidatingAdmissionPolicy` plus a binding, moving enforcement into the API server and out of any webhook — at the cost of everything CEL alone cannot reach: live cluster lookups, registry access, mutation, and generation.
+You can now write a `ValidatingPolicy` with CEL and read its failure messages. The mission asks you to replace a pattern rule with a CEL expression that a pattern cannot express.
+
+Pause the playground, start the lab, and submit your work as often as you like:
+
+```sh
+astrona stop ats-011-playground-110
+astrona run --git ssh://git@github.com/astrona-io/ATS011.git -c sections/section-110/module-01/labs/lab-01
+astrona submit -c sections/section-110/module-01/labs/lab-01
+```
+
+When the lab passes, remove it and return to the playground:
+
+```sh
+astrona destroy ats-011-lab-111
+astrona start ats-011-playground-110
+```

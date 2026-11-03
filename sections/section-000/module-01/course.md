@@ -21,6 +21,8 @@ None of these is a separate competency on the KCA's Writing Policies list, which
 2. **[Part 2 — Failure Actions and Staged Rollout](./course-02-failure-actions-and-rollout.md)** — `validationFailureAction` at policy level, `failureAction` per rule, and `validationFailureActionOverrides` for enforcing in one namespace while auditing elsewhere.
 3. **[Part 3 — Rule Ordering and Carving Out Exceptions](./course-03-rule-ordering-and-exceptions.md)** — the fixed order Kyverno runs rule types in and why it is not configurable, how several policies compose on one request, and the three ways to exempt something from a rule without weakening it for everyone.
 
+The module closes with a summary page and a mission, **Policy Objects and Rule Anatomy Lab**, a graded lab that asks you to write and apply the policies from this module on a live cluster.
+
 ## Learning objectives
 
 After this module you can:

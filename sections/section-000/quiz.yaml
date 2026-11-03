@@ -1,0 +1,311 @@
+# Knowledge check for section 000. Listed in astrona.yaml as a `type: quiz` entry after the capstone lab.
+schema_version: 1
+kind: question_bank
+id: ats011-000
+course_id: ATS011
+exam_code: KCA
+status: draft
+provenance: Original practice material written for this course; not official exam questions.
+scope:
+  type: section
+  id: section-000
+  title: "Policy Objects and Rule Anatomy"
+questions:
+  - id: ats011-000-q01
+    type: single_choice
+    difficulty: beginner
+    learning_objective: "Explain how the kind and namespace of a policy object limit the resources its rules can govern"
+    source_readings:
+      - sections/section-000/module-01/course-01-policy-objects-and-rule-anatomy.md
+    prompt: "A namespaced `Policy` in `team-staging` has a rule whose `match` block is `kinds: [Pod]` with no namespace restriction. Which Pods does the rule govern?"
+    options:
+      - id: a
+        text: "Pods in every namespace, because the rule does not restrict namespaces."
+        explanation: "The scope is decided by the kind and namespace of the policy object, not by the rule."
+      - id: b
+        text: "Only Pods in `team-staging`."
+        explanation: "Correct. Scope is decided by the policy object's kind and namespace before any rule is consulted. A namespaced `Policy` cannot be widened by its own `match` block."
+      - id: c
+        text: "No Pods, because a namespaced `Policy` cannot match Pods without a namespace list."
+        explanation: "The rule is valid and selects Pods, but only inside the policy's own namespace."
+      - id: d
+        text: "Pods in `team-staging` and in every namespace that carries the same labels."
+        explanation: "Labels never widen a namespaced policy beyond its own namespace."
+    correct_option: b
+    explanation: "Scope is decided by the policy object's kind and namespace before any rule is consulted. A namespaced `Policy` cannot be widened by its own `match` block."
+
+  - id: ats011-000-q02
+    type: single_choice
+    difficulty: intermediate
+    learning_objective: "Decide when a policy must be a ClusterPolicy because of the scope of the triggering resource"
+    source_readings:
+      - sections/section-000/module-01/course-01-policy-objects-and-rule-anatomy.md
+    prompt: "Why can a namespaced `Policy` never carry a `generate` rule triggered by `kind: Namespace`?"
+    options:
+      - id: a
+        text: "Because `generate` rules are only allowed to create `NetworkPolicy` objects."
+        explanation: "Generate rules can create many kinds; the limit here is about the trigger, not the output."
+      - id: b
+        text: "Because a namespaced `Policy` can only run `validate` rules."
+        explanation: "A namespaced `Policy` can hold mutate, validate and generate rules."
+      - id: c
+        text: "Because the generated resources would end up in the wrong namespace."
+        explanation: "Where the generated resources land does not matter; the trigger resource is what cannot be selected."
+      - id: d
+        text: "A `Namespace` is cluster-scoped, so no namespaced policy can select it; the rule must live in a `ClusterPolicy`."
+        explanation: "Correct. A `Namespace` does not belong to any namespace, so a namespaced policy cannot select it. The same applies to `ClusterRole`, `PersistentVolume` and any cluster-scoped CRD kind. A rule triggered by a cluster-scoped resource has to live in a `ClusterPolicy`, wherever the created resources end up."
+    correct_option: d
+    explanation: "A `Namespace` does not belong to any namespace, so a namespaced policy cannot select it. The same applies to `ClusterRole`, `PersistentVolume` and any cluster-scoped CRD kind. A rule triggered by a cluster-scoped resource has to live in a `ClusterPolicy`, wherever the created resources end up."
+
+  - id: ats011-000-q03
+    type: single_choice
+    difficulty: beginner
+    learning_objective: "Name the common fields of a rule and the constraint on the rule body"
+    source_readings:
+      - sections/section-000/module-01/course-01-policy-objects-and-rule-anatomy.md
+    prompt: "Which statement about the structure of a rule is correct?"
+    options:
+      - id: a
+        text: "Every rule has a unique `name`, and exactly one rule body, so a single rule cannot both mutate and validate."
+        explanation: "Correct. Every rule carries `name` (required, unique within the policy), `match`, `exclude`, `preconditions` and `context`. The hard constraint is exactly one rule body per rule, so mutating and validating needs two rules. The `name` is the only clue a developer gets about which rule stopped them."
+      - id: b
+        text: "A rule can hold a `mutate` body and a `validate` body together if both use the same `match`."
+        explanation: "A rule allows exactly one body; wanting both means writing two rules."
+      - id: c
+        text: "The `name` of a rule is optional because the policy name appears in rejection messages."
+        explanation: "The `name` is required and is what appears in a rejection message."
+      - id: d
+        text: "Only `match` is shared by all rules; `exclude`, `preconditions` and `context` exist only on validate rules."
+        explanation: "`exclude`, `preconditions` and `context` are available on every rule type."
+    correct_option: a
+    explanation: "Every rule carries `name` (required, unique within the policy), `match`, `exclude`, `preconditions` and `context`. The hard constraint is exactly one rule body per rule, so mutating and validating needs two rules. The `name` is the only clue a developer gets about which rule stopped them."
+
+  - id: ats011-000-q04
+    type: single_choice
+    difficulty: beginner
+    learning_objective: "Predict what a rule with an empty match block selects"
+    source_readings:
+      - sections/section-000/module-01/course-01-policy-objects-and-rule-anatomy.md
+    prompt: "What does a rule with an empty `match` block match?"
+    options:
+      - id: a
+        text: "Every resource in the cluster, because no filter means no restriction."
+        explanation: "Kyverno never treats an absent or empty `match` as an implicit match of everything."
+      - id: b
+        text: "Every resource in the policy's own namespace only."
+        explanation: "An empty match does not fall back to the namespace; it selects nothing."
+      - id: c
+        text: "Nothing, because the rule selects no resources and acts as a no-op."
+        explanation: "Correct. Kyverno never treats an absent or empty `match` as an implicit \"everything\". This is a deliberate safety choice: an accidental blank `match` does nothing instead of governing the entire cluster."
+      - id: d
+        text: "The policy is rejected at apply time because an empty `match` is invalid."
+        explanation: "The rule is accepted and simply never selects anything."
+    correct_option: c
+    explanation: "Kyverno never treats an absent or empty `match` as an implicit \"everything\". This is a deliberate safety choice: an accidental blank `match` does nothing instead of governing the entire cluster."
+
+  - id: ats011-000-q05
+    type: single_choice
+    difficulty: intermediate
+    learning_objective: "Interpret what a requester sees when enforced and audited rules both fail"
+    source_readings:
+      - sections/section-000/module-01/course-02-failure-actions-and-rollout.md
+    prompt: "A policy has two validate rules, one with `failureAction: Enforce` and one with `failureAction: Audit`. A Pod violates both. What does the requester see?"
+    options:
+      - id: a
+        text: "A rejection that lists both rules, with the audited one marked as a warning."
+        explanation: "The rejection lists only the rules that blocked the request."
+      - id: b
+        text: "The Pod is admitted, because the audited rule downgrades the whole policy to Audit."
+        explanation: "The enforced rule still blocks; the rules do not downgrade each other."
+      - id: c
+        text: "A rejection that names only the enforced rule; the audited failure goes to a `PolicyReport`."
+        explanation: "Correct. A rejection message lists the rules that blocked the request, not every rule that failed. The audited failure is recorded in a `PolicyReport` and does not appear in the error at all, so diagnosing from the error alone gives a filtered view."
+      - id: d
+        text: "A rejection that names only the audited rule, because it was evaluated last."
+        explanation: "The audited rule never blocks a request, so it cannot appear as the cause of a rejection."
+    correct_option: c
+    explanation: "A rejection message lists the rules that blocked the request, not every rule that failed. The audited failure is recorded in a `PolicyReport` and does not appear in the error at all, so diagnosing from the error alone gives a filtered view."
+
+  - id: ats011-000-q06
+    type: single_choice
+    difficulty: intermediate
+    learning_objective: "Explain why failure action can be set per rule"
+    source_readings:
+      - sections/section-000/module-01/course-02-failure-actions-and-rollout.md
+    prompt: "Why does a per-rule `failureAction` exist when `validationFailureAction` already sets the behavior of the policy?"
+    options:
+      - id: a
+        text: "Rules inside one policy are often at different maturities, and the policy-level field forces both to the same consequence."
+        explanation: "Correct. A policy can hold a rule you are confident enough to block on and another you are still tuning. The policy-level field forces both to the same consequence; the per-rule field does not. The policy-level form is still the simpler starting point."
+      - id: b
+        text: "The per-rule field replaces the policy-level field, which is deprecated and ignored."
+        explanation: "The policy-level form still works and remains the simpler starting point."
+      - id: c
+        text: "The per-rule field is needed because the policy-level field only accepts `Audit`."
+        explanation: "The policy-level field accepts both `Audit` and `Enforce`."
+      - id: d
+        text: "Per-rule values control background scanning, while the policy-level value controls admission."
+        explanation: "Both fields control the consequence of a failure; background scanning is a separate switch."
+    correct_option: a
+    explanation: "A policy can hold a rule you are confident enough to block on and another you are still tuning. The policy-level field forces both to the same consequence; the per-rule field does not. The policy-level form is still the simpler starting point."
+
+  - id: ats011-000-q07
+    type: single_choice
+    difficulty: intermediate
+    learning_objective: "Roll out a rule in stages by namespace using validationFailureActionOverrides"
+    source_readings:
+      - sections/section-000/module-01/course-02-failure-actions-and-rollout.md
+    prompt: "You want a new rule enforced in `team-prod` but only audited everywhere else, from a single policy. How do you do it?"
+    options:
+      - id: a
+        text: "Set `validationFailureAction: Enforce` and add an `exclude` block for every other namespace."
+        explanation: "Excluding resources removes them from the rule entirely, so they would not even be audited."
+      - id: b
+        text: "Create a `Policy` in `team-prod` set to `Enforce` and keep the `ClusterPolicy` untouched."
+        explanation: "This splits one policy into two, which the task asked to avoid, and a duplicate rule drifts over time."
+      - id: c
+        text: "Set `validationFailureAction: Enforce` and add an override with `action: Audit` and `namespaces: [team-prod]`."
+        explanation: "This has the polarity reversed; it audits `team-prod` and enforces everywhere else."
+      - id: d
+        text: "Set `validationFailureAction: Audit` as the default and add `validationFailureActionOverrides` with `action: Enforce` and `namespaces: [team-prod]`."
+        explanation: "Correct. Use `Audit` as the default and an override with `action: Enforce` for the namespaces you trust. The `namespaces` list accepts globs such as `team-*` and `*-prod`. This inverts the usual rollout: enforce in one namespace, learn from it, then widen the list."
+    correct_option: d
+    explanation: "Use `Audit` as the default and an override with `action: Enforce` for the namespaces you trust. The `namespaces` list accepts globs such as `team-*` and `*-prod`. This inverts the usual rollout: enforce in one namespace, learn from it, then widen the list."
+
+  - id: ats011-000-q08
+    type: single_choice
+    difficulty: intermediate
+    learning_objective: "Predict the execution order of mutate and validate rules across policies"
+    source_readings:
+      - sections/section-000/module-01/course-03-rule-ordering-and-exceptions.md
+    prompt: "Two `ClusterPolicy` objects match the same Pod. `aa-validate-policy` requires a label and `zz-mutate-policy` adds it. The validating policy was created first and sorts first alphabetically. Is the Pod admitted?"
+    options:
+      - id: a
+        text: "No, because the validating policy sorts first and sees the Pod without the label."
+        explanation: "Policy name has no bearing on execution order."
+      - id: b
+        text: "Yes, because every mutate rule runs before any validate rule."
+        explanation: "Correct. Execution order is decided by rule type, not by policy name or creation order. The mutate rule adds the label and the validate rule then examines an object that already has it."
+      - id: c
+        text: "No, because the policy created first always runs first."
+        explanation: "Creation order has no bearing on the outcome either."
+      - id: d
+        text: "It depends on which policy was applied most recently."
+        explanation: "Order is decided by rule type, not by when a policy was applied."
+    correct_option: b
+    explanation: "Execution order is decided by rule type, not by policy name or creation order. The mutate rule adds the label and the validate rule then examines an object that already has it."
+
+  - id: ats011-000-q09
+    type: single_choice
+    difficulty: advanced
+    learning_objective: "Locate where image verification runs in the admission order and find its failures"
+    source_readings:
+      - sections/section-000/module-01/course-03-rule-ordering-and-exceptions.md
+    prompt: "Where does `verifyImages` sit in the admission order, and what follows from that?"
+    options:
+      - id: a
+        text: "It runs with mutation, because a successful check rewrites the image reference to the digest, so a failed check comes from the mutating webhook."
+        explanation: "Correct. A successful verification rewrites the image reference to pin the resolved digest, so `verifyImages` sits with mutation. A failed signature check therefore comes back from `mutate.kyverno.svc-fail`, and you need the mutating webhook logs to find it."
+      - id: b
+        text: "It runs with validation, so a failed signature check is returned by the validating webhook."
+        explanation: "It is grouped with mutation because it rewrites the image reference."
+      - id: c
+        text: "It runs after generation, driven by the background controller."
+        explanation: "Generation runs after the response; image verification happens during admission."
+      - id: d
+        text: "It runs before all other rules in its own separate webhook."
+        explanation: "It shares the mutating webhook rather than having its own."
+    correct_option: a
+    explanation: "A successful verification rewrites the image reference to pin the resolved digest, so `verifyImages` sits with mutation. A failed signature check therefore comes back from `mutate.kyverno.svc-fail`, and you need the mutating webhook logs to find it."
+
+  - id: ats011-000-q10
+    type: single_choice
+    difficulty: intermediate
+    learning_objective: "Explain why generated resources may appear after the admission response"
+    source_readings:
+      - sections/section-000/module-01/course-03-rule-ordering-and-exceptions.md
+    prompt: "A script runs `kubectl create ns team-x` and immediately reads the `NetworkPolicy` that a `generate` rule should produce there. It works only sometimes. Why?"
+    options:
+      - id: a
+        text: "Generate rules only run when the namespace has a label that is added later."
+        explanation: "No label is needed; the delay comes from when generation runs."
+      - id: b
+        text: "The admission webhook is rate limited and drops some generate requests."
+        explanation: "Nothing is dropped; generation simply happens after the response."
+      - id: c
+        text: "`generate` runs after the admission response is returned, driven by the background controller, so success of the create says nothing about generation."
+        explanation: "Correct. `generate` is driven by the background controller after the admission response has been returned. The fix is to wait for the generated resource instead of assuming that creating the namespace implies it."
+      - id: d
+        text: "`kubectl create ns` skips admission for cluster-scoped resources."
+        explanation: "Namespace creation does go through admission."
+    correct_option: c
+    explanation: "`generate` is driven by the background controller after the admission response has been returned. The fix is to wait for the generated resource instead of assuming that creating the namespace implies it."
+
+  - id: ats011-000-q11
+    type: single_choice
+    difficulty: advanced
+    learning_objective: "Resolve conflicting mutate rules by making them non-overlapping"
+    source_readings:
+      - sections/section-000/module-01/course-03-rule-ordering-and-exceptions.md
+    prompt: "Two mutate rules in different policies set the same field to different values. Which value wins, and what is the correct response?"
+    options:
+      - id: a
+        text: "The rule from the policy with the alphabetically first name wins, so rename the policies."
+        explanation: "Ordering within a rule type is not something to rely on, including names."
+      - id: b
+        text: "The rule from the newest policy wins, so recreate the policy that should win."
+        explanation: "Creation time does not decide it."
+      - id: c
+        text: "The last rule applied wins, so add a third rule that sets the final value."
+        explanation: "A third rule adds another overlapping writer and makes the ordering problem worse."
+      - id: d
+        text: "The result is undefined, so make the rules non-overlapping by narrowing a `match` or gating one rule with `preconditions`."
+        explanation: "Correct. Ordering within a rule type is undefined. Do not reason harder about which runs first; make the rules non-overlapping, either by narrowing one `match` or with a `preconditions` block that is false whenever the other applies."
+    correct_option: d
+    explanation: "Ordering within a rule type is undefined. Do not reason harder about which runs first; make the rules non-overlapping, either by narrowing one `match` or with a `preconditions` block that is false whenever the other applies."
+
+  - id: ats011-000-q12
+    type: single_choice
+    difficulty: advanced
+    learning_objective: "Choose between exclude and preconditions for exempting a workload"
+    source_readings:
+      - sections/section-000/module-01/course-03-rule-ordering-and-exceptions.md
+    prompt: "A workload legitimately cannot satisfy a rule. When do you reach for `exclude` rather than `preconditions`?"
+    options:
+      - id: a
+        text: "When the exemption depends on an annotation value or a field deep in the spec."
+        explanation: "Those depend on resource data, which only `preconditions` can express."
+      - id: b
+        text: "When the exemption depends on the identity of the resource, such as kind, name, namespace or labels, and belongs permanently to the policy."
+        explanation: "Correct. `exclude` is evaluated during resource selection, so an excluded resource produces no report entry, not even a `skip`. Use `preconditions` when the exemption depends on the data of the resource that no selector can express; a skipped rule appears in reports as `skip` and keeps an audit trail."
+      - id: c
+        text: "When you want the exempted resource to appear in reports as `skip`."
+        explanation: "A skipped rule from `preconditions` appears as `skip`; an excluded resource produces no report entry at all."
+      - id: d
+        text: "When the exemption needs a numeric comparison on a request variable."
+        explanation: "`exclude` fields are static, so computed comparisons belong in `preconditions`."
+    correct_option: b
+    explanation: "`exclude` is evaluated during resource selection, so an excluded resource produces no report entry, not even a `skip`. Use `preconditions` when the exemption depends on the data of the resource that no selector can express; a skipped rule appears in reports as `skip` and keeps an audit trail."
+
+  - id: ats011-000-q13
+    type: single_choice
+    difficulty: advanced
+    learning_objective: "Diagnose a PolicyException that is accepted but ignored"
+    source_readings:
+      - sections/section-000/module-01/course-03-rule-ordering-and-exceptions.md
+    prompt: "You apply a `PolicyException`, get no error, and the exempted Pod is still rejected. What should you check first?"
+    options:
+      - id: a
+        text: "Whether the exception object has the same name as the Pod."
+        explanation: "The name of an exception does not need to match a Pod; it is matched through its own rules."
+      - id: b
+        text: "Whether `PolicyException` is enabled, because the admission controller ships with `--enablePolicyException=false` and then never consults the object."
+        explanation: "Correct. With the flag off the exception object is created without error, at most with a deprecation warning about its API version, and is then never consulted. Nothing shows that it is being ignored. Enabling it is an install-time decision, which belongs to the Installation, Configuration, and Upgrades domain."
+      - id: c
+        text: "Whether the policy is in `Audit` mode, because exceptions apply only to enforced policies."
+        explanation: "Exceptions are about exempting a request from a rule; they do not depend on the failure action being changed."
+      - id: d
+        text: "Whether the Kyverno background controller has finished its first scan."
+        explanation: "Exceptions are consulted at admission and do not wait for a scan."
+    correct_option: b
+    explanation: "With the flag off the exception object is created without error, at most with a deprecation warning about its API version, and is then never consulted. Nothing shows that it is being ignored. Enabling it is an install-time decision, which belongs to the Installation, Configuration, and Upgrades domain."

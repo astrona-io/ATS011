@@ -96,6 +96,21 @@ The practical arrangement many clusters land on is both: PSA as a floor that can
 > - **Assuming Kyverno's rule replaces PSA.** They are independent admission paths; a namespace labelled for PSA still enforces PSA regardless of what your policy says.
 > - **Expecting an exclusion to show up in the failure message.** It shows up as an *absence*. Compare against the same policy without the exclusion if you need to confirm it.
 
-## Section recap
+## Your mission: podSecurity Lab
 
-`exclude` relaxes a named control instead of abandoning a profile, scoped by `controlName` and optionally narrowed by `images` or by `restrictedField` plus `values`. That keeps the exemption documented, reviewable, and as small as the requirement. Kubernetes' own Pod Security Admission enforces the same standards at namespace granularity with no per-control exemptions, which is why the two are commonly run together rather than as alternatives.
+You can now enforce a Pod Security Standards profile with `validate.podSecurity` and relax a single control. The mission asks you to enforce the `baseline` profile in one namespace and exclude one control for one image only.
+
+Pause the playground, start the lab, and submit your work as often as you like:
+
+```sh
+astrona stop ats-011-playground-0104
+astrona run --git ssh://git@github.com/astrona-io/ATS011.git -c sections/section-010/module-04/labs/lab-01
+astrona submit -c sections/section-010/module-04/labs/lab-01
+```
+
+When the lab passes, remove it and return to the playground:
+
+```sh
+astrona destroy ats-011-lab-014
+astrona start ats-011-playground-0104
+```

@@ -1,0 +1,37 @@
+metadata:
+  name: "ats-011-lab-043"
+  docs:
+    solution: "solution.md"
+    question: "question.md"
+
+bootstrap:
+  init:
+    - name: "lab-043-setup"
+      description: "Installs Kyverno and waits for its controllers to be ready"
+      type: "file"
+      source: "bootstrap/01-install-kyverno.sh"
+    - name: "lab-043-seed"
+      description: "Creates the anchor-lab namespace"
+      type: "file"
+      source: "bootstrap/02-seed.sh"
+
+validation:
+  scripts:
+    - name: "team-label-default"
+      description: "A missing team label is added, an existing one is kept"
+      type: "file"
+      source: "validation/validate-team-label.sh"
+      hint: "Use an add-if-not-present anchor under metadata.labels: +(team): platform. A plain team: platform overwrites the owner's value."
+    - name: "automount-default"
+      description: "automountServiceAccountToken defaults to false without overriding true"
+      type: "file"
+      source: "validation/validate-automount.sh"
+      hint: "Under spec, add +(automountServiceAccountToken): false in the same patchStrategicMerge."
+    - name: "sidecar-hardening"
+      description: "Only sidecar-* containers get readOnlyRootFilesystem, and only when unset"
+      type: "file"
+      source: "validation/validate-sidecar.sh"
+      hint: "Under spec.containers use a list element with (name): \"sidecar-*\" and securityContext: +(readOnlyRootFilesystem): true."
+
+teardown:
+  keepCluster: false

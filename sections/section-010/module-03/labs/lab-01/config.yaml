@@ -1,0 +1,32 @@
+metadata:
+  name: "ats-011-lab-013"
+  docs:
+    solution: "solution.md"
+    question: "question.md"
+
+bootstrap:
+  init:
+    - name: "lab-013-setup"
+      description: "Installs Kyverno and waits for its controllers to be ready"
+      type: "file"
+      source: "bootstrap/01-install-kyverno.sh"
+    - name: "lab-013-seed"
+      description: "Creates the anchors namespace"
+      type: "file"
+      source: "bootstrap/02-seed.sh"
+
+validation:
+  scripts:
+    - name: "conditional-and-equality"
+      description: "The latest-tag and privileged requirements hold"
+      type: "file"
+      source: "validation/validate-conditional-and-equality.sh"
+      hint: "Use (image): '*:latest' next to imagePullPolicy, and =(securityContext) with =(privileged): false."
+    - name: "negation-and-existence"
+      description: "hostNetwork is forbidden and one readiness probe is required"
+      type: "file"
+      source: "validation/validate-negation-and-existence.sh"
+      hint: "Use X(hostNetwork) and ^(containers)."
+
+teardown:
+  keepCluster: false

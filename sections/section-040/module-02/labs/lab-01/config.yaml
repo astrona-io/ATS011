@@ -1,0 +1,32 @@
+metadata:
+  name: "ats-011-lab-042"
+  docs:
+    solution: "solution.md"
+    question: "question.md"
+
+bootstrap:
+  init:
+    - name: "lab-042-setup"
+      description: "Installs Kyverno and waits for its controllers to be ready"
+      type: "file"
+      source: "bootstrap/01-install-kyverno.sh"
+    - name: "lab-042-seed"
+      description: "Creates the mutate-lab namespace"
+      type: "file"
+      source: "bootstrap/02-seed.sh"
+
+validation:
+  scripts:
+    - name: "all-containers-prefixed"
+      description: "Every container image gets the registry prefix"
+      type: "file"
+      source: "validation/validate-all-containers-prefixed.sh"
+      hint: "Use mutate.foreach over request.object.spec.containers and patch each entry by name with {{ element.name }}."
+    - name: "no-double-prefix"
+      description: "An image that already has the prefix is not prefixed again"
+      type: "file"
+      source: "validation/validate-no-double-prefix.sh"
+      hint: "Add preconditions inside the foreach entry: element.image NotEquals 'registry.internal/*'."
+
+teardown:
+  keepCluster: false

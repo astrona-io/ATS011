@@ -20,6 +20,8 @@ That architecture introduces one requirement the admission-time policy types nev
 1. **[Part 1 — Schedules, Matching, and the RBAC Requirement](./course-01-schedules-matching-and-rbac.md)** — the `CleanupPolicy` and `ClusterCleanupPolicy` shape, cron schedules and what they guarantee about timing, selecting victims with `match`, and the aggregating `ClusterRole` that makes deletion possible at all.
 2. **[Part 2 — Conditions, TTL Labels, and Deletion Semantics](./course-02-conditions-ttl-and-deletion-semantics.md)** — narrowing with `conditions` over the `target` variable, the per-resource `cleanup.kyverno.io/ttl` label as a lighter alternative, `deletionPropagationPolicy`, and how the newer CEL-based `DeletingPolicy` relates to all of this.
 
+The module closes with a summary page and a mission, **Cleanup Policies Lab**, a graded lab that asks you to write and apply the policies from this module on a live cluster.
+
 ## Learning objectives
 
 After this module you can:

@@ -1,0 +1,428 @@
+# Knowledge check for section 040. Listed in astrona.yaml as a `type: quiz` entry after the capstone lab.
+schema_version: 1
+kind: question_bank
+id: ats011-040
+course_id: ATS011
+exam_code: KCA
+status: draft
+provenance: Original practice material written for this course; not official exam questions.
+scope:
+  type: section
+  id: section-040
+  title: "Mutation Rules"
+questions:
+
+  - id: ats011-040-q01
+    type: single_choice
+    difficulty: intermediate
+    learning_objective: "Predict the result of an unnamed list entry in patchStrategicMerge"
+    source_readings:
+      - sections/section-040/module-01/course-01-patchstrategicmerge-mechanics.md
+    prompt: "A `mutate.patchStrategicMerge` block sets `spec.containers` as a plain list with one entry, `- imagePullPolicy: IfNotPresent`, with no `name` field. It is applied to a Pod with two containers. What happens?"
+    options:
+      - id: a
+        text: "The fragment is merged into the first container only, because lists merge by position."
+        explanation: "Strategic merge reconciles container lists by the `name` merge key, not by position."
+      - id: b
+        text: "The fragment is applied to both containers, because a missing name acts as a wildcard."
+        explanation: "A missing `name` is not a wildcard; only the `(name)` anchor gives that behaviour."
+      - id: c
+        text: "The Pod is rejected, because the fragment is inserted as a new container that lacks its required `name`."
+        explanation: "Correct. With no `name` or `(name)` anchor the fragment matches no existing container and is added as a nameless one, which the API server refuses with `spec.containers: Required value`."
+      - id: d
+        text: "The patch is silently skipped and the Pod is admitted unchanged."
+        explanation: "The patch is not skipped; it corrupts the resource by adding a new entry."
+    correct_option: c
+    explanation: "With no `name` or `(name)` anchor the fragment matches no existing container and is added as a nameless one, which the API server refuses with `spec.containers: Required value`."
+
+  - id: ats011-040-q02
+    type: single_choice
+    difficulty: beginner
+    learning_objective: "Predict how patchStrategicMerge treats a scalar the requester already set"
+    source_readings:
+      - sections/section-040/module-01/course-01-patchstrategicmerge-mechanics.md
+    prompt: "A `ClusterPolicy` mutate rule sets `metadata.labels.managed-by: platform`. An incoming Pod already carries `managed-by: team-x`. What does the persisted object hold?"
+    options:
+      - id: a
+        text: "`managed-by: platform`, because the patch value always replaces the submitted scalar."
+        explanation: "Correct. `patchStrategicMerge` has no only-if-absent behaviour for a scalar; to set a value only when missing you must gate the rule with a precondition."
+      - id: b
+        text: "`managed-by: team-x`, because values supplied by the requester are never overwritten."
+        explanation: "Mutation overwrites what the requester submitted."
+      - id: c
+        text: "Both values, stored as a comma-separated string."
+        explanation: "Strategic merge replaces a scalar; it does not concatenate."
+      - id: d
+        text: "The request is rejected because the label already exists."
+        explanation: "An existing key is not a conflict; it is simply replaced."
+    correct_option: a
+    explanation: "`patchStrategicMerge` has no only-if-absent behaviour for a scalar; to set a value only when missing you must gate the rule with a precondition."
+
+  - id: ats011-040-q03
+    type: single_choice
+    difficulty: intermediate
+    learning_objective: "Describe the ordering of mutate and validate rules across policies"
+    source_readings:
+      - sections/section-040/module-01/course-01-patchstrategicmerge-mechanics.md
+    prompt: "True or false: a `validate` rule that requires a label can never pass for a Pod that omits it, even when another rule on the cluster injects that label with `mutate`."
+    options:
+      - id: a
+        text: "True, because each policy is evaluated in isolation and cannot see changes made by another."
+        explanation: "Policies are not isolated; mutation results flow into later validation."
+      - id: b
+        text: "True, because validation always runs against the object exactly as the user submitted it."
+        explanation: "Validation runs against the object after mutation."
+      - id: c
+        text: "False, but only when the mutate and validate rules sit in the same `ClusterPolicy`."
+        explanation: "The ordering guarantee holds across separate policy objects too."
+      - id: d
+        text: "False, because every mutate rule on the cluster runs before any validate rule, even across separate `ClusterPolicy` objects."
+        explanation: "Correct. By the time any validate rule runs, the injected label is already present."
+    correct_option: d
+    explanation: "By the time any validate rule runs, the injected label is already present."
+
+  - id: ats011-040-q04
+    type: single_choice
+    difficulty: advanced
+    learning_objective: "Rule out policy name order as the cause of mutate-before-validate"
+    source_readings:
+      - sections/section-040/module-01/course-01-patchstrategicmerge-mechanics.md
+    prompt: "You split a mutate rule and a validate rule into two `ClusterPolicy` objects and name the validate policy so it sorts alphabetically before the mutate policy. Does that change which runs first?"
+    options:
+      - id: a
+        text: "Yes, policies run in alphabetical order, so the validate policy now runs first."
+        explanation: "Name order is not the mechanism."
+      - id: b
+        text: "No, because mutate-before-validate is a fixed processing guarantee, not a result of naming or creation order."
+        explanation: "Correct. Every mutate rule on the cluster still finishes first regardless of how the policies are named."
+      - id: c
+        text: "Yes, but only if the validate policy was also created first."
+        explanation: "Creation order does not matter either."
+      - id: d
+        text: "No, but only because Kyverno sorts policies by their `kind` field."
+        explanation: "Kyverno does not order by kind; the guarantee is between rule types."
+    correct_option: b
+    explanation: "Every mutate rule on the cluster still finishes first regardless of how the policies are named."
+
+  - id: ats011-040-q05
+    type: single_choice
+    difficulty: intermediate
+    learning_objective: "Identify what triggers a mutateExistingOnPolicyUpdate rule"
+    source_readings:
+      - sections/section-040/module-01/course-02-mutating-existing-resources.md
+    prompt: "What does `mutate.mutateExistingOnPolicyUpdate: true` trigger on, compared with an ordinary mutate rule?"
+    options:
+      - id: a
+        text: "A new admission request for a resource matching the `match` block, exactly like an ordinary rule."
+        explanation: "That describes an ordinary rule, not this field."
+      - id: b
+        text: "A change to any of the target resources themselves, detected through a watch."
+        explanation: "Changes to targets do not drive it."
+      - id: c
+        text: "The `ClusterPolicy` being created or updated, after which it patches existing resources named in `mutate.targets`."
+        explanation: "Correct. It reaches out to resources that were never part of an admission request at that moment."
+      - id: d
+        text: "A cron schedule defined on the policy."
+        explanation: "Mutate rules have no schedule; cleanup policies do."
+    correct_option: c
+    explanation: "It reaches out to resources that were never part of an admission request at that moment."
+
+  - id: ats011-040-q06
+    type: single_choice
+    difficulty: advanced
+    learning_objective: "Diagnose a background controller permission rejection"
+    source_readings:
+      - sections/section-040/module-01/course-02-mutating-existing-resources.md
+    prompt: "Applying a new `mutateExistingOnPolicyUpdate` policy for Pods is rejected immediately with an \"auth check fails\" error naming `system:serviceaccount:kyverno:kyverno-background-controller`. What is missing and how is it granted?"
+    options:
+      - id: a
+        text: "Your own user lacks `update` on Pods; ask for the `cluster-admin` role."
+        explanation: "The check is about Kyverno's service account, not yours."
+      - id: b
+        text: "The admission controller needs the permission; edit the `kyverno:admission-controller` role."
+        explanation: "The background controller performs this work."
+      - id: c
+        text: "The policy needs `validationFailureAction: Audit`, which skips the permission check."
+        explanation: "That field does not bypass the apply-time check."
+      - id: d
+        text: "The background controller needs `update` on the target kind, granted through a `ClusterRole` labelled `rbac.kyverno.io/aggregate-to-background-controller: \"true\"`."
+        explanation: "Correct. Kyverno refuses at apply time a rule it knows it cannot execute, and aggregation folds your role into its own so you never edit it directly."
+    correct_option: d
+    explanation: "Kyverno refuses at apply time a rule it knows it cannot execute, and aggregation folds your role into its own so you never edit it directly."
+
+  - id: ats011-040-q07
+    type: single_choice
+    difficulty: advanced
+    learning_objective: "Predict the effect of an immutable field change on a combined patch"
+    source_readings:
+      - sections/section-040/module-01/course-02-mutating-existing-resources.md
+    prompt: "A `mutateExistingOnPolicyUpdate` rule patches both a label and a container's `imagePullPolicy` on running Pods in one fragment. For a Pod whose `imagePullPolicy` really needs to change, what happens to the label?"
+    options:
+      - id: a
+        text: "It is not updated either, because the whole patch is one `Update` call that the API server rejects."
+        explanation: "Correct. A running Pod's `imagePullPolicy` is immutable, so the single update fails as a whole, and the failure is only logged in the background controller Pod."
+      - id: b
+        text: "The label is applied and only the `imagePullPolicy` change is dropped."
+        explanation: "The patch is not split into per-field updates."
+      - id: c
+        text: "The Pod is deleted and recreated with both changes."
+        explanation: "Kyverno does not recreate Pods."
+      - id: d
+        text: "Kyverno retries the label separately after the failure."
+        explanation: "There is no automatic split retry."
+    correct_option: a
+    explanation: "A running Pod's `imagePullPolicy` is immutable, so the single update fails as a whole, and the failure is only logged in the background controller Pod."
+
+  - id: ats011-040-q08
+    type: single_choice
+    difficulty: intermediate
+    learning_objective: "Choose a workable way to change container defaults on existing Pods"
+    source_readings:
+      - sections/section-040/module-01/course-02-mutating-existing-resources.md
+    prompt: "What is the realistic way to apply a new container-level default such as `imagePullPolicy` to workloads that already exist?"
+    options:
+      - id: a
+        text: "Patch the running Pods directly with a more privileged service account."
+        explanation: "Kubernetes forbids changing most Pod spec fields regardless of who asks."
+      - id: b
+        text: "Use `mutateExistingOnPolicyUpdate` with `synchronize: true` so Kyverno forces the field."
+        explanation: "`synchronize` is a generate setting and does not override immutability."
+      - id: c
+        text: "Target a higher-level mutable object, such as a Deployment's Pod template, so a rolling update replaces the Pods."
+        explanation: "Correct. Limit direct Pod mutation to labels and annotations and let a controller roll out new Pods for container fields."
+      - id: d
+        text: "Delete the policy and apply it again so existing Pods are re-admitted."
+        explanation: "Existing Pods are not re-admitted when a policy is reapplied."
+    correct_option: c
+    explanation: "Limit direct Pod mutation to labels and annotations and let a controller roll out new Pods for container fields."
+
+  - id: ats011-040-q09
+    type: single_choice
+    difficulty: intermediate
+    learning_objective: "Decide when foreach is required instead of the (name) anchor"
+    source_readings:
+      - sections/section-040/module-02/course-01-foreach-in-mutate.md
+    prompt: "When is `mutate.foreach` required rather than the `(name)` anchor?"
+    options:
+      - id: a
+        text: "When the policy mutates more than one container."
+        explanation: "The anchor already handles many containers with one fixed fragment."
+      - id: b
+        text: "When the new value must be computed from the element being patched, such as prefixing each image with a mirror."
+        explanation: "Correct. `foreach` binds the current item to `element`, which makes a per-element derived value possible."
+      - id: c
+        text: "When the policy targets a Deployment instead of a Pod."
+        explanation: "The target kind does not decide this."
+      - id: d
+        text: "When the rule must run on UPDATE as well as CREATE."
+        explanation: "Operations are set in `match`, not by choosing `foreach`."
+    correct_option: b
+    explanation: "`foreach` binds the current item to `element`, which makes a per-element derived value possible."
+
+  - id: ats011-040-q10
+    type: single_choice
+    difficulty: intermediate
+    learning_objective: "Explain why a foreach fragment includes the container name"
+    source_readings:
+      - sections/section-040/module-02/course-01-foreach-in-mutate.md
+    prompt: "Inside a `foreach` that does a `patchStrategicMerge` on `containers`, why does the fragment usually include `name: \"{{ element.name }}\"`?"
+    options:
+      - id: a
+        text: "So the container is renamed to something unique."
+        explanation: "The name is reused, not changed."
+      - id: b
+        text: "Because `foreach` cannot iterate without a `name` field in the output."
+        explanation: "`foreach` does not require it for iteration."
+      - id: c
+        text: "To satisfy the API server's schema check for every container field."
+        explanation: "The reason is the merge key, not a schema check."
+      - id: d
+        text: "Because strategic merge reconciles the list by `name`; without it the fragment is inserted as a new nameless container that the API server rejects."
+        explanation: "Correct. It is the same failure as omitting the `(name)` anchor, for the same reason."
+    correct_option: d
+    explanation: "It is the same failure as omitting the `(name)` anchor, for the same reason."
+
+  - id: ats011-040-q11
+    type: single_choice
+    difficulty: advanced
+    learning_objective: "Predict the result of re-applying a non-idempotent mutation"
+    source_readings:
+      - sections/section-040/module-02/course-02-idempotency-and-rule-interaction.md
+    prompt: "A rule prefixes every container image with `mirror.local/`. Its `match` has `kinds: [Pod]` and no `operations` restriction. A Pod is created correctly and then someone adds an unrelated label. What does the image look like afterwards?"
+    options:
+      - id: a
+        text: "`mirror.local/nginx:1.27`, because Kyverno detects that the prefix is already present."
+        explanation: "Kyverno does not detect that."
+      - id: b
+        text: "`nginx:1.27`, because the UPDATE reverts the mutation."
+        explanation: "Mutation does not revert on update."
+      - id: c
+        text: "`mirror.local/mirror.local/nginx:1.27`, because the rule matched the UPDATE and transformed the already-transformed value."
+        explanation: "Correct. Nothing errors or warns, and the Pod now references an image that does not exist."
+      - id: d
+        text: "The UPDATE is rejected because the image field is immutable."
+        explanation: "Image changes are allowed on a Pod, and the rule is not rejected."
+    correct_option: c
+    explanation: "Nothing errors or warns, and the Pod now references an image that does not exist."
+
+  - id: ats011-040-q12
+    type: single_choice
+    difficulty: intermediate
+    learning_objective: "Distinguish idempotent from compounding mutations"
+    source_readings:
+      - sections/section-040/module-02/course-02-idempotency-and-rule-interaction.md
+    prompt: "Which statement correctly separates idempotent from non-idempotent mutations?"
+    options:
+      - id: a
+        text: "Setting a field to a constant compounds on each application, while deriving a value does not."
+        explanation: "This is backwards."
+      - id: b
+        text: "Every `patchStrategicMerge` rule is idempotent, and only `foreach` rules are not."
+        explanation: "The rule form does not decide it."
+      - id: c
+        text: "Prefixing, appending, and incrementing are idempotent because the rule is the same each time."
+        explanation: "These compound, since each pass builds on the last value."
+      - id: d
+        text: "Setting a constant is idempotent, while prefixing, appending, incrementing, and wrapping compound and need a guard or an `operations` restriction."
+        explanation: "Correct. Such rules are re-evaluated on every UPDATE and by background mutation."
+    correct_option: d
+    explanation: "Such rules are re-evaluated on every UPDATE and by background mutation."
+
+  - id: ats011-040-q13
+    type: single_choice
+    difficulty: advanced
+    learning_objective: "Place a guard at the right level inside foreach"
+    source_readings:
+      - sections/section-040/module-02/course-02-idempotency-and-rule-interaction.md
+    prompt: "Why must the guard against re-prefixing an image live inside the `foreach` entry rather than in rule-level preconditions?"
+    options:
+      - id: a
+        text: "Rule-level preconditions run once for the whole resource, while a nested `preconditions` block runs per element."
+        explanation: "Correct. A Pod with one prefixed and one unprefixed container needs a per-element decision."
+      - id: b
+        text: "Rule-level preconditions are ignored for any rule that uses `foreach`."
+        explanation: "They are evaluated, just at the wrong granularity."
+      - id: c
+        text: "Nested preconditions are cached, which makes admission faster."
+        explanation: "Caching is not the reason."
+      - id: d
+        text: "Rule-level preconditions can only read labels."
+        explanation: "They can read any request data."
+    correct_option: a
+    explanation: "A Pod with one prefixed and one unprefixed container needs a per-element decision."
+
+  - id: ats011-040-q14
+    type: single_choice
+    difficulty: advanced
+    learning_objective: "Resolve two mutate rules that write the same field"
+    source_readings:
+      - sections/section-040/module-02/course-02-idempotency-and-rule-interaction.md
+    prompt: "Two mutate rules in different policies both write `spec.containers[*].image`. Which wins, and what should you do?"
+    options:
+      - id: a
+        text: "The policy created first wins, so create the important one first."
+        explanation: "Creation order is not a guarantee."
+      - id: b
+        text: "The policy with the higher `priority` field wins, so set one."
+        explanation: "There is deliberately no priority field."
+      - id: c
+        text: "The policy whose name sorts last wins, so rename it."
+        explanation: "Name order is not relied upon."
+      - id: d
+        text: "The result is undefined within a rule type, so make the rules non-overlapping by narrowing `match` or adding preconditions."
+        explanation: "Correct. Only ordering between rule types is fixed, with every mutate rule before any validate rule."
+    correct_option: d
+    explanation: "Only ordering between rule types is fixed, with every mutate rule before any validate rule."
+
+  - id: ats011-040-q15
+    type: single_choice
+    difficulty: beginner
+    learning_objective: "Predict the effect of the add-if-not-present anchor on an existing value"
+    source_readings:
+      - sections/section-040/module-03/course-01-add-if-not-present-anchor.md
+    prompt: "A rule patches `metadata.labels` with `+(team): platform`. A Pod already carries the label `team: payments`. What is the label afterwards?"
+    options:
+      - id: a
+        text: "`platform`, because the policy always wins."
+        explanation: "That is what a plain `team: platform` would do."
+      - id: b
+        text: "`payments`, because the anchor writes the field only when it is missing."
+        explanation: "Correct. The `+()` anchor adds the key only if it is absent, so the owner's choice is left alone."
+      - id: c
+        text: "The Pod is rejected because the label already exists."
+        explanation: "A mutate rule with `+()` does not reject anything."
+      - id: d
+        text: "Both values, as a comma-separated list."
+        explanation: "A label holds a single string value."
+    correct_option: b
+    explanation: "The `+()` anchor adds the key only if it is absent, so the owner's choice is left alone."
+
+  - id: ats011-040-q16
+    type: single_choice
+    difficulty: advanced
+    learning_objective: "Recognise when the add-if-not-present anchor does nothing"
+    source_readings:
+      - sections/section-040/module-03/course-01-add-if-not-present-anchor.md
+    prompt: "A rule uses `+(imagePullPolicy): IfNotPresent` to set a default. Pods created without that field still end up with a different value. Why?"
+    options:
+      - id: a
+        text: "The anchor only works on label keys."
+        explanation: "It works on any scalar or object field."
+      - id: b
+        text: "The anchor has to be placed around the value, not the key."
+        explanation: "The anchor is part of the key."
+      - id: c
+        text: "Kyverno ignores mutate rules on Pods."
+        explanation: "Mutate rules do apply to Pods."
+      - id: d
+        text: "The API server has already defaulted the field by the time the webhook sees the Pod, so the anchor finds it present and writes nothing."
+        explanation: "Correct. Do not rely on `+()` for a field the API server defaults itself, because a defaulted field such as `imagePullPolicy` is usually already present."
+    correct_option: d
+    explanation: "Do not rely on `+()` for a field the API server defaults itself, because a defaulted field such as `imagePullPolicy` is usually already present."
+
+  - id: ats011-040-q17
+    type: single_choice
+    difficulty: intermediate
+    learning_objective: "Explain how a conditional anchor selects list elements"
+    source_readings:
+      - sections/section-040/module-03/course-02-conditional-anchors-in-mutation.md
+    prompt: "A patch has `containers: [ {(name): \"sidecar-*\", securityContext: {readOnlyRootFilesystem: true}} ]`. The Pod has containers `app` and `sidecar-log`. What happens?"
+    options:
+      - id: a
+        text: "Only `sidecar-log` is patched, and `app` is skipped rather than rejected."
+        explanation: "Correct. The conditional anchor is an if on that element. Elements that do not match are skipped, not rejected."
+      - id: b
+        text: "Both containers are patched, because `*` matches every name."
+        explanation: "The pattern is `sidecar-*`, which does not match `app`. Only `(name): \"*\"` is that wide."
+      - id: c
+        text: "The Pod is rejected because `app` does not match the pattern."
+        explanation: "The anchor filters which elements are patched. It does not reject."
+      - id: d
+        text: "Neither is patched, because a conditional anchor needs `preconditions` as well."
+        explanation: "Conditional anchors work inside `patchStrategicMerge` on their own."
+    correct_option: a
+    explanation: "The conditional anchor is an if on that element. Elements that do not match are skipped, not rejected."
+
+  - id: ats011-040-q18
+    type: single_choice
+    difficulty: advanced
+    learning_objective: "Combine the conditional anchor with the add-if-not-present anchor"
+    source_readings:
+      - sections/section-040/module-03/course-01-add-if-not-present-anchor.md
+      - sections/section-040/module-03/course-02-conditional-anchors-in-mutation.md
+    prompt: "A rule uses `(name): \"sidecar-*\"` and `+(readOnlyRootFilesystem): true`. Pod `sidecar-a` has no securityContext, `sidecar-b` sets `readOnlyRootFilesystem: false`, and `app` sets nothing. What are the three results?"
+    options:
+      - id: a
+        text: "`sidecar-a` is true, `sidecar-b` is true, and `app` is true."
+        explanation: "`sidecar-b` set its own value, and `app` does not match the name filter."
+      - id: b
+        text: "`sidecar-a` is unset, `sidecar-b` is false, and `app` is true."
+        explanation: "`sidecar-a` is the one that gets the default."
+      - id: c
+        text: "`sidecar-a` is true, `sidecar-b` stays false, and `app` is unchanged."
+        explanation: "Correct. The conditional anchor chooses the elements and the `+()` anchor decides per field whether to write, so the owner's `false` is kept and `app` is untouched."
+      - id: d
+        text: "`sidecar-a` is true, `sidecar-b` is true, and `app` is unchanged."
+        explanation: "`+()` does not overwrite a field that is present, so `sidecar-b` keeps `false`."
+    correct_option: c
+    explanation: "The conditional anchor chooses the elements and the `+()` anchor decides per field whether to write, so the owner's `false` is kept and `app` is untouched."

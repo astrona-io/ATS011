@@ -157,3 +157,22 @@ Give `sidecar` matching `limits` and re-apply, and the same Pod satisfies both
 rules in one pass. That relative failure path is also the argument for putting
 `{{ element.name }}` in the message: the path alone tells you *what* was wrong
 but not *which* container it was.
+
+## Your mission: Pattern-Based Validation Lab
+
+You can now write a `validate.pattern` rule, accept several shapes with `anyPattern`, and check every container with `foreach`. The mission asks you to write a policy that requires a `team` label and per-container resource limits, and prove that a Pod with one bad container is rejected.
+
+Pause the playground, start the lab, and submit your work as often as you like:
+
+```sh
+astrona stop ats-011-playground-010
+astrona run --git ssh://git@github.com/astrona-io/ATS011.git -c sections/section-010/module-01/labs/lab-01
+astrona submit -c sections/section-010/module-01/labs/lab-01
+```
+
+When the lab passes, remove it and return to the playground:
+
+```sh
+astrona destroy ats-011-lab-011
+astrona start ats-011-playground-010
+```

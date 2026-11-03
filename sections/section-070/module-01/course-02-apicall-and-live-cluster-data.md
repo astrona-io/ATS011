@@ -212,3 +212,22 @@ scope: { kind: Pod, name: seed-a }
 ```
 
 Both `seed-a` and `seed-b` — Pods that existed before the policy was ever applied — were correctly evaluated against a freshly-fetched live count of their own namespace, confirming `apiCall` isn't limited to admission-time evaluation; a background scan re-runs it too, against the resource's own `request.namespace` context, each time the scan executes.
+
+## Your mission: Live Pod-Quota Lab
+
+You can now use request variables and an `apiCall` context entry to decide with live cluster data. The mission asks you to write a policy that reads live Pod counts through `apiCall` and rejects a request when the limit is reached.
+
+Pause the playground, start the lab, and submit your work as often as you like:
+
+```sh
+astrona stop ats-011-playground-070
+astrona run --git ssh://git@github.com/astrona-io/ATS011.git -c sections/section-070/module-01/labs/lab-01
+astrona submit -c sections/section-070/module-01/labs/lab-01
+```
+
+When the lab passes, remove it and return to the playground:
+
+```sh
+astrona destroy ats-011-lab-071
+astrona start ats-011-playground-070
+```

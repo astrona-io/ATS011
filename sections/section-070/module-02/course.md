@@ -20,6 +20,8 @@ This module covers the other three: `configMap` for operational data you want to
 1. **[Part 1 — configMap and variable](./course-01-configmap-and-variable-context.md)** — externalising policy data into a ConfigMap so the policy itself stops changing, the `variable` entry type for naming intermediate results, and how context entries build on one another in order.
 2. **[Part 2 — imageRegistry and globalReference](./course-02-imageregistry-and-globalreference.md)** — reading real image metadata from a registry at admission time, what the result actually contains, and caching expensive lookups in a `GlobalContextEntry` instead of repeating them per request.
 
+The module closes with a summary page and a mission, **Context Entries Lab**, a graded lab that asks you to write and apply the policies from this module on a live cluster.
+
 ## Learning objectives
 
 After this module you can:

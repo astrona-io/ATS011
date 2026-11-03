@@ -108,7 +108,21 @@ Three outcomes and what each means:
 
 The third is the one worth reading carefully rather than glancing at, because a generated rule with a nonsense path looks structurally identical to a correct one.
 
+## Your mission: Autogen Rules Lab
 
-## Section recap
+You can now predict what autogen generates, scope it, and spot when it does not apply. The mission asks you to write a Pod rule and prove that its generated rules also protect the controllers that create Pods.
 
-Autogen declines entirely when a rule's `match` or `exclude` names any kind besides `Pod` — `status.autogen` comes back empty, with no error to notice. And it fires without understanding your pattern, performing the same fixed path rewrite regardless, so a pattern that already anticipated a controller's shape is rewritten into a path no resource has. Both failures look identical from outside: a policy that installed cleanly and protects less than it appears to. The defence is the same in each case — write the rule against a Pod's own native shape, one kind per rule, and read `status.autogen` rather than assuming it.
+Pause the playground, start the lab, and submit your work as often as you like:
+
+```sh
+astrona stop ats-011-playground-090
+astrona run --git ssh://git@github.com/astrona-io/ATS011.git -c sections/section-090/module-01/labs/lab-01
+astrona submit -c sections/section-090/module-01/labs/lab-01
+```
+
+When the lab passes, remove it and return to the playground:
+
+```sh
+astrona destroy ats-011-lab-091
+astrona start ats-011-playground-090
+```

@@ -1,0 +1,477 @@
+# Knowledge check for section 110. Listed in astrona.yaml as a `type: quiz` entry after the capstone lab.
+schema_version: 1
+kind: question_bank
+id: ats011-110
+course_id: ATS011
+exam_code: KCA
+status: draft
+provenance: Original practice material written for this course; not official exam questions.
+scope:
+  type: section
+  id: section-110
+  title: "Common Expression Language (CEL)"
+questions:
+
+  - id: ats011-110-q01
+    type: single_choice
+    difficulty: intermediate
+    learning_objective: "Contrast pattern matching with CEL expressions"
+    source_readings:
+      - sections/section-110/module-01/course-01-cel-as-a-language.md
+    prompt: "What is the fundamental difference between what a `validate.pattern` block expresses and what a `validate.cel` expression expresses?"
+    options:
+      - id: a
+        text: "A `pattern` evaluates to a boolean, while CEL describes a YAML shape."
+        explanation: "This reverses them."
+      - id: b
+        text: "A `pattern` runs in the background controller, while CEL runs at admission."
+        explanation: "Both run at admission."
+      - id: c
+        text: "They are equivalent, and CEL is only a different syntax for the same shapes."
+        explanation: "CEL can express rules no shape can."
+      - id: d
+        text: "A `pattern` describes what the resource must look like, while CEL states what must be true as a boolean, which enables cross-field comparisons, arithmetic, and transition rules."
+        explanation: "Correct. None of those is a shape."
+    correct_option: d
+    explanation: "None of those is a shape."
+
+  - id: ats011-110-q02
+    type: single_choice
+    difficulty: intermediate
+    learning_objective: "Explain why CEL is not Turing-complete"
+    source_readings:
+      - sections/section-110/module-01/course-01-cel-as-a-language.md
+    prompt: "CEL is deliberately not Turing-complete. Why is that a feature given where admission control sits?"
+    options:
+      - id: a
+        text: "It makes expressions shorter to write."
+        explanation: "The reason is safety, not brevity."
+      - id: b
+        text: "It lets expressions call external services safely."
+        explanation: "CEL has no I/O."
+      - id: c
+        text: "Admission runs synchronously on every write, and CEL has no loops, recursion, or I/O, so every expression terminates and its cost can be estimated before running."
+        explanation: "Correct. An expression that never ends would stop the cluster accepting writes."
+      - id: d
+        text: "It prevents expressions from reading the resource."
+        explanation: "Expressions read `object` freely."
+    correct_option: c
+    explanation: "An expression that never ends would stop the cluster accepting writes."
+
+  - id: ats011-110-q03
+    type: single_choice
+    difficulty: advanced
+    learning_objective: "Diagnose a missing-key error in a CEL rule"
+    source_readings:
+      - sections/section-110/module-01/course-02-writing-validate-cel-safely.md
+    prompt: "You write `object.spec.containers.all(c, c.resources.limits['memory'] != '')` under `Enforce`, and a Pod with no `resources` block is rejected. Is the policy working?"
+    options:
+      - id: a
+        text: "Yes, because the Pod really violates the rule."
+        explanation: "The expression failed instead of returning false."
+      - id: b
+        text: "No, because the message `no such key: limits` shows an evaluation error that fell closed, so guard with `has(c.resources) && has(c.resources.limits) && 'memory' in c.resources.limits`."
+        explanation: "Correct. CEL errors on a missing field rather than returning null."
+      - id: c
+        text: "Yes, because `all()` rejects any Pod with empty fields."
+        explanation: "`all()` does not do that."
+      - id: d
+        text: "No, because `Enforce` is not a valid action here."
+        explanation: "The rejection came from an evaluation error."
+    correct_option: b
+    explanation: "CEL errors on a missing field rather than returning null."
+
+  - id: ats011-110-q04
+    type: single_choice
+    difficulty: intermediate
+    learning_objective: "Predict all() over an empty list"
+    source_readings:
+      - sections/section-110/module-01/course-02-writing-validate-cel-safely.md
+    prompt: "What does `object.spec.containers.all(c, <predicate>)` evaluate to when `containers` is empty, and why does it matter?"
+    options:
+      - id: a
+        text: "`false`, so Pods without containers are always rejected."
+        explanation: "It is true on an empty set."
+      - id: b
+        text: "An error, because there is no element to bind."
+        explanation: "An empty set is valid."
+      - id: c
+        text: "`true` vacuously, so a rule saying every container must satisfy X asserts nothing about a resource with no containers, and emptiness needs a separate `size(...) > 0` check."
+        explanation: "Correct. `all()` never catches the empty case."
+      - id: d
+        text: "`null`, which `Enforce` treats as a pass."
+        explanation: "CEL has no null boolean result here."
+    correct_option: c
+    explanation: "`all()` never catches the empty case."
+
+  - id: ats011-110-q05
+    type: single_choice
+    difficulty: advanced
+    learning_objective: "Identify the bound values and the one patterns lack"
+    source_readings:
+      - sections/section-110/module-01/course-01-cel-as-a-language.md
+      - sections/section-110/module-01/course-02-writing-validate-cel-safely.md
+    prompt: "Which values are bound in a `validate.cel` expression, and which one enables a rule that no `validate.pattern` could express?"
+    options:
+      - id: a
+        text: "`object` and `request` only, with `request` enabling the extra rules."
+        explanation: "More values are bound."
+      - id: b
+        text: "`object`, `variables`, and `secrets`, with `secrets` enabling the extra rules."
+        explanation: "There is no `secrets` binding."
+      - id: c
+        text: "`object` and `namespaceObject`, with `namespaceObject` enabling the extra rules."
+        explanation: "It helps with namespace rules but is not the unique one."
+      - id: d
+        text: "`object`, `oldObject`, `request`, `variables`, and `namespaceObject`, with `oldObject` enabling transition rules such as replicas never decreasing."
+        explanation: "Correct. A pattern sees only one resource."
+    correct_option: d
+    explanation: "A pattern sees only one resource."
+
+  - id: ats011-110-q06
+    type: single_choice
+    difficulty: intermediate
+    learning_objective: "Find the two bugs in matchConstraints"
+    source_readings:
+      - sections/section-110/module-01/course-03-the-validatingpolicy-type.md
+    prompt: "In a `ValidatingPolicy`, `matchConstraints.resourceRules` has `resources: [\"Pod\"]` and `operations: [\"CREATE\"]`. What are the two bugs?"
+    options:
+      - id: a
+        text: "`Pod` must be `pod`, and `CREATE` must be `create`."
+        explanation: "Names are plural and operations upper case."
+      - id: b
+        text: "`resources` must be a Kind with an API group, and `operations` must be `*`."
+        explanation: "Resources use API resource names."
+      - id: c
+        text: "`resources` takes the lowercase plural `pods`, like RBAC, and omitting `UPDATE` lets a compliant Pod be edited into a non-compliant one unchecked."
+        explanation: "Correct. Most validation rules want `[\"CREATE\", \"UPDATE\"]`."
+      - id: d
+        text: "`Pod` must be `Pods`, and `CREATE` needs `DELETE` beside it."
+        explanation: "The spelling is lowercase and DELETE is not the gap."
+    correct_option: c
+    explanation: "Most validation rules want `[\"CREATE\", \"UPDATE\"]`."
+
+  - id: ats011-110-q07
+    type: single_choice
+    difficulty: advanced
+    learning_objective: "Differentiate matchConditions from validations"
+    source_readings:
+      - sections/section-110/module-01/course-03-the-validatingpolicy-type.md
+    prompt: "What is the difference between a `matchCondition` that evaluates to `false` and a `validation` that evaluates to `false`?"
+    options:
+      - id: a
+        text: "Both deny the request, and only the message differs."
+        explanation: "A false match condition skips the policy."
+      - id: b
+        text: "A false `matchCondition` denies, and a false `validation` skips."
+        explanation: "This reverses them."
+      - id: c
+        text: "A false `matchCondition` means the policy does not apply, so the request is skipped, while a false `validation` means the request is non-compliant and handled by `validationActions`."
+        explanation: "Correct. Exemptions such as `kube-system` belong in `matchConditions`."
+      - id: d
+        text: "They are identical, because both are checked after admission."
+        explanation: "They differ in outcome."
+    correct_option: c
+    explanation: "Exemptions such as `kube-system` belong in `matchConditions`."
+
+  - id: ats011-110-q08
+    type: single_choice
+    difficulty: intermediate
+    learning_objective: "Choose valid validationActions"
+    source_readings:
+      - sections/section-110/module-01/course-03-the-validatingpolicy-type.md
+    prompt: "A colleague sets `validationActions: [Enforce]` on a `ValidatingPolicy` and it is rejected. What went wrong, and which combination of real values is also disallowed?"
+    options:
+      - id: a
+        text: "`Enforce` must be lowercase, and `Audit` with `Warn` is disallowed."
+        explanation: "The value is not valid at any case."
+      - id: b
+        text: "The field must be a string, and `Deny` with `Audit` is disallowed."
+        explanation: "It is a list."
+      - id: c
+        text: "`Enforce` needs the `policies.kyverno.io` prefix, and `Deny` alone is disallowed."
+        explanation: "There is no prefix, and `Deny` alone is fine."
+      - id: d
+        text: "`Enforce` is `ClusterPolicy` vocabulary, since the list takes `Deny`, `Audit`, and `Warn`, and `Deny` with `Warn` is disallowed because it reports the failure twice."
+        explanation: "Correct. `[Audit, Warn]` is allowed and suits a rollout."
+    correct_option: d
+    explanation: "`[Audit, Warn]` is allowed and suits a rollout."
+
+  - id: ats011-110-q09
+    type: single_choice
+    difficulty: advanced
+    learning_objective: "Explain autogen on a ValidatingPolicy"
+    source_readings:
+      - sections/section-110/module-01/course-04-autogen-and-native-admission-policies.md
+    prompt: "A `ValidatingPolicy` mentions only `pods`, yet a Deployment with a non-compliant template is rejected. Why, and where do you look?"
+    options:
+      - id: a
+        text: "The Deployment inherits the Pod's admission automatically through Kubernetes."
+        explanation: "Kyverno generates variants."
+      - id: b
+        text: "Autogen generates variants for Pod controllers and rewrites field paths inside the CEL strings, shown in `status.autogen.configs`, with a `defaults` config and a separate `cronjobs` config."
+        explanation: "Correct. For instance `object.metadata.labels` becomes `object.spec.template.metadata.labels`."
+      - id: c
+        text: "The policy was silently converted to a `ClusterPolicy` with `kind: Deployment`."
+        explanation: "The kind is not converted."
+      - id: d
+        text: "The API server evaluates Pod templates natively with no Kyverno involvement."
+        explanation: "A webhook still does the work."
+    correct_option: b
+    explanation: "For instance `object.metadata.labels` becomes `object.spec.template.metadata.labels`."
+
+  - id: ats011-110-q10
+    type: single_choice
+    difficulty: advanced
+    learning_objective: "Identify native enforcement of a generated VAP"
+    source_readings:
+      - sections/section-110/module-01/course-04-autogen-and-native-admission-policies.md
+    prompt: "You set `spec.autogen.validatingAdmissionPolicy.enabled: true`, and a non-compliant Pod is rejected with `ValidatingAdmissionPolicy '...' with binding '...' denied request`. What enforces this, and what did you give up?"
+    options:
+      - id: a
+        text: "Kyverno's webhook, and you gave up audit reports."
+        explanation: "The message has no webhook in it."
+      - id: b
+        text: "A mutating webhook, and you gave up digest pinning."
+        explanation: "No webhook is involved."
+      - id: c
+        text: "The cleanup controller, and you gave up schedules."
+        explanation: "It is unrelated."
+      - id: d
+        text: "The API server through a generated native VAP, so a webhook outage cannot fail it, but you lose `apiCall`, image registry lookups, mutation, and generation."
+        explanation: "Correct. That is why it is a per-policy switch, not a cluster-wide mode."
+    correct_option: d
+    explanation: "That is why it is a per-policy switch, not a cluster-wide mode."
+
+  - id: ats011-110-q11
+    type: single_choice
+    difficulty: intermediate
+    learning_objective: "Identify the enforcement path from the first message line"
+    source_readings:
+      - sections/section-110/module-01/course-03-the-validatingpolicy-type.md
+      - sections/section-110/module-01/course-04-autogen-and-native-admission-policies.md
+    prompt: "Given only the first line of a rejection, how do you tell which of Kyverno's three enforcement paths blocked the request?"
+    options:
+      - id: a
+        text: "By the HTTP status code, which differs per path."
+        explanation: "The status code is the same."
+      - id: b
+        text: "By the namespace of the Pod."
+        explanation: "It does not identify the path."
+      - id: c
+        text: "By the webhook and framing, where `validate.kyverno.svc-fail` with a multi-line block is a `ClusterPolicy`, `vpol.validate.kyverno.svc-fail` with `Policy <name> failed:` is a `ValidatingPolicy`, and no webhook at all means a generated VAP."
+        explanation: "Correct. In the last case the API server enforced it with Kyverno uninvolved."
+      - id: d
+        text: "By the policy's creation time in the message."
+        explanation: "The message carries no timestamp."
+    correct_option: c
+    explanation: "In the last case the API server enforced it with Kyverno uninvolved."
+
+  - id: ats011-110-q12
+    type: single_choice
+    difficulty: intermediate
+    learning_objective: "Respond to the ClusterPolicy deprecation warning"
+    source_readings:
+      - sections/section-110/module-01/course-03-the-validatingpolicy-type.md
+    prompt: "Because `ClusterPolicy` prints a deprecation warning on every apply, should you write `ValidatingPolicy` for the KCA?"
+    options:
+      - id: a
+        text: "Yes, because `ClusterPolicy` stops working in v1.19.1."
+        explanation: "It is fully functional."
+      - id: b
+        text: "Yes, because every existing repository already uses the new kinds."
+        explanation: "Existing repositories use `ClusterPolicy`."
+      - id: c
+        text: "No, because `ValidatingPolicy` cannot enforce anything yet."
+        explanation: "It does enforce."
+      - id: d
+        text: "No, because `ClusterPolicy` is fully functional and what the domain asks you to author, and you should know the `policies.kyverno.io` family well enough to read it."
+        explanation: "Correct. The warning signposts direction, not removal."
+    correct_option: d
+    explanation: "The warning signposts direction, not removal."
+
+  - id: ats011-110-q13
+    type: single_choice
+    difficulty: beginner
+    learning_objective: "Map the five CEL-native kinds to their classic constructs"
+    source_readings:
+      - sections/section-110/module-02/course-01-mutating-and-generating-policies.md
+      - sections/section-110/module-02/course-02-imagevalidating-and-deletingpolicy.md
+    prompt: "Which pairing correctly names a CEL-native kind and the classic construct it replaces?"
+    options:
+      - id: a
+        text: "`MutatingPolicy` replaces `rules[].generate`."
+        explanation: "It replaces `rules[].mutate`."
+      - id: b
+        text: "`GeneratingPolicy` replaces `rules[].verifyImages`."
+        explanation: "It replaces `rules[].generate`."
+      - id: c
+        text: "`ImageValidatingPolicy` replaces `rules[].verifyImages`, and `DeletingPolicy` replaces the cleanup policies."
+        explanation: "Correct. Each kind also has a `Namespaced*` counterpart."
+      - id: d
+        text: "`ValidatingPolicy` replaces `ClusterCleanupPolicy`."
+        explanation: "It replaces `rules[].validate`."
+    correct_option: c
+    explanation: "Each kind also has a `Namespaced*` counterpart."
+
+  - id: ats011-110-q14
+    type: single_choice
+    difficulty: beginner
+    learning_objective: "Tell the families apart by apiVersion"
+    source_readings:
+      - sections/section-110/module-02/course-01-mutating-and-generating-policies.md
+    prompt: "How do you tell from the YAML alone which family a policy belongs to?"
+    options:
+      - id: a
+        text: "By the `kind`, since classic kinds never end in `Policy`."
+        explanation: "Both families use such names."
+      - id: b
+        text: "By the `apiVersion`, where `kyverno.io/v1` or `v2` is classic and `policies.kyverno.io/*` is CEL-native, which also predicts the rejection message shape."
+        explanation: "Correct. The webhook names differ between the families."
+      - id: c
+        text: "By the `status` block, which only CEL-native policies have."
+        explanation: "Classic policies also carry a `status` block."
+      - id: d
+        text: "By the namespace the policy is in."
+        explanation: "Namespace is not a marker."
+    correct_option: b
+    explanation: "The webhook names differ between the families."
+
+  - id: ats011-110-q15
+    type: single_choice
+    difficulty: advanced
+    learning_objective: "Read a MutatingPolicy ApplyConfiguration expression"
+    source_readings:
+      - sections/section-110/module-02/course-01-mutating-and-generating-policies.md
+    prompt: "A `MutatingPolicy` has `patchType: ApplyConfiguration` and the expression `Object{ metadata: Object.metadata{ labels: {\"managed-by\": \"x\"} } }`. What is it and what is it equivalent to?"
+    options:
+      - id: a
+        text: "A JSON Patch operation, equivalent to `op: add`."
+        explanation: "That is the other patch type."
+      - id: b
+        text: "A CEL validation, equivalent to `validate.pattern`."
+        explanation: "It mutates the resource."
+      - id: c
+        text: "A cleanup condition, equivalent to `conditions`."
+        explanation: "It is not a condition."
+      - id: d
+        text: "CEL object initialization that constructs the fragment to merge, equivalent to a `patchStrategicMerge` fragment, with `JSONPatch` as the RFC 6902 analogue."
+        explanation: "Correct. `Object.metadata` is the typed sub-object, so nesting mirrors the path."
+    correct_option: d
+    explanation: "`Object.metadata` is the typed sub-object, so nesting mirrors the path."
+
+  - id: ats011-110-q16
+    type: single_choice
+    difficulty: advanced
+    learning_objective: "Identify what splitting a policy loses"
+    source_readings:
+      - sections/section-110/module-02/course-01-mutating-and-generating-policies.md
+    prompt: "You split a classic `ClusterPolicy` with a mutate default and a validate requirement into a `MutatingPolicy` and a `ValidatingPolicy`. What did you lose?"
+    options:
+      - id: a
+        text: "The mutate-before-validate ordering."
+        explanation: "It survives, since it is between rule types."
+      - id: b
+        text: "Co-location, because nothing binds the two, so deleting the mutating policy leaves the validating one rejecting what the mutation used to fix."
+        explanation: "Correct. Name and label paired policies so the link is visible."
+      - id: c
+        text: "The ability to use CEL in the validate rule."
+        explanation: "CEL remains available."
+      - id: d
+        text: "The audit reports for both policies."
+        explanation: "Reports are unaffected."
+    correct_option: b
+    explanation: "Name and label paired policies so the link is visible."
+
+  - id: ats011-110-q17
+    type: single_choice
+    difficulty: advanced
+    learning_objective: "Translate cleanup conditions into DeletingPolicy"
+    source_readings:
+      - sections/section-110/module-02/course-02-imagevalidating-and-deletingpolicy.md
+    prompt: "Translating a `ClusterCleanupPolicy` into a `DeletingPolicy`, the schedule and `deletionPropagationPolicy` carry over. Name two things that do not."
+    options:
+      - id: a
+        text: "The cron format and the resource kinds."
+        explanation: "The cron format carries over."
+      - id: b
+        text: "The RBAC and the controller."
+        explanation: "These are unchanged."
+      - id: c
+        text: "`match` becomes `matchConstraints`, and conditions become named CEL expressions that read `object` instead of `target`, with `has()` guards where a field may be absent."
+        explanation: "Correct. The `target` to `object` change is easy to miss."
+      - id: d
+        text: "The `schedule` format and the labels."
+        explanation: "Both carry over."
+    correct_option: c
+    explanation: "The `target` to `object` change is easy to miss."
+
+  - id: ats011-110-q18
+    type: single_choice
+    difficulty: intermediate
+    learning_objective: "Judge RBAC needs after migrating to DeletingPolicy"
+    source_readings:
+      - sections/section-110/module-02/course-02-imagevalidating-and-deletingpolicy.md
+    prompt: "Does migrating from `ClusterCleanupPolicy` to `DeletingPolicy` change the RBAC you need?"
+    options:
+      - id: a
+        text: "Yes, it needs a new `ClusterRole` labelled for the deleting controller."
+        explanation: "The cleanup controller still deletes."
+      - id: b
+        text: "No, because the same cleanup controller deletes, so the `aggregate-to-cleanup-controller` ClusterRole with `get`, `list`, `watch`, and `delete` still works, though `status` may stay empty."
+        explanation: "Correct. Confirm the schedule fires by observing resources, not status."
+      - id: c
+        text: "No, because `DeletingPolicy` needs no permissions."
+        explanation: "It still needs delete permission."
+      - id: d
+        text: "Yes, it needs `cluster-admin` bound to the policy."
+        explanation: "That is never required."
+    correct_option: b
+    explanation: "Confirm the schedule fires by observing resources, not status."
+
+  - id: ats011-110-q19
+    type: single_choice
+    difficulty: advanced
+    learning_objective: "Compare attestors in ImageValidatingPolicy with classic verifyImages"
+    source_readings:
+      - sections/section-110/module-02/course-02-imagevalidating-and-deletingpolicy.md
+    prompt: "What changes about attestors in an `ImageValidatingPolicy` compared with a classic `verifyImages` rule?"
+    options:
+      - id: a
+        text: "They stay positional, and only the keys move."
+        explanation: "They become named."
+      - id: b
+        text: "They are removed, and signatures are always keyless."
+        explanation: "Attestors remain."
+      - id: c
+        text: "They are named rather than positional, so expressions refer to a name, the backend is an explicit `cosign` or `notary` choice, and `images` is a list of named CEL expressions."
+        explanation: "Correct. A failure names the attestor that mattered."
+      - id: d
+        text: "They are shared cluster-wide, and each policy only references an index."
+        explanation: "Names are used instead of indexes."
+    correct_option: c
+    explanation: "A failure names the attestor that mattered."
+
+  - id: ats011-110-q20
+    type: single_choice
+    difficulty: intermediate
+    learning_objective: "Decide whether to author CEL-native policies for the exam"
+    source_readings:
+      - sections/section-110/module-02/course-01-mutating-and-generating-policies.md
+      - sections/section-110/module-02/course-02-imagevalidating-and-deletingpolicy.md
+    prompt: "Should you author CEL-native policies for the KCA?"
+    options:
+      - id: a
+        text: "Yes, because classic policies are removed in v1.19.1."
+        explanation: "They are functional."
+      - id: b
+        text: "Yes, because the family is stable and field names behave as in classic policies."
+        explanation: "The family is still moving, and fields do not always behave the same."
+      - id: c
+        text: "No, and you need not be able to read them either."
+        explanation: "Reading them is useful."
+      - id: d
+        text: "No, keep authoring classic policies, because the competencies are classic, though you should read CEL-native ones and adopt deliberately since a field such as `target` becoming `object` behaves differently."
+        explanation: "Correct. The deprecation warnings signpost direction, not removal."
+    correct_option: d
+    explanation: "The deprecation warnings signpost direction, not removal."

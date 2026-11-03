@@ -140,6 +140,21 @@ That last detail is a real limitation to know: inside a `foreach`, the *rule-lev
 > - **Comparing quantities as strings.** Use the numeric operators, which understand `Mi`/`Gi`/`m`; `Equals` against `"512Mi"` is a string match and will miss `0.5Gi`.
 > - **Expecting the rule message to name the failing element inside a `foreach`.** It resolves against the whole resource unless you reference `element` explicitly.
 
-## Section recap
+## Your mission: Deny Rules Lab
 
-Conditions share one `key`/`operator`/`value` syntax across four operator families — equality, numeric, set, and duration — with case-sensitive names. The four set operators are a two-by-two grid of Any/All against In/NotIn, and the Any/All axis only bites once `key` resolves to a list. `foreach` combined with `deny` tests every element of a list independently, and the `|| ''` fallback is what keeps an optional field from turning a condition into an evaluation error.
+You can now write a `deny` rule with conditions, pick the right operator, and test every list element with `foreach`. The mission asks you to write three deny rules for Deployments that cap replicas, restrict a label to a fixed set, and allow only approved image registries.
+
+Pause the playground, start the lab, and submit your work as often as you like:
+
+```sh
+astrona stop ats-011-playground-0102
+astrona run --git ssh://git@github.com/astrona-io/ATS011.git -c sections/section-010/module-02/labs/lab-01
+astrona submit -c sections/section-010/module-02/labs/lab-01
+```
+
+When the lab passes, remove it and return to the playground:
+
+```sh
+astrona destroy ats-011-lab-012
+astrona start ats-011-playground-0102
+```

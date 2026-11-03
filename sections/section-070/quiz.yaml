@@ -1,0 +1,450 @@
+# Knowledge check for section 070. Listed in astrona.yaml as a `type: quiz` entry after the capstone lab.
+schema_version: 1
+kind: question_bank
+id: ats011-070
+course_id: ATS011
+exam_code: KCA
+status: draft
+provenance: Original practice material written for this course; not official exam questions.
+scope:
+  type: section
+  id: section-070
+  title: "Variables & API Calls in Policies"
+questions:
+
+  - id: ats011-070-q01
+    type: single_choice
+    difficulty: intermediate
+    learning_objective: "Explain why variables in match never select anything useful"
+    source_readings:
+      - sections/section-070/module-01/course-01-jmespath-variables-and-context.md
+    prompt: "A policy sets `match.resources.namespaces: [\"{{ request.namespace }}\"]`, expecting \"whatever namespace the request is in\". After applying it, no Pod ever triggers the rule. Why?"
+    options:
+      - id: a
+        text: "Variables are not supported in `match` or `exclude`, so the braces are taken as a literal namespace string that matches nothing."
+        explanation: "Correct. The comparison against live values must move into `preconditions` or the `validate` rule itself."
+      - id: b
+        text: "`request.namespace` is only defined for cluster-scoped resources."
+        explanation: "It is defined for namespaced requests."
+      - id: c
+        text: "Kyverno rejects the policy at apply time because of the braces."
+        explanation: "The policy is accepted, which is why the failure is silent."
+      - id: d
+        text: "Variables in `match` need a `context` entry declared first."
+        explanation: "A context entry does not change the rule that `match` is static."
+    correct_option: a
+    explanation: "The comparison against live values must move into `preconditions` or the `validate` rule itself."
+
+  - id: ats011-070-q02
+    type: single_choice
+    difficulty: intermediate
+    learning_objective: "Guard references to oldObject by operation"
+    source_readings:
+      - sections/section-070/module-01/course-01-jmespath-variables-and-context.md
+    prompt: "A precondition compares `{{ request.oldObject.metadata.labels.locked }}` to `\"true\"` with no other guard, and a brand-new Pod is created. What happens when it is evaluated?"
+    options:
+      - id: a
+        text: "`oldObject` holds a copy of the new Pod, so the comparison works normally."
+        explanation: "There is no previous version on CREATE."
+      - id: b
+        text: "The request is always rejected, because `oldObject` is a reserved word on CREATE."
+        explanation: "It is not reserved, and the result depends on the path."
+      - id: c
+        text: "Kyverno fills `oldObject` from the last Pod that existed in the namespace."
+        explanation: "It never borrows another object."
+      - id: d
+        text: "`oldObject` exists only on UPDATE and DELETE, so on CREATE the path resolves to empty or can fail, which is why a `request.operation` check comes first."
+        explanation: "Correct. The guard keeps the expression from being evaluated on a CREATE."
+    correct_option: d
+    explanation: "The guard keeps the expression from being evaluated on a CREATE."
+
+  - id: ats011-070-q03
+    type: single_choice
+    difficulty: intermediate
+    learning_objective: "Place a context apiCall at rule level"
+    source_readings:
+      - sections/section-070/module-01/course-02-apicall-and-live-cluster-data.md
+    prompt: "Where does a `context.apiCall` block belong in a `ClusterPolicy`?"
+    options:
+      - id: a
+        text: "In `spec.context`, shared by all rules."
+        explanation: "`kubectl explain` reports that field does not exist."
+      - id: b
+        text: "In `spec.rules[].context`, so each rule that needs the data defines its own entry."
+        explanation: "Correct. Two rules that need the same live data each need their own entry."
+      - id: c
+        text: "In `metadata.annotations` as a JSON string."
+        explanation: "Annotations are not parsed for this."
+      - id: d
+        text: "In `spec.background`, because lookups run in the background."
+        explanation: "That field is a boolean switch."
+    correct_option: b
+    explanation: "Two rules that need the same live data each need their own entry."
+
+  - id: ats011-070-q04
+    type: single_choice
+    difficulty: advanced
+    learning_objective: "Scope an apiCall urlPath per request"
+    source_readings:
+      - sections/section-070/module-01/course-02-apicall-and-live-cluster-data.md
+    prompt: "A `context.apiCall` uses `urlPath: \"/api/v1/namespaces/{{request.namespace}}/pods\"` with `jmesPath: \"items | length(@)\"`. One Pod is created in a namespace with 5 Pods and another in an empty namespace. Do both get the same count?"
+    options:
+      - id: a
+        text: "Yes, because the policy has a single definition."
+        explanation: "The variable is resolved per request."
+      - id: b
+        text: "Yes, because Kyverno caches the first result for the policy."
+        explanation: "Each admission request is evaluated independently."
+      - id: c
+        text: "No, but only if the two Pods arrive in separate batches."
+        explanation: "Per-request resolution does not depend on batching."
+      - id: d
+        text: "No, because `request.namespace` resolves to each Pod's own namespace, so one sees about 5 and the other 0 or 1."
+        explanation: "Correct. A hardcoded namespace would return the same count for both."
+    correct_option: d
+    explanation: "A hardcoded namespace would return the same count for both."
+
+  - id: ats011-070-q05
+    type: single_choice
+    difficulty: advanced
+    learning_objective: "Predict how a failing apiCall behaves without default"
+    source_readings:
+      - sections/section-070/module-01/course-02-apicall-and-live-cluster-data.md
+    prompt: "A `context.apiCall` with no `default` targets a resource the admission service account cannot read, and `validationFailureAction` is `Enforce`. What happens to a matching resource?"
+    options:
+      - id: a
+        text: "It is admitted, because a failed lookup is treated as no data."
+        explanation: "A failed lookup fails closed."
+      - id: b
+        text: "It is blocked, because the failed call breaks variable substitution and surfaces as a denial such as `failed to fetch data for APICall`."
+        explanation: "Correct. Without a `default` the `apiCall` fails closed."
+      - id: c
+        text: "It is admitted with a warning event."
+        explanation: "It is denied, not warned."
+      - id: d
+        text: "It is queued and retried until the permission appears."
+        explanation: "Admission does not queue."
+    correct_option: b
+    explanation: "Without a `default` the `apiCall` fails closed."
+
+  - id: ats011-070-q06
+    type: single_choice
+    difficulty: advanced
+    learning_objective: "Predict the effect of a default on a failing apiCall"
+    source_readings:
+      - sections/section-070/module-01/course-02-apicall-and-live-cluster-data.md
+    prompt: "The same setup as before, except the `apiCall` now has `default: 0`. What changes?"
+    options:
+      - id: a
+        text: "The request is still denied, but the message mentions the default."
+        explanation: "The default avoids the error."
+      - id: b
+        text: "The call's failure resolves the variable to `0`, so the condition is evaluated against it and the request can be admitted."
+        explanation: "Correct. This is fail-open, which silently stops enforcing a quota-style limit when the call breaks."
+      - id: c
+        text: "The policy is rejected, because `default` is only valid with `variable` entries."
+        explanation: "It is valid on `apiCall`."
+      - id: d
+        text: "The default is used on every request, even when the call succeeds."
+        explanation: "It is a fallback used only on failure."
+    correct_option: b
+    explanation: "This is fail-open, which silently stops enforcing a quota-style limit when the call breaks."
+
+  - id: ats011-070-q07
+    type: single_choice
+    difficulty: intermediate
+    learning_objective: "Judge the RBAC needed for a Pod apiCall"
+    source_readings:
+      - sections/section-070/module-01/course-02-apicall-and-live-cluster-data.md
+    prompt: "The admission controller's service account is bound to the built-in `view` ClusterRole. Does an `apiCall` listing Pods in a namespace need extra RBAC?"
+    options:
+      - id: a
+        text: "Yes, it needs `update` on Pods first."
+        explanation: "Listing needs read verbs only."
+      - id: b
+        text: "Yes, every `apiCall` needs a dedicated ClusterRole."
+        explanation: "`view` already covers most read-only resources."
+      - id: c
+        text: "No, because `view` grants get, list, and watch on Pods, though Secrets or write access would need an extra grant."
+        explanation: "Correct. `kubectl auth can-i list pods` as that account returns yes."
+      - id: d
+        text: "No, because `apiCall` runs as the requesting user."
+        explanation: "It runs as Kyverno's account."
+    correct_option: c
+    explanation: "`kubectl auth can-i list pods` as that account returns yes."
+
+  - id: ats011-070-q08
+    type: single_choice
+    difficulty: intermediate
+    learning_objective: "Compare a variable entry with inline substitution"
+    source_readings:
+      - sections/section-070/module-02/course-01-configmap-and-variable-context.md
+    prompt: "A rule has an `apiCall` entry and a `variable` entry that extracts `request.object.metadata.name`. What does the `variable` entry add over writing `{{ request.object.metadata.name }}` in the `message`?"
+    options:
+      - id: a
+        text: "It makes a network call to read the name."
+        explanation: "A `variable` entry makes no network call."
+      - id: b
+        text: "It is required, because inline substitution never works in a `message`."
+        explanation: "Inline use works for a single reference."
+      - id: c
+        text: "For a single use nothing functional, but a name helps when a derived expression is reused or long, and it needs no network call."
+        explanation: "Correct. It is a separate mechanism from `apiCall`, so a policy can combine both."
+      - id: d
+        text: "It caches the value across all requests."
+        explanation: "It is evaluated per request."
+    correct_option: c
+    explanation: "It is a separate mechanism from `apiCall`, so a policy can combine both."
+
+  - id: ats011-070-q09
+    type: single_choice
+    difficulty: intermediate
+    learning_objective: "Pick the right context type for image metadata"
+    source_readings:
+      - sections/section-070/module-02/course-02-imageregistry-and-globalreference.md
+    prompt: "A rule needs an image's CPU architecture. Which context type fits, and why not `apiCall`?"
+    options:
+      - id: a
+        text: "`configMap`, because the architecture is stored in a ConfigMap."
+        explanation: "Image metadata is not in a ConfigMap."
+      - id: b
+        text: "`apiCall`, because the Kubernetes API knows every image."
+        explanation: "The API server does not know image contents."
+      - id: c
+        text: "`variable`, because it can read any remote document."
+        explanation: "A `variable` only processes data already in hand."
+      - id: d
+        text: "`imageRegistry`, because the manifest and config blob live in the registry, and it binds `configData.architecture` and `configData.os`."
+        explanation: "Correct. An `apiCall` only queries the Kubernetes API server."
+    correct_option: d
+    explanation: "An `apiCall` only queries the Kubernetes API server."
+
+  - id: ats011-070-q10
+    type: single_choice
+    difficulty: beginner
+    learning_objective: "Reference keys of a configMap context entry"
+    source_readings:
+      - sections/section-070/module-02/course-01-configmap-and-variable-context.md
+    prompt: "A `configMap` context entry is named `allowed`, and the ConfigMap has a key `registries`. How do you reference it?"
+    options:
+      - id: a
+        text: "`{{ allowed.registries }}`"
+        explanation: "The entry binds the whole object, so keys sit under `.data`."
+      - id: b
+        text: "`{{ allowed.configMap.registries }}`"
+        explanation: "There is no `configMap` level."
+      - id: c
+        text: "`{{ allowed.data.registries }}`"
+        explanation: "Correct. Omitting `.data` is a common mistake and gives an unresolved value rather than a clear error."
+      - id: d
+        text: "`{{ registries }}`"
+        explanation: "Entries are referenced through their name."
+    correct_option: c
+    explanation: "Omitting `.data` is a common mistake and gives an unresolved value rather than a clear error."
+
+  - id: ats011-070-q11
+    type: single_choice
+    difficulty: advanced
+    learning_objective: "Recognise the trust boundary of external policy data"
+    source_readings:
+      - sections/section-070/module-02/course-01-configmap-and-variable-context.md
+    prompt: "What is the security consequence of moving a registry allowlist from a policy into a ConfigMap?"
+    options:
+      - id: a
+        text: "None, because ConfigMaps are read-only for Kyverno."
+        explanation: "Anyone who can edit it changes enforcement."
+      - id: b
+        text: "The allowlist becomes encrypted at rest."
+        explanation: "ConfigMaps are not encrypted by this change."
+      - id: c
+        text: "The ConfigMap joins the policy's trust boundary, so whoever can edit it effectively rewrites the rule, which argues for a dedicated, tightly controlled namespace."
+        explanation: "Correct. Edits would not appear in a policy review."
+      - id: d
+        text: "The policy must now run in `Audit` mode."
+        explanation: "The mode is unaffected."
+    correct_option: c
+    explanation: "Edits would not appear in a policy review."
+
+  - id: ats011-070-q12
+    type: single_choice
+    difficulty: advanced
+    learning_objective: "Name two reasons to use a variable entry"
+    source_readings:
+      - sections/section-070/module-02/course-01-configmap-and-variable-context.md
+    prompt: "Which two reasons justify a `variable` context entry?"
+    options:
+      - id: a
+        text: "To speed up apiCalls and to bypass RBAC."
+        explanation: "It does neither."
+      - id: b
+        text: "To read Secrets and to call external services."
+        explanation: "It reads data already in hand."
+      - id: c
+        text: "To make a rule run in the background and to skip preconditions."
+        explanation: "It affects neither."
+      - id: d
+        text: "To name an intermediate result used in several places, and on v1.19.1 to make a nested field renderable in a `message`, where a direct reference rendered empty."
+        explanation: "Correct. Binding it through a `variable` first produced the value."
+    correct_option: d
+    explanation: "Binding it through a `variable` first produced the value."
+
+  - id: ats011-070-q13
+    type: single_choice
+    difficulty: intermediate
+    learning_objective: "Respect the evaluation order of context entries"
+    source_readings:
+      - sections/section-070/module-02/course-01-configmap-and-variable-context.md
+    prompt: "Can a later context entry reference an earlier one, and an earlier one a later one?"
+    options:
+      - id: a
+        text: "Both directions work, because Kyverno builds a dependency graph."
+        explanation: "There is no dependency graph."
+      - id: b
+        text: "Neither works, because entries are independent."
+        explanation: "Later entries may reference earlier ones."
+      - id: c
+        text: "A later entry can reference an earlier one, but not the reverse, since entries run top to bottom once, so reordering is not cosmetic."
+        explanation: "Correct. A moved dependency is unresolved when it is needed."
+      - id: d
+        text: "Only an earlier entry can reference a later one, since later ones are resolved first."
+        explanation: "The order is top to bottom."
+    correct_option: c
+    explanation: "A moved dependency is unresolved when it is needed."
+
+  - id: ats011-070-q14
+    type: single_choice
+    difficulty: advanced
+    learning_objective: "Count lookups before preconditions"
+    source_readings:
+      - sections/section-070/module-02/course-01-configmap-and-variable-context.md
+    prompt: "A rule has four context entries and a precondition that skips the rule for most resources. How many lookups happen per matching request?"
+    options:
+      - id: a
+        text: "Zero when the precondition skips the rule."
+        explanation: "Context loads before preconditions."
+      - id: b
+        text: "One, for the first entry only."
+        explanation: "All entries are loaded."
+      - id: c
+        text: "Two, since lookups are lazy."
+        explanation: "They are not lazy."
+      - id: d
+        text: "All four, because context is fetched before preconditions, so narrowing `match` is what reduces lookups."
+        explanation: "Correct. A precondition saves only the rule body."
+    correct_option: d
+    explanation: "A precondition saves only the rule body."
+
+  - id: ats011-070-q15
+    type: single_choice
+    difficulty: advanced
+    learning_objective: "Choose globalReference and name the tradeoff"
+    source_readings:
+      - sections/section-070/module-02/course-02-imageregistry-and-globalreference.md
+    prompt: "When is `globalReference` the right choice over `apiCall`, and what do you give up?"
+    options:
+      - id: a
+        text: "When data must be the current instant's state, and you give up nothing."
+        explanation: "A cache is not current."
+      - id: b
+        text: "When the lookup is cheap, and you give up cluster scope."
+        explanation: "The cache is cluster-scoped shared state."
+      - id: c
+        text: "When you need write access, and you give up RBAC."
+        explanation: "It does not grant writes."
+      - id: d
+        text: "When the lookup is expensive or external and changes slowly, and you give up freshness, since the cache is also part of the trust boundary."
+        explanation: "Correct. A live quota check cannot use one without changing its meaning."
+    correct_option: d
+    explanation: "A live quota check cannot use one without changing its meaning."
+
+  - id: ats011-070-q16
+    type: single_choice
+    difficulty: intermediate
+    learning_objective: "Explain why a regex pattern should be anchored"
+    source_readings:
+      - sections/section-070/module-03/course-01-string-and-number-functions.md
+    prompt: "What does `regex_match('[0-9]+', 'abc1')` return?"
+    options:
+      - id: a
+        text: "`false`, because the text does not start with a digit."
+        explanation: "The pattern is not anchored on its own."
+      - id: b
+        text: "An error, because the text contains letters."
+        explanation: "The text may hold any characters."
+      - id: c
+        text: "`true`, because a digit appears somewhere and the pattern is not anchored without `^` and `$`."
+        explanation: "Correct. Anchor the pattern when the whole value must match."
+      - id: d
+        text: "`1`, the matched digits."
+        explanation: "`regex_match` returns a boolean, not the match."
+    correct_option: c
+    explanation: "Anchor the pattern when the whole value must match."
+
+  - id: ats011-070-q17
+    type: single_choice
+    difficulty: advanced
+    learning_objective: "Predict the result of trim with a character set"
+    source_readings:
+      - sections/section-070/module-03/course-01-string-and-number-functions.md
+    prompt: "What does `trim('foocorpcom','mo')` return?"
+    options:
+      - id: a
+        text: "`corpcom`, because the word `foo` is removed."
+        explanation: "The second argument is a set of characters, not a word."
+      - id: b
+        text: "`foocorpc`, because `m` and `o` are removed from both ends."
+        explanation: "Correct. The second argument is a set of characters stripped from both ends, which is why `trim_prefix` is the exact tool for a prefix."
+      - id: c
+        text: "`foocorpcom`, because the text contains no exact `mo`."
+        explanation: "The second argument is not matched as a word."
+      - id: d
+        text: "`rp`, because every listed character is removed everywhere."
+        explanation: "`rp` comes from the set `mcof`, and `trim` only strips the ends."
+    correct_option: b
+    explanation: "The second argument is a set of characters stripped from both ends, which is why `trim_prefix` is the exact tool for a prefix."
+
+  - id: ats011-070-q18
+    type: single_choice
+    difficulty: intermediate
+    learning_objective: "Compare a time_since result with a duration operator"
+    source_readings:
+      - sections/section-070/module-03/course-02-collections-time-and-encoding-functions.md
+    prompt: "A rule must fire when `time_since('', annotation, '')` is more than 24 hours. Which operator is correct?"
+    options:
+      - id: a
+        text: "`DurationGreaterThan` with the value `24h`, because the function returns a duration string."
+        explanation: "Correct. Compare durations with the duration operators. Plain numeric operators are the wrong tool for a duration string."
+      - id: b
+        text: "`GreaterThan` with the value `24`, because durations are numbers."
+        explanation: "The result is a string such as `48h0m33s`, so use a duration operator."
+      - id: c
+        text: "`Equals` with the value `24h`, because only equal durations can be compared."
+        explanation: "The duration operators compare greater and lower values."
+      - id: d
+        text: "`AnyIn` with the value `[\"24h\"]`, because the result is a list."
+        explanation: "The result is a duration string, not a list."
+    correct_option: a
+    explanation: "Compare durations with the duration operators. Plain numeric operators are the wrong tool for a duration string."
+
+  - id: ats011-070-q19
+    type: single_choice
+    difficulty: intermediate
+    learning_objective: "Apply label_match with extra labels on the resource"
+    source_readings:
+      - sections/section-070/module-03/course-02-collections-time-and-encoding-functions.md
+    prompt: "A resource has the labels `team: platform` and `tier: web`. What does `label_match` return when the required map is `{\"team\":\"platform\"}` and the actual map is the resource labels?"
+    options:
+      - id: a
+        text: "`false`, because the maps are not identical."
+        explanation: "The second map may hold extra entries."
+      - id: b
+        text: "`null`, because the key `tier` is unmatched."
+        explanation: "The function returns a boolean."
+      - id: c
+        text: "An error, because the maps have different sizes."
+        explanation: "Different sizes are allowed."
+      - id: d
+        text: "`true`, because every key and value of the first map is present in the second."
+        explanation: "Correct. The required labels come first and the actual labels second. This is the check for the resource carrying at least those labels."
+    correct_option: d
+    explanation: "The required labels come first and the actual labels second. This is the check for the resource carrying at least those labels."

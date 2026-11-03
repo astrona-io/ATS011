@@ -20,6 +20,8 @@ This module covers both halves of that story: verifying that an image is signed 
 1. **[Part 1 — Signature Verification with verifyImages](./course-01-signature-verification-and-attestors.md)** — the `verifyImages` rule shape, `imageReferences` scoping, the `attestors` block, public-key vs. keyless verification, and what `failureAction` actually gates.
 2. **[Part 2 — Attestations & Digest Pinning](./course-02-attestations-and-digest-pinning.md)** — verifying signed metadata (SBOMs, provenance, code review) beyond a bare signature, the `attestations` block and its `conditions`, and exactly how `mutateDigest` rewrites an image reference after a successful verification.
 
+The module closes with a summary page and a mission, **VerifyImage Rules Lab**, a graded lab that asks you to write and apply the policies from this module on a live cluster.
+
 ## Learning objectives
 
 After this module you can:

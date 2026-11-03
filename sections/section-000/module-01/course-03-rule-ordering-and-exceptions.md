@@ -114,6 +114,21 @@ For the Writing Policies domain, the thing to carry is the decision itself: `exc
 > - **Debugging a `PolicyException` that was never enabled.** No error is raised; check the flag first.
 > - **Reaching for `exclude` when the exemption depends on a field value.** `exclude` selects on identity — kind, name, namespace, labels. A value buried in the spec needs `preconditions`.
 
-## Section recap
+## Your mission: Policy Objects and Rule Anatomy Lab
 
-Rule type, not policy name, decides execution order: mutate everywhere, then validate everywhere, then generate asynchronously after the response. Ordering within a type is undefined, so overlapping rules should be made non-overlapping rather than reasoned about. And exemptions come in three forms — `exclude`, `preconditions`, and `PolicyException` — distinguished by whether the exemption is structural, data-dependent, or delegated.
+You can now choose between a namespaced `Policy` and a `ClusterPolicy`, set failure actions per rule and per namespace, and exempt a workload in the right way. The mission asks you to write a namespaced `Policy` and a `ClusterPolicy` with per-namespace failure action overrides, then prove the behaviour with real ConfigMaps.
+
+Pause the playground, start the lab, and submit your work as often as you like:
+
+```sh
+astrona stop ats-011-playground-000
+astrona run --git ssh://git@github.com/astrona-io/ATS011.git -c sections/section-000/module-01/labs/lab-01
+astrona submit -c sections/section-000/module-01/labs/lab-01
+```
+
+When the lab passes, remove it and return to the playground:
+
+```sh
+astrona destroy ats-011-lab-001
+astrona start ats-011-playground-000
+```

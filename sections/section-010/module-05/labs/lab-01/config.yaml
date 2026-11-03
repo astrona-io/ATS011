@@ -1,0 +1,42 @@
+metadata:
+  name: "ats-011-lab-015"
+  docs:
+    solution: "solution.md"
+    question: "question.md"
+
+bootstrap:
+  init:
+    - name: "lab-015-setup"
+      description: "Installs Kyverno and waits for its controllers to be ready"
+      type: "file"
+      source: "bootstrap/01-install-kyverno.sh"
+    - name: "lab-015-seed"
+      description: "Creates the assert-lab namespace and the app-sa service account"
+      type: "file"
+      source: "bootstrap/02-seed.sh"
+
+validation:
+  scripts:
+    - name: "uses-assert"
+      description: "A policy with a validate.assert rule exists"
+      type: "file"
+      source: "validation/validate-uses-assert.sh"
+      hint: "Use validate.assert with an object tree, not validate.pattern."
+    - name: "default-sa-rejected"
+      description: "The default service account is rejected, app-sa is admitted"
+      type: "file"
+      source: "validation/validate-default-sa.sh"
+      hint: "Under object.spec use the expression (serviceAccountName == 'default') with the value false."
+    - name: "latest-tag-rejected"
+      description: "An image that ends with :latest is rejected in any container"
+      type: "file"
+      source: "validation/validate-latest-tag.sh"
+      hint: "Use ~.containers and (ends_with(image, ':latest')): false."
+    - name: "memory-limit-required"
+      description: "A container without a memory limit is rejected"
+      type: "file"
+      source: "validation/validate-memory-limit.sh"
+      hint: "Under ~.containers use (resources.limits.memory != `null`): true."
+
+teardown:
+  keepCluster: false

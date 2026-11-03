@@ -1,0 +1,37 @@
+metadata:
+  name: "ats-011-lab-063"
+  docs:
+    solution: "solution.md"
+    question: "question.md"
+
+bootstrap:
+  init:
+    - name: "lab-063-setup"
+      description: "Installs Kyverno and waits for its controllers to be ready"
+      type: "file"
+      source: "bootstrap/01-install-kyverno.sh"
+    - name: "lab-063-seed"
+      description: "Creates the image-lab namespace"
+      type: "file"
+      source: "bootstrap/02-seed.sh"
+
+validation:
+  scripts:
+    - name: "allowed-registries"
+      description: "Pods from registries other than docker.io and ghcr.io are rejected"
+      type: "file"
+      source: "validation/validate-allowed-registries.sh"
+      hint: "Deny with key {{ images.containers.*.registry }}, operator AnyNotIn and value [docker.io, ghcr.io]."
+    - name: "no-latest-tag"
+      description: "Pods that use the latest tag, written or implied, are rejected"
+      type: "file"
+      source: "validation/validate-no-latest-tag.sh"
+      hint: "Deny with key {{ images.containers.*.tag }}, operator AnyIn and value [latest]. A missing tag counts as latest."
+    - name: "deployment-coverage"
+      description: "The same rules also block Deployments"
+      type: "file"
+      source: "validation/validate-deployment-coverage.sh"
+      hint: "Match kinds [Pod] only. Kyverno generates the Deployment rules from the Pod rule."
+
+teardown:
+  keepCluster: false

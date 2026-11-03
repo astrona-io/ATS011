@@ -22,6 +22,8 @@ There are five, they are easy to confuse, and the exam expects you to tell them 
 1. **[Part 1 — Conditional and Equality Anchors](./course-01-conditional-and-equality-anchors.md)** — `()` for "if this matches, then check the siblings", `=()` for "if this key exists, check inside it", and the skip-versus-fail distinction that both depend on.
 2. **[Part 2 — Existence, Negation, and Global Anchors](./course-02-existence-negation-and-global-anchors.md)** — `^()` for "at least one element", `X()` for "this key must not exist", `<()` for gating the whole rule, and a decision table for choosing between all five.
 
+The module closes with a summary page and a mission, **Validation Anchors Lab**, a graded lab that asks you to write and apply the policies from this module on a live cluster.
+
 ## Learning objectives
 
 After this module you can:

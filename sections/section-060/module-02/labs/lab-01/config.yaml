@@ -1,0 +1,37 @@
+metadata:
+  name: "ats-011-lab-062"
+  docs:
+    solution: "solution.md"
+    question: "question.md"
+
+bootstrap:
+  init:
+    - name: "lab-062-setup"
+      description: "Installs Kyverno and waits for its controllers to be ready"
+      type: "file"
+      source: "bootstrap/01-install-kyverno.sh"
+    - name: "lab-062-seed"
+      description: "Creates the verify-lab namespace"
+      type: "file"
+      source: "bootstrap/02-seed.sh"
+
+validation:
+  scripts:
+    - name: "attestor-structure"
+      description: "The policy has one attestor set with count 1 and two key entries"
+      type: "file"
+      source: "validation/validate-attestor-structure.sh"
+      hint: "Use attestors[0].count: 1 and two entries, each with keys.publicKeys."
+    - name: "digest-settings"
+      description: "required and verifyDigest are true and mutateDigest is false"
+      type: "file"
+      source: "validation/validate-digest-settings.sh"
+      hint: "Set required: true, verifyDigest: true and mutateDigest: false on the verifyImages entry."
+    - name: "scope-by-image"
+      description: "Only matching images are checked"
+      type: "file"
+      source: "validation/validate-scope-by-image.sh"
+      hint: "imageReferences must be registry.example.com/release/* so other images are ignored."
+
+teardown:
+  keepCluster: false

@@ -24,6 +24,8 @@ That precision comes with strictness. `patchStrategicMerge` mostly degrades grac
 2. **[Part 2 — Pointer Escaping and Missing Paths](./course-02-pointer-escaping-and-missing-paths.md)** — escaping `/` as `~1` inside a key name, and the three very different things `add`, `remove`, and `replace` do when the location you named is not there.
 3. **[Part 3 — Guarded Removal and Safe Patch Design](./course-03-guarded-removal-and-safe-patches.md)** — the blast radius of a strict operation on a broad match, using `preconditions` so a destructive patch stops depending on which operation you chose, and why a patch list is applied as a unit.
 
+The module closes with a summary page and a mission, **JSON Patches Lab**, a graded lab that asks you to write and apply the policies from this module on a live cluster.
+
 ## Learning objectives
 
 After this module you can:

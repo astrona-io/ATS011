@@ -20,6 +20,8 @@ Module 1 built validation as a **shape**: draw the resource you will accept, let
 1. **[Part 1 — Deny Rules and the Inversion](./course-01-deny-rules-and-the-inversion.md)** — what `deny` is for, how its `conditions` block reads, the `any`/`all` distinction, why the polarity trips people up, and putting the offending value into the failure message.
 2. **[Part 2 — The Condition Operator Vocabulary](./course-02-condition-operator-vocabulary.md)** — the full operator set, the four set operators and why there are four of them, numeric and duration comparisons, and running a `deny` once per list element with `foreach`.
 
+The module closes with a summary page and a mission, **Deny Rules Lab**, a graded lab that asks you to write and apply the policies from this module on a live cluster.
+
 ## Learning objectives
 
 After this module you can:

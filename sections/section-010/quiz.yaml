@@ -1,0 +1,683 @@
+# Knowledge check for section 010. Listed in astrona.yaml as a `type: quiz` entry after the capstone lab.
+schema_version: 1
+kind: question_bank
+id: ats011-010
+course_id: ATS011
+exam_code: KCA
+status: draft
+provenance: Original practice material written for this course; not official exam questions.
+scope:
+  type: section
+  id: section-010
+  title: "Validation Rules"
+questions:
+  - id: ats011-010-q01
+    type: single_choice
+    difficulty: beginner
+    learning_objective: "Predict the result of a validate rule that has no match block"
+    source_readings:
+      - sections/section-010/module-01/course-01-the-clusterpolicy-object.md
+    prompt: "You apply a `ClusterPolicy` with a `validate` rule but no `match` block at all. What happens to an incoming Pod?"
+    options:
+      - id: a
+        text: "The rule is applied to every Pod, because no filter means no restriction."
+        explanation: "There is no accidental match-everything rule; an absent `match` selects nothing."
+      - id: b
+        text: "The policy is rejected at apply time because `match` is mandatory."
+        explanation: "The policy is accepted; the rule simply never selects a resource."
+      - id: c
+        text: "The rule applies to Pods in the `default` namespace only."
+        explanation: "There is no default namespace fallback."
+      - id: d
+        text: "Nothing, because the rule matches zero resources and is never evaluated."
+        explanation: "Correct. A rule with no `match` block never selects anything, so Kyverno never evaluates it against the Pod. This is a deliberate safety default."
+    correct_option: d
+    explanation: "A rule with no `match` block never selects anything, so Kyverno never evaluates it against the Pod. This is a deliberate safety default."
+
+  - id: ats011-010-q02
+    type: single_choice
+    difficulty: intermediate
+    learning_objective: "Use the ?* wildcard to require a non-empty value"
+    source_readings:
+      - sections/section-010/module-01/course-02-the-pattern-block-and-failure-actions.md
+    prompt: "A pattern requires `metadata.labels.env: \"?*\"`. A Pod is submitted with `labels: { env: \"\" }`. Does it pass?"
+    options:
+      - id: a
+        text: "No, because `?*` demands at least one character and an empty string has none."
+        explanation: "Correct. `?*` means one or more characters, so the value must be non-empty. An empty string fails it, while the key merely existing is not enough."
+      - id: b
+        text: "Yes, because the key exists and `*` matches any value including an empty one."
+        explanation: "The `?` in the idiom requires at least one character."
+      - id: c
+        text: "Yes, because patterns only check that the key is present."
+        explanation: "A pattern checks the value as well as the key."
+      - id: d
+        text: "No, but only because empty labels are invalid in Kubernetes."
+        explanation: "An empty label value is valid in Kubernetes; the rule rejects it because of the pattern."
+    correct_option: a
+    explanation: "`?*` means one or more characters, so the value must be non-empty. An empty string fails it, while the key merely existing is not enough."
+
+  - id: ats011-010-q03
+    type: single_choice
+    difficulty: beginner
+    learning_objective: "Describe what Audit mode shows to the developer"
+    source_readings:
+      - sections/section-010/module-01/course-02-the-pattern-block-and-failure-actions.md
+    prompt: "Your policy has `spec.validationFailureAction: Audit`. A developer applies a Pod that fails the rule. What does the developer see?"
+    options:
+      - id: a
+        text: "The apply is rejected with the rule message, and the Pod is not created."
+        explanation: "Rejection is the behavior of `Enforce`, not `Audit`."
+      - id: b
+        text: "The Pod is created and then deleted after the next background scan."
+        explanation: "A scan never deletes resources."
+      - id: c
+        text: "Nothing unusual: the apply succeeds and the failure is recorded in a `PolicyReport`."
+        explanation: "Correct. `Audit` never blocks the request; it only records a result entry in a `PolicyReport` or `ClusterPolicyReport` for later review. To stop a developer at admission time, the policy must use `Enforce`."
+      - id: d
+        text: "The apply succeeds but with the Pod marked as failed in its status."
+        explanation: "Kyverno does not change the status of the Pod; it writes a report entry."
+    correct_option: c
+    explanation: "`Audit` never blocks the request; it only records a result entry in a `PolicyReport` or `ClusterPolicyReport` for later review. To stop a developer at admission time, the policy must use `Enforce`."
+
+  - id: ats011-010-q04
+    type: single_choice
+    difficulty: intermediate
+    learning_objective: "Recognize that plain list patterns match by position and choose foreach"
+    source_readings:
+      - sections/section-010/module-01/course-03-anypattern-foreach-and-messages.md
+    prompt: "A `validate.pattern` targets `spec.containers` as a plain list and checks that `resources.limits.memory` is set. A Pod has two containers and only the second is missing the limit. Does the rule catch it?"
+    options:
+      - id: a
+        text: "Yes, because a pattern on a list is evaluated against every container."
+        explanation: "Plain list patterns are positional, not applied to each item."
+      - id: b
+        text: "Yes, because Kyverno rejects the Pod if any field in any container is missing."
+        explanation: "Kyverno checks only what the pattern defines."
+      - id: c
+        text: "Not reliably, because a plain list pattern matches by position and only checks the first entry that the pattern defines; `foreach` checks every item."
+        explanation: "Correct. A plain `pattern` against a list matches by position, so pattern index 0 is checked against container index 0. If the pattern defines one entry, the second container is never inspected. `foreach` evaluates the nested pattern against every item."
+      - id: d
+        text: "No, because patterns cannot be applied to lists at all."
+        explanation: "A pattern can target a list; the problem is how it matches items."
+    correct_option: c
+    explanation: "A plain `pattern` against a list matches by position, so pattern index 0 is checked against container index 0. If the pattern defines one entry, the second container is never inspected. `foreach` evaluates the nested pattern against every item."
+
+  - id: ats011-010-q05
+    type: single_choice
+    difficulty: advanced
+    learning_objective: "Evaluate anyPattern results and debug its error message"
+    source_readings:
+      - sections/section-010/module-01/course-03-anypattern-foreach-and-messages.md
+    prompt: "An `anyPattern` has three entries. The resource fails the first two and matches the third. What is the result, and what does the error quote if all three had failed?"
+    options:
+      - id: a
+        text: "The rule passes; if all three failed, the error quotes only the mismatch from the last entry evaluated."
+        explanation: "Correct. `anyPattern` succeeds the moment any single entry matches. When all fail, the error quotes only the last evaluated entry, so you must inspect every branch yourself when debugging."
+      - id: b
+        text: "The rule fails, because the first failed entry already decides the result."
+        explanation: "`anyPattern` succeeds as soon as any one entry matches."
+      - id: c
+        text: "The rule passes; if all three failed, the error lists the mismatch from every entry."
+        explanation: "The error only quotes one mismatch, so you must inspect each branch yourself."
+      - id: d
+        text: "The rule fails, because all entries must match for `anyPattern` to pass."
+        explanation: "That describes an all-must-match rule; `anyPattern` needs only one."
+    correct_option: a
+    explanation: "`anyPattern` succeeds the moment any single entry matches. When all fail, the error quotes only the last evaluated entry, so you must inspect every branch yourself when debugging."
+
+  - id: ats011-010-q06
+    type: single_choice
+    difficulty: beginner
+    learning_objective: "Explain the practical role of validate.message"
+    source_readings:
+      - sections/section-010/module-01/course-03-anypattern-foreach-and-messages.md
+    prompt: "A colleague says `validate.message` is required for a `validate` rule to function. Which answer is most accurate?"
+    options:
+      - id: a
+        text: "It is strictly required and the policy is rejected without it."
+        explanation: "Kyverno accepts the rule and uses a generic message."
+      - id: b
+        text: "It is useless, because the message is never shown to the requester."
+        explanation: "The message is shown in the rejection."
+      - id: c
+        text: "It is required only for `Audit` policies because reports need a text."
+        explanation: "Reports do not depend on a message being set, and the message matters most for blocked requests."
+      - id: d
+        text: "It is not strictly required because Kyverno falls back to a generic message, but without a specific message the developer cannot tell what the rule is."
+        explanation: "Correct. Kyverno falls back to a generic message if you omit it, but the developer whose request was rejected then sees only that validation failed. A well-written `message` is part of the rule working correctly."
+    correct_option: d
+    explanation: "Kyverno falls back to a generic message if you omit it, but the developer whose request was rejected then sees only that validation failed. A well-written `message` is part of the rule working correctly."
+
+  - id: ats011-010-q07
+    type: single_choice
+    difficulty: intermediate
+    learning_objective: "Explain why Enforce does not affect resources that already exist"
+    source_readings:
+      - sections/section-010/module-01/course-02-the-pattern-block-and-failure-actions.md
+      - sections/section-010/module-01/course-01-the-clusterpolicy-object.md
+    prompt: "A rule matches `kinds: [Pod]` with `validationFailureAction: Enforce`. After you apply it, existing non-compliant Pods are still running. Why were they not deleted or blocked?"
+    options:
+      - id: a
+        text: "`Enforce` only works for Pods created by a Deployment, not for standalone Pods."
+        explanation: "`Enforce` works on any matched request; the issue is timing."
+      - id: b
+        text: "Admission control only fires on new admission requests; reporting on existing resources is the job of background scanning, which only reports."
+        explanation: "Correct. `Enforce` and `Audit` only govern new admission requests such as creates and updates. Detecting existing non-compliant resources is the job of background scanning with `spec.background: true`, and even a scan only reports; it never deletes or blocks."
+      - id: c
+        text: "Kyverno deletes non-compliant Pods only after a restart of the admission controller."
+        explanation: "Kyverno does not delete resources on restart."
+      - id: d
+        text: "Existing Pods are protected by a finalizer that Kyverno adds when the policy is created."
+        explanation: "No such finalizer exists."
+    correct_option: b
+    explanation: "`Enforce` and `Audit` only govern new admission requests such as creates and updates. Detecting existing non-compliant resources is the job of background scanning with `spec.background: true`, and even a scan only reports; it never deletes or blocks."
+
+  - id: ats011-010-q08
+    type: single_choice
+    difficulty: intermediate
+    learning_objective: "Write a deny condition with the correct polarity"
+    source_readings:
+      - sections/section-010/module-02/course-01-deny-rules-and-the-inversion.md
+    prompt: "A requirement reads \"a Deployment may have at most 3 replicas\". Which condition does a `validate.deny` rule need?"
+    options:
+      - id: a
+        text: "`key: \"{{ request.object.spec.replicas }}\"`, `operator: GreaterThan`, `value: 3`, because deny conditions describe the unacceptable state."
+        explanation: "Correct. A pattern describes the shape of an acceptable resource; \"at most 3\" is a numeric comparison. The polarity matters: `deny` conditions describe the unacceptable state, so the requirement becomes \"greater than 3\"."
+      - id: b
+        text: "`key: \"{{ request.object.spec.replicas }}\"`, `operator: LessThan`, `value: 3`."
+        explanation: "This denies replica counts below 3, which is the opposite of the requirement."
+      - id: c
+        text: "`key: \"{{ request.object.spec.replicas }}\"`, `operator: LessThanOrEquals`, `value: 3`."
+        explanation: "This denies the acceptable values, which inverts the rule."
+      - id: d
+        text: "A `validate.pattern` with `replicas: \"<=3\"`, because patterns handle numeric comparisons best."
+        explanation: "A pattern describes the shape of a resource and has little vocabulary for numeric limits, which makes `deny` the right tool."
+    correct_option: a
+    explanation: "A pattern describes the shape of an acceptable resource; \"at most 3\" is a numeric comparison. The polarity matters: `deny` conditions describe the unacceptable state, so the requirement becomes \"greater than 3\"."
+
+  - id: ats011-010-q09
+    type: single_choice
+    difficulty: advanced
+    learning_objective: "Compare any and all under deny polarity"
+    source_readings:
+      - sections/section-010/module-02/course-01-deny-rules-and-the-inversion.md
+    prompt: "With deny polarity, which is stricter, `conditions.any` or `conditions.all`?"
+    options:
+      - id: a
+        text: "`all`, because it demands that every condition is checked."
+        explanation: "`all` rejects only when every condition holds, so it rejects less."
+      - id: b
+        text: "They are equally strict because both evaluate the same conditions."
+        explanation: "They differ in how many conditions must hold before a rejection."
+      - id: c
+        text: "`any`, because a true condition rejects, and `any` rejects as soon as one condition holds."
+        explanation: "Correct. Because a true condition rejects, `any` rejects when a single condition holds, while `all` needs every condition to hold. Writing `all` where `any` was meant silently under-enforces."
+      - id: d
+        text: "`all`, because it matches the intuition from `match.all`."
+        explanation: "The intuition built on `match` reads backwards here; an `all` block written where `any` was meant under-enforces."
+    correct_option: c
+    explanation: "Because a true condition rejects, `any` rejects when a single condition holds, while `all` needs every condition to hold. Writing `all` where `any` was meant silently under-enforces."
+
+  - id: ats011-010-q10
+    type: single_choice
+    difficulty: intermediate
+    learning_objective: "Write useful deny messages"
+    source_readings:
+      - sections/section-010/module-02/course-01-deny-rules-and-the-inversion.md
+    prompt: "Why does `message` matter more on a deny rule than on a pattern rule?"
+    options:
+      - id: a
+        text: "Because a deny rule cannot be set to `Audit`."
+        explanation: "Deny rules can be audited as well."
+      - id: b
+        text: "Because a pattern rule does not show messages at all."
+        explanation: "Pattern failures show the message and the failing path."
+      - id: c
+        text: "Because deny messages are the only ones that can use variables."
+        explanation: "Both rule styles can use variables in messages; the difference is the missing field path."
+      - id: d
+        text: "A deny failure carries no field path, so the message is the requester's entire diagnostic."
+        explanation: "Correct. A pattern failure reports the failing path, such as `/metadata/labels/team/`. A deny failure reports only that the condition was true, so quoting the offending value back, for example `{{ request.object.spec.replicas }}`, is worth the extra line."
+    correct_option: d
+    explanation: "A pattern failure reports the failing path, such as `/metadata/labels/team/`. A deny failure reports only that the condition was true, so quoting the offending value back, for example `{{ request.object.spec.replicas }}`, is worth the extra line."
+
+  - id: ats011-010-q11
+    type: single_choice
+    difficulty: intermediate
+    learning_objective: "Choose between AnyIn and AllIn"
+    source_readings:
+      - sections/section-010/module-02/course-02-condition-operator-vocabulary.md
+    prompt: "Kyverno has four set operators: `AnyIn`, `AllIn`, `AnyNotIn` and `AllNotIn`. When does the difference between `AnyIn` and `AllIn` actually matter?"
+    options:
+      - id: a
+        text: "Only when the `value` list has more than ten entries."
+        explanation: "The length of the value list does not change the Any and All behavior."
+      - id: b
+        text: "Only when the `key` resolves to a list; against a single value the two behave the same."
+        explanation: "Correct. The Any and All axis only matters when the key resolves to a list. Working policies often use them interchangeably until a key starts resolving to more than one item and the rule quietly changes meaning."
+      - id: c
+        text: "Always, because `AllIn` reads the key from the whole request while `AnyIn` reads only the object."
+        explanation: "Both read the same key; the difference is how a list is compared."
+      - id: d
+        text: "Never, because Kyverno treats them as aliases."
+        explanation: "They differ as soon as the key resolves to several items."
+    correct_option: b
+    explanation: "The Any and All axis only matters when the key resolves to a list. Working policies often use them interchangeably until a key starts resolving to more than one item and the rule quietly changes meaning."
+
+  - id: ats011-010-q12
+    type: single_choice
+    difficulty: advanced
+    learning_objective: "Handle missing keys with a default in a deny condition"
+    source_readings:
+      - sections/section-010/module-02/course-02-condition-operator-vocabulary.md
+    prompt: "A condition uses `key: \"{{ request.object.metadata.labels.tier }}\"` with `operator: AnyNotIn`. A Pod arrives with no labels. What happens and what is the fix?"
+    options:
+      - id: a
+        text: "The condition evaluates to false and the Pod is admitted; no fix is needed."
+        explanation: "A missing variable is an evaluation error, not a false condition."
+      - id: b
+        text: "The variable does not resolve, which is an evaluation error; use `{{ request.object.metadata.labels.tier || '' }}` so that absent is treated as invalid."
+        explanation: "Correct. The `|| ''` fallback yields an empty string, which is not in the allowed list, so \"absent\" is treated as \"invalid\". That is almost always what a controlled-vocabulary rule wants."
+      - id: c
+        text: "The condition evaluates to true and the Pod is always rejected without errors."
+        explanation: "It is an error rather than a clean true result, and the default makes the outcome intentional."
+      - id: d
+        text: "Kyverno substitutes the first value of the allowed list."
+        explanation: "Kyverno never substitutes values from the list."
+    correct_option: b
+    explanation: "The `|| ''` fallback yields an empty string, which is not in the allowed list, so \"absent\" is treated as \"invalid\". That is almost always what a controlled-vocabulary rule wants."
+
+  - id: ats011-010-q13
+    type: single_choice
+    difficulty: advanced
+    learning_objective: "Name the offending element in a foreach deny message"
+    source_readings:
+      - sections/section-010/module-02/course-02-condition-operator-vocabulary.md
+      - sections/section-010/module-02/course-01-deny-rules-and-the-inversion.md
+    prompt: "Inside a `foreach ... deny`, the rule-level `message` names every container image instead of only the offender. How do you name only the offending one?"
+    options:
+      - id: a
+        text: "Reference `{{ request.object.spec.containers[0].image }}`, which always points at the failing item."
+        explanation: "Index 0 is a fixed position and may not be the failing element."
+      - id: b
+        text: "Use `{{ request.object.spec.containers[*].image }}` with a `deny` operator `Equals`."
+        explanation: "That expression resolves to the full list regardless of the failing element."
+      - id: c
+        text: "Remove the `foreach`, because messages cannot name items inside it."
+        explanation: "Messages can name the current element with `element`."
+      - id: d
+        text: "Reference `{{ element.image }}` in the message, because the rule-level message is evaluated against the whole resource."
+        explanation: "Correct. The rule-level message is evaluated against the whole resource, so `{{ request.object.spec.containers[*].image }}` resolves to the full list. `{{ element.image }}` names only the current element."
+    correct_option: d
+    explanation: "The rule-level message is evaluated against the whole resource, so `{{ request.object.spec.containers[*].image }}` resolves to the full list. `{{ element.image }}` names only the current element."
+
+  - id: ats011-010-q14
+    type: single_choice
+    difficulty: intermediate
+    learning_objective: "Predict the effect of a conditional anchor on sibling fields"
+    source_readings:
+      - sections/section-010/module-03/course-01-conditional-and-equality-anchors.md
+    prompt: "A pattern contains `(image): \"*:latest\"` alongside `imagePullPolicy: Always`. A container runs `nginx:1.27` with `imagePullPolicy: IfNotPresent`. Is it admitted?"
+    options:
+      - id: a
+        text: "Yes, because the conditional anchor did not match, so its sibling fields were never examined."
+        explanation: "Correct. The anchor is the \"if\" and the siblings are the \"then\". Since the image is not a `:latest` reference, the siblings are not checked. A container running `nginx:latest` with `IfNotPresent` would be rejected."
+      - id: b
+        text: "No, because `imagePullPolicy` must always be `Always` for every container."
+        explanation: "The sibling is only enforced when the anchored value matches."
+      - id: c
+        text: "No, because `nginx:1.27` does not match the pattern for the image."
+        explanation: "A non-matching anchor means the check does not apply; it does not fail."
+      - id: d
+        text: "Yes, but only because the container is in an exempt namespace."
+        explanation: "Namespaces play no part in this outcome."
+    correct_option: a
+    explanation: "The anchor is the \"if\" and the siblings are the \"then\". Since the image is not a `:latest` reference, the siblings are not checked. A container running `nginx:latest` with `IfNotPresent` would be rejected."
+
+  - id: ats011-010-q15
+    type: single_choice
+    difficulty: intermediate
+    learning_objective: "Distinguish the conditional anchor from the equality anchor"
+    source_readings:
+      - sections/section-010/module-03/course-01-conditional-and-equality-anchors.md
+    prompt: "What is the difference between `()` and `=()`?"
+    options:
+      - id: a
+        text: "`()` checks that a field is absent, and `=()` checks that it is present."
+        explanation: "Neither anchor checks for absence; `X()` is the negation anchor."
+      - id: b
+        text: "`()` is for lists and `=()` is for maps."
+        explanation: "Both can be used on any field type."
+      - id: c
+        text: "`()` enforces its siblings only when the anchored value matches, while `=()` enforces the nested pattern whenever the key is present, whatever its value."
+        explanation: "Correct. `()` asks whether the field has this value. `=()` asks whether the field exists at all, which makes it safe to reach into an optional block; a plain `volumes:` key would require every Pod to declare volumes."
+      - id: d
+        text: "They are identical, and `=()` is only an older spelling."
+        explanation: "They have different meanings."
+    correct_option: c
+    explanation: "`()` asks whether the field has this value. `=()` asks whether the field exists at all, which makes it safe to reach into an optional block; a plain `volumes:` key would require every Pod to declare volumes."
+
+  - id: ats011-010-q16
+    type: single_choice
+    difficulty: advanced
+    learning_objective: "Compare existence anchors, foreach and positional list patterns"
+    source_readings:
+      - sections/section-010/module-03/course-02-existence-negation-and-global-anchors.md
+    prompt: "A Pod has two containers and only the second defines a `readinessProbe`. Is it admitted under `^(containers)` with a probe pattern, and under an equivalent `foreach`?"
+    options:
+      - id: a
+        text: "Rejected under both, because the first container has no probe."
+        explanation: "The existence anchor needs only one matching element."
+      - id: b
+        text: "Admitted under both, because one container has a probe."
+        explanation: "`foreach` evaluates every element and fails on the first non-compliant one."
+      - id: c
+        text: "It is admitted under `^()` because at least one element matches, and rejected under `foreach`, which requires every element to comply."
+        explanation: "Correct. The existence anchor requires that at least one element matches. A `foreach` evaluates its body against every element and fails on the first that does not comply. A plain positional list pattern would check only index 0 and reject it for a third reason."
+      - id: d
+        text: "Admitted under `foreach` and rejected under `^()`."
+        explanation: "The behavior is reversed in this option."
+    correct_option: c
+    explanation: "The existence anchor requires that at least one element matches. A `foreach` evaluates its body against every element and fails on the first that does not comply. A plain positional list pattern would check only index 0 and reject it for a third reason."
+
+  - id: ats011-010-q17
+    type: single_choice
+    difficulty: advanced
+    learning_objective: "Use the negation anchor correctly"
+    source_readings:
+      - sections/section-010/module-03/course-02-existence-negation-and-global-anchors.md
+    prompt: "Does `X(hostPath): \"/tmp\"` forbid only `hostPath` volumes that point at `/tmp`?"
+    options:
+      - id: a
+        text: "No, `X()` checks presence only, so it forbids `hostPath` outright; to restrict the path use `=(hostPath)` with a negated value such as `path: \"!/var/lib\"`."
+        explanation: "Correct. `X()` checks presence only and ignores the value, exactly as `X(hostPath): \"null\"` would. To allow `hostPath` but restrict where it points, use `=(hostPath)` with a negated value."
+      - id: b
+        text: "Yes, because the value `/tmp` narrows the check to that path."
+        explanation: "The value of an `X()` anchor is only a placeholder required by the schema."
+      - id: c
+        text: "Yes, because `X()` is a conditional anchor that compares values."
+        explanation: "`X()` does not compare values; `()` does."
+      - id: d
+        text: "No, it allows every `hostPath` and rejects every other volume type."
+        explanation: "It rejects `hostPath` and does not reject other volume types."
+    correct_option: a
+    explanation: "`X()` checks presence only and ignores the value, exactly as `X(hostPath): \"null\"` would. To allow `hostPath` but restrict where it points, use `=(hostPath)` with a negated value."
+
+  - id: ats011-010-q18
+    type: single_choice
+    difficulty: advanced
+    learning_objective: "Use a global anchor to link conditions across branches of a resource"
+    source_readings:
+      - sections/section-010/module-03/course-02-existence-negation-and-global-anchors.md
+      - sections/section-010/module-03/course-01-conditional-and-equality-anchors.md
+    prompt: "Why can a conditional anchor `()` not express \"Pods using corp.reg.com images must set imagePullSecrets\"?"
+    options:
+      - id: a
+        text: "Because `()` cannot match image names that contain a registry."
+        explanation: "`()` can match image values; the limit is the reach of the condition."
+      - id: b
+        text: "Because `imagePullSecrets` is cluster-scoped."
+        explanation: "`imagePullSecrets` is a field of the Pod spec."
+      - id: c
+        text: "Because `()` only works in `Audit` mode."
+        explanation: "Anchors work in both failure actions."
+      - id: d
+        text: "`()` governs only its siblings, while `imagePullSecrets` is in another branch; the global anchor `<()` applies the whole pattern when its condition is true."
+        explanation: "Correct. `()` governs only fields in the same element of the pattern. The global anchor `<()` reaches across: when its condition is false, the whole rule is skipped, and when true, every other part of the pattern applies."
+    correct_option: d
+    explanation: "`()` governs only fields in the same element of the pattern. The global anchor `<()` reaches across: when its condition is false, the whole rule is skipped, and when true, every other part of the pattern applies."
+
+  - id: ats011-010-q19
+    type: single_choice
+    difficulty: advanced
+    learning_objective: "Interpret skip results in reports"
+    source_readings:
+      - sections/section-010/module-03/course-02-existence-negation-and-global-anchors.md
+    prompt: "A dashboard shows a rule with a large `skip` count and no `fail` results. Is the cluster compliant with that rule?"
+    options:
+      - id: a
+        text: "Yes, because skip is a form of pass."
+        explanation: "Reports record `skip` separately from `pass`."
+      - id: b
+        text: "Unknown, because a skipped rule is not a passing one; most resources may never have been assessed."
+        explanation: "Correct. When an anchor does not apply, the check is skipped rather than passed. A large `skip` count means most resources were never assessed, which is not the same as most of them complying."
+      - id: c
+        text: "No, because every skip is counted as a failure after one hour."
+        explanation: "Skips are never converted into failures."
+      - id: d
+        text: "Yes, because a rule without a `fail` result cannot be violated."
+        explanation: "A rule that does not apply cannot fail, which is why zero fails says little."
+    correct_option: b
+    explanation: "When an anchor does not apply, the check is skipped rather than passed. A large `skip` count means most resources were never assessed, which is not the same as most of them complying."
+
+  - id: ats011-010-q20
+    type: single_choice
+    difficulty: beginner
+    learning_objective: "Compare the Pod Security Standard levels"
+    source_readings:
+      - sections/section-010/module-04/course-01-podsecurity-profiles-and-levels.md
+    prompt: "Which statement about the three Pod Security Standard levels is correct?"
+    options:
+      - id: a
+        text: "`privileged`, `baseline` and `restricted` are cumulative; `baseline` forbids known escalation paths, and `restricted` also requires hardening such as `runAsNonRoot` and a seccomp profile."
+        explanation: "Correct. `baseline` forbids privilege-escalation paths such as privileged containers, host namespaces, host ports and dangerous capabilities. `restricted` also requires `runAsNonRoot`, `allowPrivilegeEscalation: false`, dropping all capabilities and a seccomp profile. This move from forbidding to requiring is why many images fail `restricted`."
+      - id: b
+        text: "`baseline` requires non-root users and seccomp, and `restricted` only adds host network checks."
+        explanation: "The requirements for non-root and seccomp belong to `restricted`."
+      - id: c
+        text: "The three levels are independent lists with no overlap."
+        explanation: "They are cumulative."
+      - id: d
+        text: "`restricted` only forbids privileged containers and adds nothing else."
+        explanation: "`restricted` adds positive requirements on top of `baseline`."
+    correct_option: a
+    explanation: "`baseline` forbids privilege-escalation paths such as privileged containers, host namespaces, host ports and dangerous capabilities. `restricted` also requires `runAsNonRoot`, `allowPrivilegeEscalation: false`, dropping all capabilities and a seccomp profile. This move from forbidding to requiring is why many images fail `restricted`."
+
+  - id: ats011-010-q21
+    type: single_choice
+    difficulty: intermediate
+    learning_objective: "Read a podSecurity violation message"
+    source_readings:
+      - sections/section-010/module-04/course-01-podsecurity-profiles-and-levels.md
+    prompt: "How does a Pod Security Standard violation message differ from an ordinary pattern failure?"
+    options:
+      - id: a
+        text: "It always contains one `failed at path` line and no further detail."
+        explanation: "There is no single failed path in this message style."
+      - id: b
+        text: "It only names the namespace label that triggered the rule."
+        explanation: "The message names controls and fields, not a label."
+      - id: c
+        text: "It has one parenthesised block per violated control instead of a single `failed at path`, and a Pod violating several controls gets several blocks."
+        explanation: "Correct. Each block has the form `(Forbidden reason: <control>, field error list: [<field>: <problem>])`. Fixing only the first and resubmitting surfaces the next, so read the whole message."
+      - id: d
+        text: "It contains only the first violated control, so you fix one problem per attempt."
+        explanation: "All violated controls are listed in one message."
+    correct_option: c
+    explanation: "Each block has the form `(Forbidden reason: <control>, field error list: [<field>: <problem>])`. Fixing only the first and resubmitting surfaces the next, so read the whole message."
+
+  - id: ats011-010-q22
+    type: single_choice
+    difficulty: advanced
+    learning_objective: "Relax one control instead of lowering the profile"
+    source_readings:
+      - sections/section-010/module-04/course-02-excluding-controls-and-psa.md
+      - sections/section-010/module-04/course-01-podsecurity-profiles-and-levels.md
+    prompt: "One workload needs a capability that `restricted` forbids. Why is dropping that namespace to `baseline` the wrong fix?"
+    options:
+      - id: a
+        text: "Because `baseline` is stricter than `restricted`."
+        explanation: "`restricted` is the stricter profile."
+      - id: b
+        text: "Because `baseline` cannot be applied to a single namespace."
+        explanation: "It can be applied by policy to any selection."
+      - id: c
+        text: "Because exclusions are not possible in the `podSecurity` rule."
+        explanation: "`podSecurity.exclude` exists for this purpose."
+      - id: d
+        text: "It abandons many controls, such as seccomp, non-root and privilege escalation, when only one was needed; `podSecurity.exclude` with a `controlName` relaxes just that control."
+        explanation: "Correct. Dropping to `baseline` trades one exemption for about a dozen. `exclude` with a `controlName` relaxes the single control and keeps the rest enforced, and it documents the exemption next to the policy."
+    correct_option: d
+    explanation: "Dropping to `baseline` trades one exemption for about a dozen. `exclude` with a `controlName` relaxes the single control and keeps the rest enforced, and it documents the exemption next to the policy."
+
+  - id: ats011-010-q23
+    type: single_choice
+    difficulty: advanced
+    learning_objective: "Scope an exclusion to specific field values"
+    source_readings:
+      - sections/section-010/module-04/course-02-excluding-controls-and-psa.md
+    prompt: "How do you permit exactly `NET_BIND_SERVICE` while still forbidding every other added capability?"
+    options:
+      - id: a
+        text: "Use an `exclude` entry with only `controlName: Capabilities` and no `restrictedField`."
+        explanation: "Omitting `restrictedField` selects all restricted fields for the control, which is broader."
+      - id: b
+        text: "Use an `exclude` entry with `controlName: Capabilities`, `restrictedField: spec.containers[*].securityContext.capabilities.add` and `values: [NET_BIND_SERVICE]`."
+        explanation: "Correct. `restrictedField` names the exact field the control governs and `values` lists what is permitted in it, so a container that adds `SYS_ADMIN` is still rejected by the same rule."
+      - id: c
+        text: "Set the namespace to `privileged` and add a pattern for the capability."
+        explanation: "This removes every control for the namespace."
+      - id: d
+        text: "Add `NET_BIND_SERVICE` to the `drop` list of the container."
+        explanation: "Dropping a capability removes it, which is the opposite of permitting it."
+    correct_option: b
+    explanation: "`restrictedField` names the exact field the control governs and `values` lists what is permitted in it, so a container that adds `SYS_ADMIN` is still rejected by the same rule."
+
+  - id: ats011-010-q24
+    type: single_choice
+    difficulty: advanced
+    learning_objective: "Decide when to pin the podSecurity version"
+    source_readings:
+      - sections/section-010/module-04/course-02-excluding-controls-and-psa.md
+    prompt: "Why pin `version` on an enforcing `podSecurity` rule instead of leaving it at `latest`?"
+    options:
+      - id: a
+        text: "Because `latest` is not accepted on `Enforce` policies."
+        explanation: "`latest` is accepted; the risk is that it changes."
+      - id: b
+        text: "The standards change between Kubernetes releases, so `latest` can start rejecting workloads after an upgrade with no change to your policy."
+        explanation: "Correct. With `latest`, an upgrade can add controls to a profile and break deployments for a reason nobody changed. Pinning makes a profile change an explicit decision. For an `Audit` policy, `latest` is arguably better because you want to see new violations."
+      - id: c
+        text: "Because pinning makes the policy apply faster."
+        explanation: "Pinning does not affect speed."
+      - id: d
+        text: "Because pinning also pins the Kyverno version."
+        explanation: "It pins the version of the standards only."
+    correct_option: b
+    explanation: "With `latest`, an upgrade can add controls to a profile and break deployments for a reason nobody changed. Pinning makes a profile change an explicit decision. For an `Audit` policy, `latest` is arguably better because you want to see new violations."
+
+  - id: ats011-010-q25
+    type: single_choice
+    difficulty: intermediate
+    learning_objective: "Compare Kyverno podSecurity with built-in Pod Security Admission"
+    source_readings:
+      - sections/section-010/module-04/course-02-excluding-controls-and-psa.md
+    prompt: "How does the Kyverno `podSecurity` rule differ from the built-in Pod Security Admission?"
+    options:
+      - id: a
+        text: "Kyverno replaces PSA, and the two cannot run together."
+        explanation: "They are independent admission paths and can run together."
+      - id: b
+        text: "PSA offers per-control exclusions by field value and Kyverno does not."
+        explanation: "The reverse is true."
+      - id: c
+        text: "Both are configured only through namespace labels."
+        explanation: "Only PSA is configured by namespace label."
+      - id: d
+        text: "PSA applies one level per namespace through a label without per-control exemptions, while the Kyverno rule uses policy selectors, per-control exclusions and `PolicyReport` output; many clusters run both."
+        explanation: "Correct. PSA is configured by a namespace label and exempting anything needs a cluster-level change to the API server. Kyverno uses `match` and `exclude`, can exclude single controls by image or field value, and reports into `PolicyReport`. Many clusters run PSA as a floor and Kyverno on top."
+    correct_option: d
+    explanation: "PSA is configured by a namespace label and exempting anything needs a cluster-level change to the API server. Kyverno uses `match` and `exclude`, can exclude single controls by image or field value, and reports into `PolicyReport`. Many clusters run PSA as a floor and Kyverno on top."
+
+  - id: ats011-010-q26
+    type: single_choice
+    difficulty: intermediate
+    learning_objective: "Explain why the ~. modifier is needed to check every list item"
+    source_readings:
+      - sections/section-010/module-05/course-01-assertion-trees.md
+    prompt: "In an assertion tree, `containers` is written as a plain key, without `~.`, and its child is `(ends_with(image, ':latest')): false`. What does the child node receive?"
+    options:
+      - id: a
+        text: "Each container in turn, one at a time."
+        explanation: "That is what `~.containers` does. A plain key does not iterate."
+      - id: b
+        text: "Only the first container in the list."
+        explanation: "Kyverno does not pick the first item for you."
+      - id: c
+        text: "The whole list, not one container, so the expression no longer runs against a single container."
+        explanation: "Correct. A plain key selects the field and hands its value, here the whole list, to the children. Add `~.` in front of the key to take each element in turn."
+      - id: d
+        text: "Nothing, because a plain key on a list is rejected when the policy is applied."
+        explanation: "The policy is accepted. The problem shows up when the check runs."
+    correct_option: c
+    explanation: "A plain key selects the field and hands its value, here the whole list, to the children. Add `~.` in front of the key to take each element in turn."
+
+  - id: ats011-010-q27
+    type: single_choice
+    difficulty: advanced
+    learning_objective: "Scope a named binding in an assertion tree"
+    source_readings:
+      - sections/section-010/module-05/course-01-assertion-trees.md
+    prompt: "A node is written `(length(containers))->count`. Where can `$count` be read?"
+    options:
+      - id: a
+        text: "In that node and in every descendant of it, but not in sibling nodes or in parents."
+        explanation: "Correct. A binding is visible to the node that defines it and to everything below it. If a child defines the same name again, the new value applies only below that child."
+      - id: b
+        text: "In every node of the tree, including siblings and parents."
+        explanation: "Kyverno promises no order between sibling keys, so a binding cannot be visible to them."
+      - id: c
+        text: "Only in the node that defines it, not in its children."
+        explanation: "Children are exactly where a binding is meant to be read."
+      - id: d
+        text: "Only in a sibling that is written after it in the YAML file."
+        explanation: "Kyverno does not guarantee any order between the keys of one node."
+    correct_option: a
+    explanation: "A binding is visible to the node that defines it and to everything below it. If a child defines the same name again, the new value applies only below that child."
+
+  - id: ats011-010-q28
+    type: single_choice
+    difficulty: intermediate
+    learning_objective: "Describe what ignoreFields does in validate.manifests"
+    source_readings:
+      - sections/section-010/module-05/course-02-validating-signed-manifests.md
+    prompt: "Why does a `validate.manifests` rule use `ignoreFields` with `spec.replicas` for Deployments?"
+    options:
+      - id: a
+        text: "Because `spec.replicas` cannot be part of a signed manifest."
+        explanation: "Any field can be signed. The issue is that some fields change legitimately afterwards."
+      - id: b
+        text: "Because the field is encrypted when the manifest is signed."
+        explanation: "Signing does not encrypt fields."
+      - id: c
+        text: "Because Kyverno skips every field that has a default value."
+        explanation: "Only the fields you list are ignored."
+      - id: d
+        text: "Because a horizontal autoscaler changes the field after signing, so a strict comparison would reject a legitimate change; the list should stay as short as possible."
+        explanation: "Correct. A signed manifest is a fixed document, but controllers and the API server change fields after it is applied. Every field on the list can be changed without breaking the signature, so keep the list short."
+    correct_option: d
+    explanation: "A signed manifest is a fixed document, but controllers and the API server change fields after it is applied. Every field on the list can be changed without breaking the signature, so keep the list short."
+
+  - id: ats011-010-q29
+    type: single_choice
+    difficulty: intermediate
+    learning_objective: "Calculate which signatures satisfy an attestor count"
+    source_readings:
+      - sections/section-010/module-05/course-02-validating-signed-manifests.md
+    prompt: "An attestor lists three `entries` and sets `count: 2`. What does Kyverno require?"
+    options:
+      - id: a
+        text: "All three entries must have signed."
+        explanation: "That would need `count: 3`."
+      - id: b
+        text: "Any two of the three entries must have signed."
+        explanation: "Correct. `count` is the number of entries that must have signed, and any two of the three satisfy it."
+      - id: c
+        text: "Exactly one entry must have signed, and the count is only a label."
+        explanation: "`count` is enforced. With `count: 1` one valid signature would be enough."
+      - id: d
+        text: "Two signatures from the same entry are enough."
+        explanation: "The count is a number of entries, not a number of signatures."
+    correct_option: b
+    explanation: "`count` is the number of entries that must have signed, and any two of the three satisfy it."

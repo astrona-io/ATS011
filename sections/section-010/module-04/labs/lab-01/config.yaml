@@ -1,0 +1,32 @@
+metadata:
+  name: "ats-011-lab-014"
+  docs:
+    solution: "solution.md"
+    question: "question.md"
+
+bootstrap:
+  init:
+    - name: "lab-014-setup"
+      description: "Installs Kyverno and waits for its controllers to be ready"
+      type: "file"
+      source: "bootstrap/01-install-kyverno.sh"
+    - name: "lab-014-seed"
+      description: "Creates the pss-lab namespace"
+      type: "file"
+      source: "bootstrap/02-seed.sh"
+
+validation:
+  scripts:
+    - name: "baseline-enforced"
+      description: "A privileged Pod is rejected and a plain Pod is admitted"
+      type: "file"
+      source: "validation/validate-baseline-enforced.sh"
+      hint: "Use validate.podSecurity with level baseline."
+    - name: "capabilities-exclusion"
+      description: "NET_ADMIN is allowed only for the net-tool image"
+      type: "file"
+      source: "validation/validate-capabilities-exclusion.sh"
+      hint: "Add exclude with controlName Capabilities and images registry.example.com/net-tool*."
+
+teardown:
+  keepCluster: false

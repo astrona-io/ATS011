@@ -1,0 +1,37 @@
+metadata:
+  name: "ats-011-lab-012"
+  docs:
+    solution: "solution.md"
+    question: "question.md"
+
+bootstrap:
+  init:
+    - name: "lab-012-setup"
+      description: "Installs Kyverno and waits for its controllers to be ready"
+      type: "file"
+      source: "bootstrap/01-install-kyverno.sh"
+    - name: "lab-012-seed"
+      description: "Creates the shop namespace"
+      type: "file"
+      source: "bootstrap/02-seed.sh"
+
+validation:
+  scripts:
+    - name: "replica-cap"
+      description: "A Deployment with 6 replicas is rejected and 3 is admitted"
+      type: "file"
+      source: "validation/validate-replica-cap.sh"
+      hint: "Use operator GreaterThan with value 5 on request.object.spec.replicas."
+    - name: "allowed-tier"
+      description: "Only frontend, backend and batch tiers are admitted"
+      type: "file"
+      source: "validation/validate-allowed-tier.sh"
+      hint: "Use AnyNotIn with a fallback of empty string so a missing label is also rejected."
+    - name: "approved-registries"
+      description: "Every container image must come from an approved registry"
+      type: "file"
+      source: "validation/validate-approved-registries.sh"
+      hint: "Use foreach over request.object.spec.template.spec.containers with a deny condition on regex_match."
+
+teardown:
+  keepCluster: false

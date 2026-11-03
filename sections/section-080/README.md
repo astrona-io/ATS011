@@ -17,7 +17,7 @@ By completing this section, you will acquire the two core competencies every Kyv
 
 ## The Learning & Lab Path
 
-This section has one module, paired with hands-on practice against a real `kind` cluster running Kyverno:
+Each module has a reader, a free-exploration playground and a graded lab. Every module ends with a summary page and a mission that points to its lab. The labs are marked UNTESTED until they have been run against a live cluster.
 
 ### 1. JSON Patches
 
@@ -25,22 +25,31 @@ This section has one module, paired with hands-on practice against a real `kind`
     1. [RFC 6902 Operations and Pointer Paths](./module-01/course-01-json-patch-operations.md)
     2. [Pointer Escaping and Missing Paths](./module-01/course-02-pointer-escaping-and-missing-paths.md)
     3. [Guarded Removal and Safe Patch Design](./module-01/course-03-guarded-removal-and-safe-patches.md)
-* **Practice Lab Sandbox:** **`sections/section-080/module-01/labs/lab-01`**
+    4. [Summary](./module-01/course-04-summary.md)
+* **Practice Lab Sandbox:** **`sections/section-080/module-01/labs/lab-01`** (`ats-011-lab-081`, UNTESTED)
 * **Lab Run Command:**
     ```bash
     astrona run --git git@github.com:astrona-io/ATS011.git -c sections/section-080/module-01/labs/lab-01
     ```
-* **Hands-on Objective:** Write a `ClusterPolicy` that uses `mutate.patchesJson6902` — not `patchStrategicMerge` — to append an environment variable to the first container of every Pod, and prove it works whether or not that container already declares an `env` array.
-* **Free-Exploration Playground:** an ungraded sandbox with the same `kind` cluster and Kyverno already running, and no policies on it — linked from the top of the module reader.
+* **Hands-on Objective:** Solve this question against the `kind` cluster provisioned for this lab (Kyverno is already installed and running in the `kyverno` namespace).
+* **Free-Exploration Playground:** an ungraded sandbox with the same `kind` cluster and Kyverno already running, and no policies on it.
     ```bash
     astrona run --git git@github.com:astrona-io/ATS011.git -c sections/section-080/module-01/playground
     astrona destroy ats-011-playground-080
+    ```
+
+### Capstone
+
+* **Capstone Lab:** **`sections/section-080/capstone/labs/lab-01`** (`ats-011-lab-080`)
+* **Lab Run Command:**
+    ```bash
+    astrona run --git git@github.com:astrona-io/ATS011.git -c sections/section-080/capstone/labs/lab-01
     ```
 
 ---
 
 ## Ready for Assessment?
 
-Test your theoretical knowledge and diagnostic reasoning before tackling the JSON Patch lab mission:
+Test your theoretical knowledge with the section quiz. It is a graded quiz with a pass score of 70 percent:
 
-* **[Take the Section 080 Knowledge Check Quiz](./quiz.md)**
+* **[Take the Section 080 Knowledge Check Quiz](./quiz.yaml)**

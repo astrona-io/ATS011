@@ -1,0 +1,197 @@
+# Knowledge check for section 020. Listed in astrona.yaml as a `type: quiz` entry after the capstone lab.
+schema_version: 1
+kind: question_bank
+id: ats011-020
+course_id: ATS011
+exam_code: KCA
+status: draft
+provenance: Original practice material written for this course; not official exam questions.
+scope:
+  type: section
+  id: section-020
+  title: "Preconditions"
+questions:
+  - id: ats011-020-q01
+    type: single_choice
+    difficulty: beginner
+    learning_objective: "Explain what a false preconditions block does to the rule body"
+    source_readings:
+      - sections/section-020/module-01/course-01-preconditions-and-operators.md
+    prompt: "A rule's `match` selects all Pods, and a `preconditions.all` block evaluates to `false` for one incoming Pod. What happens to that Pod's `validate.pattern`?"
+    options:
+      - id: a
+        text: "It never runs, because the whole rule body is skipped for that resource."
+        explanation: "Correct. When `preconditions` evaluates to `false`, Kyverno skips the whole rule body, whether `validate`, `mutate` or `generate`, for that resource, as if `match` had excluded it."
+      - id: b
+        text: "It runs and the Pod passes, because the preconditions failure counts as a pass."
+        explanation: "The pattern is never consulted, which is different from passing."
+      - id: c
+        text: "It runs in `Audit` mode instead of `Enforce`."
+        explanation: "The body does not run at all."
+      - id: d
+        text: "The Pod is rejected, because a false precondition is a failure."
+        explanation: "A false precondition skips the rule; it does not fail it."
+    correct_option: a
+    explanation: "When `preconditions` evaluates to `false`, Kyverno skips the whole rule body, whether `validate`, `mutate` or `generate`, for that resource, as if `match` had excluded it."
+
+  - id: ats011-020-q02
+    type: single_choice
+    difficulty: intermediate
+    learning_objective: "Use a default value for a missing optional field in a precondition"
+    source_readings:
+      - sections/section-020/module-01/course-01-preconditions-and-operators.md
+    prompt: "A precondition `key` is `\"{{ request.object.metadata.labels.owner }}\"` and the incoming Pod has no `owner` label. What is the likely outcome and the fix?"
+    options:
+      - id: a
+        text: "The condition quietly evaluates to false, so no fix is needed."
+        explanation: "A missing optional field is a common source of evaluation errors."
+      - id: b
+        text: "Kyverno fills in the label from the namespace."
+        explanation: "Kyverno does not fill in missing labels."
+      - id: c
+        text: "The expression has nothing to resolve to, which commonly causes an evaluation error; use `{{ request.object.metadata.labels.owner || '' }}` to fall back to an empty string."
+        explanation: "Correct. The `||` default-value idiom lets the surrounding `Equals` or `NotEquals` comparison evaluate cleanly whether or not the label exists."
+      - id: d
+        text: "The Pod is always rejected, so the fix is to switch to `Audit`."
+        explanation: "The problem is the expression, not the failure action."
+    correct_option: c
+    explanation: "The `||` default-value idiom lets the surrounding `Equals` or `NotEquals` comparison evaluate cleanly whether or not the label exists."
+
+  - id: ats011-020-q03
+    type: single_choice
+    difficulty: intermediate
+    learning_objective: "Interpret an any block when no condition is true"
+    source_readings:
+      - sections/section-020/module-01/course-01-preconditions-and-operators.md
+    prompt: "A rule has `preconditions.any` with `request.object.metadata.labels.tier || ''` equal to `critical`, and `request.namespace` equal to `production`. A Pod is submitted in `staging` with no `tier` label. Does the rule body run?"
+    options:
+      - id: a
+        text: "Yes, because the empty default counts as a match for `any`."
+        explanation: "The default only avoids an error; it is not equal to `critical`."
+      - id: b
+        text: "Yes, because `any` runs the body unless every condition is true."
+        explanation: "`any` runs the body when at least one condition is true."
+      - id: c
+        text: "No, because `any` needs at least one true condition and neither is true."
+        explanation: "Correct. Neither condition holds: the `tier` is empty and the namespace is not `production`. If either had matched, the rule body would have run."
+      - id: d
+        text: "It depends on whether the Pod has a `team` label."
+        explanation: "No other label is involved."
+    correct_option: c
+    explanation: "Neither condition holds: the `tier` is empty and the namespace is not `production`. If either had matched, the rule body would have run."
+
+  - id: ats011-020-q04
+    type: single_choice
+    difficulty: advanced
+    learning_objective: "Spot the effect of any written in place of all"
+    source_readings:
+      - sections/section-020/module-01/course-01-preconditions-and-operators.md
+    prompt: "You meant \"enforce only when the Pod is in namespace `prod` AND the operation is `CREATE`\" but wrote `preconditions.any`. What happens to the rule?"
+    options:
+      - id: a
+        text: "It becomes far looser: the body runs for every `CREATE` in any namespace and for every operation inside `prod`."
+        explanation: "Correct. A narrow AND-gated rule silently turns into a broad OR-gated one. The bug passes a glance at the YAML and surfaces when someone updates an unrelated field in `prod` and is blocked."
+      - id: b
+        text: "It becomes stricter, because `any` requires both conditions to be false."
+        explanation: "`any` runs the body when one condition holds, which widens the rule."
+      - id: c
+        text: "It never runs, because `any` cannot combine two different request fields."
+        explanation: "`any` can combine any conditions."
+      - id: d
+        text: "It behaves the same, because `any` and `all` differ only for a single condition."
+        explanation: "They differ as soon as there are two conditions."
+    correct_option: a
+    explanation: "A narrow AND-gated rule silently turns into a broad OR-gated one. The bug passes a glance at the YAML and surfaces when someone updates an unrelated field in `prod` and is blocked."
+
+  - id: ats011-020-q05
+    type: single_choice
+    difficulty: intermediate
+    learning_objective: "Recognize the UPDATE gap in CREATE-only preconditions"
+    source_readings:
+      - sections/section-020/module-01/course-01-preconditions-and-operators.md
+    prompt: "A `preconditions.all` block has `request.operation Equals \"CREATE\"` and `request.namespace NotEquals \"trusted-automation\"`. In namespace `team-ns`, a compliant Pod has its `team` label removed with `kubectl label pod NAME team-`. Does the rule reject this?"
+    options:
+      - id: a
+        text: "Yes, because the Pod now fails the pattern and the namespace is not trusted."
+        explanation: "The rule is skipped, so the pattern is never consulted."
+      - id: b
+        text: "Yes, because `kubectl label` sends a `CREATE` request."
+        explanation: "It sends an `UPDATE` request."
+      - id: c
+        text: "No, because label changes never go through admission."
+        explanation: "They do go through admission; the rule is skipped for another reason."
+      - id: d
+        text: "No, because the label removal is an `UPDATE`, which makes the first condition false and skips the rule."
+        explanation: "Correct. A `CREATE`-only gate leaves a compliant resource free to be edited into non-compliance later. Background scanning exists to catch that gap."
+    correct_option: d
+    explanation: "A `CREATE`-only gate leaves a compliant resource free to be edited into non-compliance later. Background scanning exists to catch that gap."
+
+  - id: ats011-020-q06
+    type: single_choice
+    difficulty: intermediate
+    learning_objective: "Decide what match can filter by operation without preconditions"
+    source_readings:
+      - sections/section-020/module-01/course-02-preconditions-vs-match.md
+    prompt: "True or false: `match.resources.operations` can filter on the admission operation, such as `CREATE` and `UPDATE`, without any help from `preconditions`."
+    options:
+      - id: a
+        text: "False, because operations can only be checked with a `request.operation` precondition."
+        explanation: "`match` and `exclude` support an `operations` field."
+      - id: b
+        text: "True, because it accepts a literal list like `[CREATE, UPDATE]`, and it is the simpler tool when a rule only needs to scope itself to verbs."
+        explanation: "Correct. `match.resources.operations` and the same field under `exclude.resources` overlap with what a `request.operation` precondition can do."
+      - id: c
+        text: "False, because `operations` is only valid in `exclude`."
+        explanation: "It is valid under both `match` and `exclude`."
+      - id: d
+        text: "True, but only for `DELETE` requests."
+        explanation: "It accepts any listed operations."
+    correct_option: b
+    explanation: "`match.resources.operations` and the same field under `exclude.resources` overlap with what a `request.operation` precondition can do."
+
+  - id: ats011-020-q07
+    type: single_choice
+    difficulty: advanced
+    learning_objective: "Identify the restriction that only preconditions avoid"
+    source_readings:
+      - sections/section-020/module-01/course-02-preconditions-vs-match.md
+    prompt: "`match` and `exclude` can filter by label value and by operation. Which restriction do they have that `preconditions` do not share, and which cases does it decide?"
+    options:
+      - id: a
+        text: "Their fields must be static literals, with no `{{ }}` substitution, so computed or numeric comparisons and context-derived values are only reachable through `preconditions`."
+        explanation: "Correct. `preconditions` exist to evaluate variable expressions: JMESPath into `request.object`, `request.operation`, context variables and operators such as `GreaterThan` or `AnyIn`."
+      - id: b
+        text: "They cannot filter by namespace, so namespace checks need `preconditions`."
+        explanation: "They can filter by namespace."
+      - id: c
+        text: "They can only match one kind per rule."
+        explanation: "A match can list several kinds."
+      - id: d
+        text: "They run only in the background controller."
+        explanation: "They are evaluated at admission as well."
+    correct_option: a
+    explanation: "`preconditions` exist to evaluate variable expressions: JMESPath into `request.object`, `request.operation`, context variables and operators such as `GreaterThan` or `AnyIn`."
+
+  - id: ats011-020-q08
+    type: single_choice
+    difficulty: intermediate
+    learning_objective: "Justify keeping all gating logic in one preconditions block"
+    source_readings:
+      - sections/section-020/module-01/course-02-preconditions-vs-match.md
+      - sections/section-020/module-01/course-01-preconditions-and-operators.md
+    prompt: "Why might a policy still fold an operation check and a namespace check into one `preconditions.all` block, even though `match` and `exclude` could express the same two conditions?"
+    options:
+      - id: a
+        text: "Because `match` and `exclude` are slower and Kyverno recommends avoiding them."
+        explanation: "`match` and `exclude` are the simpler, cheaper tool where they suffice."
+      - id: b
+        text: "Because `preconditions` is the only place where an operation can be checked."
+        explanation: "`match.resources.operations` also supports it."
+      - id: c
+        text: "When one condition truly needs `preconditions`, keeping all gating logic in one block is easier to audit, and the shape is one you need to know for cases without a shortcut."
+        explanation: "Correct. Splitting related conditions across `match`, `exclude` and `preconditions` makes the policy harder to read, and writing `request.operation` and `request.namespace` comparisons correctly is a skill worth having whether or not a given case has a shortcut."
+      - id: d
+        text: "Because combining them makes Kyverno report `pass` instead of `skip`."
+        explanation: "A false precondition still reports as `skip`."
+    correct_option: c
+    explanation: "Splitting related conditions across `match`, `exclude` and `preconditions` makes the policy harder to read, and writing `request.operation` and `request.namespace` comparisons correctly is a skill worth having whether or not a given case has a shortcut."

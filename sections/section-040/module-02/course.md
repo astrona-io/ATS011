@@ -22,6 +22,8 @@ Which introduces a problem validation never had. A validate rule that runs twice
 1. **[Part 1 — foreach in a mutate rule](./course-01-foreach-in-mutate.md)** — per-element patches, referencing `element` to compute a value from the element itself, and how this differs from the `(name)` anchor.
 2. **[Part 2 — Idempotency and Rule Interaction](./course-02-idempotency-and-rule-interaction.md)** — why a mutate rule runs again on UPDATE, the doubled-prefix failure that follows, guarding a `foreach` with `preconditions`, and what happens when two mutate rules touch the same field.
 
+The module closes with a summary page and a mission, **Per-Element Mutation Lab**, a graded lab that asks you to write and apply the policies from this module on a live cluster.
+
 ## Learning objectives
 
 After this module you can:

@@ -24,6 +24,8 @@ Kyverno gives you CEL in two places that look similar and are architecturally qu
 3. **[Part 3 — The ValidatingPolicy Type](./course-03-the-validatingpolicy-type.md)** — the `policies.kyverno.io` family the deprecation warnings point at, `matchConstraints` versus `match`, `validationActions`, and `matchConditions` as a separate applicability gate.
 4. **[Part 4 — Autogen and Native Admission Policies](./course-04-autogen-and-native-admission-policies.md)** — Section 090's autogen carried into CEL expressions, and compiling a policy into a real Kubernetes `ValidatingAdmissionPolicy` so the API server enforces it with no webhook in the path.
 
+The module closes with a summary page and a mission, **CEL Validation Lab**, a graded lab that asks you to write and apply the policies from this module on a live cluster.
+
 ## Learning objectives
 
 After this module you can:

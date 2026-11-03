@@ -20,6 +20,8 @@ That is a genuine design change, not a rename. A `ClusterPolicy` can carry a mut
 1. **[Part 1 — MutatingPolicy and GeneratingPolicy](./course-01-mutating-and-generating-policies.md)** — CEL-native mutation with `mutations` and JSON Patch or apply-configuration style, generation with `generate` expressions, and how the one-kind-per-job split changes rules that used to share a policy.
 2. **[Part 2 — ImageValidatingPolicy and DeletingPolicy](./course-02-imagevalidating-and-deletingpolicy.md)** — signature verification expressed in CEL, the cleanup successor the `ClusterCleanupPolicy` deprecation warning points at, and a map from every classic rule type to its CEL-native kind.
 
+The module closes with a summary page and a mission, **CEL-Native Policy Family Lab**, a graded lab that asks you to write and apply the policies from this module on a live cluster.
+
 ## Learning objectives
 
 After this module you can:

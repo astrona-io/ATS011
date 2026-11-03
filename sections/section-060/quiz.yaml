@@ -1,0 +1,450 @@
+# Knowledge check for section 060. Listed in astrona.yaml as a `type: quiz` entry after the capstone lab.
+schema_version: 1
+kind: question_bank
+id: ats011-060
+course_id: ATS011
+exam_code: KCA
+status: draft
+provenance: Original practice material written for this course; not official exam questions.
+scope:
+  type: section
+  id: section-060
+  title: "VerifyImage Rules"
+questions:
+
+  - id: ats011-060-q01
+    type: single_choice
+    difficulty: intermediate
+    learning_objective: "Predict the effect of an unscoped imageReferences wildcard"
+    source_readings:
+      - sections/section-060/module-01/course-01-signature-verification-and-attestors.md
+    prompt: "A `verifyImages` rule sets `imageReferences: ['*']` to avoid thinking about scoping, and is applied in `Enforce` mode to a live cluster. What happens?"
+    options:
+      - id: a
+        text: "Only images from public registries are checked, so the impact is small."
+        explanation: "A wildcard covers every image."
+      - id: b
+        text: "Images that are not signed are admitted with a warning."
+        explanation: "Under `Enforce` they are denied."
+      - id: c
+        text: "Almost certainly a cluster-wide outage, because every image, including Kyverno's own and `kube-proxy`, must match your attestors."
+        explanation: "Correct. Scope `imageReferences` to the repositories your signing requirement actually covers."
+      - id: d
+        text: "Nothing, because system namespaces are exempt automatically."
+        explanation: "There is no automatic exemption."
+    correct_option: c
+    explanation: "Scope `imageReferences` to the repositories your signing requirement actually covers."
+
+  - id: ats011-060-q02
+    type: single_choice
+    difficulty: intermediate
+    learning_objective: "Locate verifyImages failures in the right webhook"
+    source_readings:
+      - sections/section-060/module-01/course-01-signature-verification-and-attestors.md
+    prompt: "A `verifyImages` rule denies a Pod, and the denial comes from a webhook named `mutate.kyverno.svc-fail`, not a validating webhook. Is that a bug?"
+    options:
+      - id: a
+        text: "Yes, verification must run in the validating webhook, so the policy is misconfigured."
+        explanation: "Verification lives in the mutating webhook."
+      - id: b
+        text: "Yes, it means `validationFailureAction` was left unset."
+        explanation: "That field does not move verification."
+      - id: c
+        text: "No, but only when `mutateDigest: false` is set."
+        explanation: "The webhook choice does not depend on it."
+      - id: d
+        text: "No, because verification runs inside the mutating webhook, which also pins the digest, and a failure denies the request from there."
+        explanation: "Correct. Look for verifyImages failures under the mutating webhook."
+    correct_option: d
+    explanation: "Look for verifyImages failures under the mutating webhook."
+
+  - id: ats011-060-q03
+    type: single_choice
+    difficulty: advanced
+    learning_objective: "Handle a signature that has no Rekor entry"
+    source_readings:
+      - sections/section-060/module-01/course-01-signature-verification-and-attestors.md
+    prompt: "An image is signed offline with Cosign without uploading to the Rekor log. The rule's `attestors.entries[].keys` points at the correct public key but sets no `rekor` configuration. Is the image admitted?"
+    options:
+      - id: a
+        text: "Yes, because the public key verification alone is enough by default."
+        explanation: "The default also cross-checks Rekor."
+      - id: b
+        text: "Yes, because Kyverno falls back to the key when Rekor has no entry."
+        explanation: "There is no automatic fallback."
+      - id: c
+        text: "No, because the default cross-check against Rekor finds no entry, so `rekor.ignoreTlog: true` is needed."
+        explanation: "Correct. The signature is valid, but the transparency-log check fails."
+      - id: d
+        text: "No, because keys cannot be used without keyless signing."
+        explanation: "Key-based attestors are supported."
+    correct_option: c
+    explanation: "The signature is valid, but the transparency-log check fails."
+
+  - id: ats011-060-q04
+    type: single_choice
+    difficulty: intermediate
+    learning_objective: "Combine signature and attestation requirements"
+    source_readings:
+      - sections/section-060/module-01/course-02-attestations-and-digest-pinning.md
+    prompt: "True or false: a single `verifyImages` entry can require both a valid signature and a valid attestation of a given predicate type."
+    options:
+      - id: a
+        text: "True, by listing both under one `attestors` block."
+        explanation: "One entry does one or the other."
+      - id: b
+        text: "True, by setting `type: Both`."
+        explanation: "There is no such value."
+      - id: c
+        text: "True, but only with keyless attestors."
+        explanation: "The attestor style does not change this."
+      - id: d
+        text: "False, so you write two entries or rules, one with top-level `attestors` and one with an `attestations` block that has its own attestors."
+        explanation: "Correct. Each entry verifies signatures or attestations, not both."
+    correct_option: d
+    explanation: "Each entry verifies signatures or attestations, not both."
+
+  - id: ats011-060-q05
+    type: single_choice
+    difficulty: intermediate
+    learning_objective: "Read the image reference after digest mutation"
+    source_readings:
+      - sections/section-060/module-01/course-02-attestations-and-digest-pinning.md
+    prompt: "A Pod runs `ghcr.io/kyverno/test-verify-image:signed` and is admitted with the default `mutateDigest`. What does `.spec.containers[0].image` show afterwards?"
+    options:
+      - id: a
+        text: "The original tag with the resolved digest appended, such as `...:signed@sha256:b31bfb4d...`."
+        explanation: "Correct. The digest is authoritative when both are present, so the Pod is pinned to the verified bytes."
+      - id: b
+        text: "A bare digest with the tag removed."
+        explanation: "Kyverno appends the digest and keeps the tag."
+      - id: c
+        text: "The unchanged tag, with the digest stored in an annotation."
+        explanation: "The image field itself is mutated."
+      - id: d
+        text: "The tag lowercased and the registry host replaced."
+        explanation: "The reference is not rewritten that way."
+    correct_option: a
+    explanation: "The digest is authoritative when both are present, so the Pod is pinned to the verified bytes."
+
+  - id: ats011-060-q06
+    type: single_choice
+    difficulty: advanced
+    learning_objective: "Diagnose a failed attestation fetch with a recent Cosign"
+    source_readings:
+      - sections/section-060/module-01/course-02-attestations-and-digest-pinning.md
+    prompt: "An attestation made with recent Cosign verifies with `cosign verify-attestation`, but Kyverno reports `failed to fetch attestations: no matching attestations`. What is the likely cause and fix?"
+    options:
+      - id: a
+        text: "The key is wrong; regenerate the key pair and re-sign."
+        explanation: "The same key works locally."
+      - id: b
+        text: "Cosign stored it in the newer Sigstore bundle format, so add `type: SigstoreBundle` to the `verifyImages` entry."
+        explanation: "Correct. This is a version-dependent gotcha, not a policy logic bug."
+      - id: c
+        text: "The registry rate-limited the request; retry later."
+        explanation: "The error is about the format."
+      - id: d
+        text: "`mutateDigest` must be `false` for attestations."
+        explanation: "That setting is unrelated."
+    correct_option: b
+    explanation: "This is a version-dependent gotcha, not a policy logic bug."
+
+  - id: ats011-060-q07
+    type: single_choice
+    difficulty: intermediate
+    learning_objective: "Handle a deprecated predicateType field"
+    source_readings:
+      - sections/section-060/module-01/course-02-attestations-and-digest-pinning.md
+    prompt: "Kyverno's documentation shows an attestation using `predicateType`. You apply that YAML to a current v1.19.1 cluster. What happens?"
+    options:
+      - id: a
+        text: "The policy is rejected because the field no longer exists."
+        explanation: "It is still accepted."
+      - id: b
+        text: "The field is silently ignored, so no attestation is checked."
+        explanation: "The rule still functions."
+      - id: c
+        text: "The policy is accepted with a deprecation warning saying to use `type`, and it still works, but new policies should use `type`."
+        explanation: "Correct. The field was renamed to `type`."
+      - id: d
+        text: "Kyverno rewrites the field and stores the new name without warning."
+        explanation: "A warning is printed."
+    correct_option: c
+    explanation: "The field was renamed to `type`."
+
+  - id: ats011-060-q08
+    type: single_choice
+    difficulty: advanced
+    learning_objective: "Justify the capstone's choice of a second rule type over attestations"
+    source_readings:
+      - sections/section-060/module-01/course-02-attestations-and-digest-pinning.md
+    prompt: "A capstone combines `verifyImages` with a `validate` and `foreach` rule instead of an `attestations` block, although attestations are covered in the text. Why?"
+    options:
+      - id: a
+        text: "Attestations are unsupported in the version used."
+        explanation: "They are supported."
+      - id: b
+        text: "Durability: a realistic attestation exercise needs an image you signed and attested yourself, and no permanent, project-maintained demo image with custom attestations exists."
+        explanation: "Correct. The permanent `test-verify-image` repository serves signature checks, and pairing with an unrelated rule is also a realistic policy shape."
+      - id: c
+        text: "Attestations cannot be combined with other rules in one policy."
+        explanation: "Rules combine freely."
+      - id: d
+        text: "`foreach` is required whenever `verifyImages` is used."
+        explanation: "It is not required."
+    correct_option: b
+    explanation: "The permanent `test-verify-image` repository serves signature checks, and pairing with an unrelated rule is also a realistic policy shape."
+
+  - id: ats011-060-q09
+    type: single_choice
+    difficulty: intermediate
+    learning_objective: "Predict how blocks of attestors combine"
+    source_readings:
+      - sections/section-060/module-02/course-01-attestor-structures.md
+    prompt: "An `attestors` list holds two blocks, each with one entry and one key. How many valid signatures must the image carry?"
+    options:
+      - id: a
+        text: "One, matching either block."
+        explanation: "Blocks are ANDed."
+      - id: b
+        text: "Two, one matching each block's key, so an image signed by only the first key is rejected."
+        explanation: "Correct. The error names `.attestors[1].entries[0].keys` to show which block failed."
+      - id: c
+        text: "One, but it must match the first block."
+        explanation: "Every block must be satisfied."
+      - id: d
+        text: "None, because blocks are advisory."
+        explanation: "Blocks are enforced."
+    correct_option: b
+    explanation: "The error names `.attestors[1].entries[0].keys` to show which block failed."
+
+  - id: ats011-060-q10
+    type: single_choice
+    difficulty: intermediate
+    learning_objective: "Predict the default for count in a multi-key block"
+    source_readings:
+      - sections/section-060/module-02/course-01-attestor-structures.md
+    prompt: "One block lists three trusted keys and does not set `count`. What does it require?"
+    options:
+      - id: a
+        text: "Any one of the three."
+        explanation: "That needs `count: 1`."
+      - id: b
+        text: "A majority, which is two of three."
+        explanation: "There is no majority default."
+      - id: c
+        text: "The first key listed only."
+        explanation: "Order does not matter."
+      - id: d
+        text: "All three, because omitting `count` requires every entry to match, so write `count: 1` for any of them."
+        explanation: "Correct. This is the opposite of what a list of trusted signers usually intends."
+    correct_option: d
+    explanation: "This is the opposite of what a list of trusted signers usually intends."
+
+  - id: ats011-060-q11
+    type: single_choice
+    difficulty: advanced
+    learning_objective: "Apply count thresholds to a partly signed image"
+    source_readings:
+      - sections/section-060/module-02/course-01-attestor-structures.md
+    prompt: "Two entries are present and only one of them really signed the image. What is the verdict for `count: 1` and for `count: 2`?"
+    options:
+      - id: a
+        text: "Denied for both, because both entries must sign."
+        explanation: "`count: 1` only needs one genuine signature."
+      - id: b
+        text: "Admitted for both, because one valid signature suffices."
+        explanation: "`count: 2` needs two."
+      - id: c
+        text: "Admitted for `count: 1` and denied for `count: 2`, because `count` is an M-of-N threshold."
+        explanation: "Correct. `count: 1` over two entries is an OR, and `count: 2` is an AND within one block."
+      - id: d
+        text: "Denied for `count: 1` and admitted for `count: 2`."
+        explanation: "This reverses the threshold logic."
+    correct_option: c
+    explanation: "`count: 1` over two entries is an OR, and `count: 2` is an AND within one block."
+
+  - id: ats011-060-q12
+    type: single_choice
+    difficulty: intermediate
+    learning_objective: "Explain what a keyless attestor matches"
+    source_readings:
+      - sections/section-060/module-02/course-01-attestor-structures.md
+    prompt: "What does a `keyless` attestor match on, and why is it considered stronger than a long-lived key?"
+    options:
+      - id: a
+        text: "A shared secret stored in Kyverno, which rotates automatically."
+        explanation: "There is no shared secret."
+      - id: b
+        text: "An IP address range of the build system."
+        explanation: "Identity is not network based."
+      - id: c
+        text: "An identity made of `subject` and `issuer`, backed by a short-lived certificate and a discarded key, so there is no long-lived secret to steal."
+        explanation: "Correct. An attacker would need to act as the identity itself."
+      - id: d
+        text: "The image digest alone, which is unique per build."
+        explanation: "The digest identifies bytes, not the signer."
+    correct_option: c
+    explanation: "An attacker would need to act as the identity itself."
+
+  - id: ats011-060-q13
+    type: single_choice
+    difficulty: advanced
+    learning_objective: "Predict what mutateDigest false does to a bare tag"
+    source_readings:
+      - sections/section-060/module-02/course-02-digests-scope-and-registry-access.md
+    prompt: "You set `mutateDigest: false` and submit a Pod that references `.../app:signed` with no digest. What happens?"
+    options:
+      - id: a
+        text: "It is admitted and the digest is added later."
+        explanation: "Nothing resolves it later."
+      - id: b
+        text: "It is admitted unverified, because verification is skipped without a digest."
+        explanation: "It is denied, not skipped."
+      - id: c
+        text: "It is denied with `missing digest for ...`, because Kyverno will not resolve the tag on the submitter's behalf."
+        explanation: "Correct. Turning mutation off makes the rule stricter, and an explicit digest passes."
+      - id: d
+        text: "It is denied because `mutateDigest: false` is invalid."
+        explanation: "The value is valid."
+    correct_option: c
+    explanation: "Turning mutation off makes the rule stricter, and an explicit digest passes."
+
+  - id: ats011-060-q14
+    type: single_choice
+    difficulty: intermediate
+    learning_objective: "Weigh the risk of a broad skipImageReferences glob"
+    source_readings:
+      - sections/section-060/module-02/course-02-digests-scope-and-registry-access.md
+    prompt: "A colleague adds `skipImageReferences: ['ghcr.io/vendor/*']` to deploy one unsigned vendor image. What is the risk?"
+    options:
+      - id: a
+        text: "The skipped images are verified with a weaker algorithm."
+        explanation: "They are not verified at all."
+      - id: b
+        text: "Skipped references get no verification at all, a bypass rather than a downgrade, and a wide glob silently removes checks from every image it covers."
+        explanation: "Correct. A skipped rule produces no error to notice, so name the exact image."
+      - id: c
+        text: "Kyverno logs a failure for every skipped image."
+        explanation: "Skipping is silent."
+      - id: d
+        text: "The skip applies only to the first Pod in the namespace."
+        explanation: "It applies to every match."
+    correct_option: b
+    explanation: "A skipped rule produces no error to notice, so name the exact image."
+
+  - id: ats011-060-q15
+    type: single_choice
+    difficulty: advanced
+    learning_objective: "Decide behaviour when the registry is unreachable"
+    source_readings:
+      - sections/section-060/module-02/course-02-digests-scope-and-registry-access.md
+    prompt: "Your registry becomes unreachable. What happens to Pod admission, and what decides it?"
+    options:
+      - id: a
+        text: "Pods are always admitted because verification results are cached forever."
+        explanation: "Caching does not cover every case."
+      - id: b
+        text: "Pods are always denied because Kyverno cannot verify offline."
+        explanation: "The outcome is configurable."
+      - id: c
+        text: "The webhook's `failurePolicy` decides: `Fail` denies matching requests, and `Ignore` admits them unverified."
+        explanation: "Correct. Neither is wrong, but not choosing is. Scope tightly, keep `timeoutSeconds` low, and use `useCache`."
+      - id: d
+        text: "The node's pull secrets decide, because nodes do the verifying."
+        explanation: "Kyverno verifies as itself, and a private registry needs `imageRegistryCredentials`."
+    correct_option: c
+    explanation: "Neither is wrong, but not choosing is. Scope tightly, keep `timeoutSeconds` low, and use `useCache`."
+
+  - id: ats011-060-q16
+    type: single_choice
+    difficulty: intermediate
+    learning_objective: "Predict how an allow list with AnyNotIn treats a mixed Pod"
+    source_readings:
+      - sections/section-060/module-03/course-01-the-images-variable.md
+    prompt: "A rule denies when `{{ images.containers.*.registry }}` is `AnyNotIn` `[docker.io, ghcr.io]`. A Pod has three containers from `docker.io` and one from `quay.io`. What happens?"
+    options:
+      - id: a
+        text: "The Pod is admitted, because most containers use allowed registries."
+        explanation: "The condition looks at each element, not a majority."
+      - id: b
+        text: "The Pod is denied, because at least one element of the key list is missing from the value list."
+        explanation: "Correct. `AnyNotIn` is true when at least one element of the key list is not in the value list, so one `quay.io` container is enough."
+      - id: c
+        text: "The Pod is denied only if all four containers use a registry outside the list."
+        explanation: "That would be `AllNotIn`, not `AnyNotIn`."
+      - id: d
+        text: "The rule errors, because a wildcard query cannot be used in a condition."
+        explanation: "A wildcard query returns a list, which is what makes whole-Pod checks short."
+    correct_option: b
+    explanation: "`AnyNotIn` is true when at least one element of the key list is not in the value list, so one `quay.io` container is enough."
+
+  - id: ats011-060-q17
+    type: single_choice
+    difficulty: intermediate
+    learning_objective: "Apply the default registry and tag in the images variable"
+    source_readings:
+      - sections/section-060/module-03/course-01-the-images-variable.md
+    prompt: "A Pod runs the image `nginx` with no registry and no tag. What does `images` hold for it, and what does a rule that denies `AnyIn [\"latest\"]` on the tags do?"
+    options:
+      - id: a
+        text: "The registry and tag are empty, so the rule does not match."
+        explanation: "Kyverno fills in defaults instead of leaving them empty."
+      - id: b
+        text: "The registry is `docker.io` and the tag is empty, so the rule does not match."
+        explanation: "The empty tag is also filled in when there is no digest."
+      - id: c
+        text: "The registry is empty and the tag is `latest`, so the rule matches."
+        explanation: "The empty registry is filled with `docker.io`."
+      - id: d
+        text: "The registry is `docker.io` and the tag is `latest`, so the rule also catches a bare `nginx`."
+        explanation: "Correct. Kyverno sets an empty registry to `docker.io` and an empty tag to `latest` when there is no digest, so nobody has to write the word `latest`."
+    correct_option: d
+    explanation: "Kyverno sets an empty registry to `docker.io` and an empty tag to `latest` when there is no digest, so nobody has to write the word `latest`."
+
+  - id: ats011-060-q18
+    type: single_choice
+    difficulty: advanced
+    learning_objective: "Separate the container-name key from the name field"
+    source_readings:
+      - sections/section-060/module-03/course-01-the-images-variable.md
+    prompt: "A container named `api` runs `ghcr.io/example/team/web:2.0`. What do `{{ images.containers.api.name }}` and the key `api` refer to?"
+    options:
+      - id: a
+        text: "The key `api` is the container name from the Pod spec, and the `name` field is `web`, the last segment of the image path."
+        explanation: "Correct. The two words are often different, and confusing them is a listed pitfall."
+      - id: b
+        text: "The `name` field is `api`, because it copies the container name."
+        explanation: "The `name` field comes from the image path."
+      - id: c
+        text: "The key is `web`, because entries are keyed by image name."
+        explanation: "Entries are keyed by container name."
+      - id: d
+        text: "Both are `team`, the second path segment."
+        explanation: "The `name` field is the last segment of the path, not the second."
+    correct_option: a
+    explanation: "The two words are often different, and confusing them is a listed pitfall."
+
+  - id: ats011-060-q19
+    type: single_choice
+    difficulty: intermediate
+    learning_objective: "Decide when imageExtractors is needed"
+    source_readings:
+      - sections/section-060/module-03/course-02-image-extractors.md
+    prompt: "A rule must check the image in a custom resource that stores it under `/spec/source/registry/url`. The Pod rule from the previous part works only on Pods. What is the fix?"
+    options:
+      - id: a
+        text: "Nothing, because `images` is built for every kind automatically."
+        explanation: "Kyverno extracts only what it knows or what you describe."
+      - id: b
+        text: "Replace `images` with a regular expression over the whole resource."
+        explanation: "The module does not teach that, and the parsed fields are what make checks short."
+      - id: c
+        text: "Add `imageExtractors` for that kind with the `path`, and a `jmesPath` if the field has a prefix such as `docker://`."
+        explanation: "Correct. Kyverno cannot guess where a custom resource keeps its image, so an extractor describes the place. For Pods and pod controllers you write nothing."
+      - id: d
+        text: "Turn off the default Pod extraction so the custom path is used."
+        explanation: "An extractor adds knowledge about other kinds. It does not change the default Pod extraction."
+    correct_option: c
+    explanation: "Kyverno cannot guess where a custom resource keeps its image, so an extractor describes the place. For Pods and pod controllers you write nothing."

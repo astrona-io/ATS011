@@ -24,7 +24,7 @@ By completing this section, you will acquire the policy-level competencies the r
 
 ## The Learning & Lab Path
 
-This section has one module. It is reading plus a free-exploration playground â€” there is no graded lab, because nothing here is a competency the exam tests in isolation:
+Each module has a reader, a free-exploration playground and a graded lab. Every module ends with a summary page and a mission that points to its lab. The labs are marked UNTESTED until they have been run against a live cluster.
 
 ### 1. Policy Objects and Rule Anatomy
 
@@ -32,16 +32,31 @@ This section has one module. It is reading plus a free-exploration playground â€
     1. [Policy Objects and Rule Anatomy](./module-01/course-01-policy-objects-and-rule-anatomy.md)
     2. [Failure Actions and Staged Rollout](./module-01/course-02-failure-actions-and-rollout.md)
     3. [Rule Ordering and Carving Out Exceptions](./module-01/course-03-rule-ordering-and-exceptions.md)
-* **Free-Exploration Playground:** an ungraded sandbox with a `kind` cluster, Kyverno already running, no policies, and two empty namespaces (`team-prod`, `team-staging`) for per-namespace failure-action experiments.
+    4. [Summary](./module-01/course-04-summary.md)
+* **Practice Lab Sandbox:** **`sections/section-000/module-01/labs/lab-01`** (`ats-011-lab-001`, UNTESTED)
+* **Lab Run Command:**
+    ```bash
+    astrona run --git git@github.com:astrona-io/ATS011.git -c sections/section-000/module-01/labs/lab-01
+    ```
+* **Hands-on Objective:** Kyverno is installed. The namespaces `staging`, `production` and `sandbox` exist. The platform team wants two ConfigMap rules rolled out in different ways.
+* **Free-Exploration Playground:** an ungraded sandbox with the same `kind` cluster and Kyverno already running, and no policies on it.
     ```bash
     astrona run --git git@github.com:astrona-io/ATS011.git -c sections/section-000/module-01/playground
     astrona destroy ats-011-playground-000
+    ```
+
+### Capstone
+
+* **Capstone Lab:** **`sections/section-000/capstone/labs/lab-01`** (`ats-011-lab-000`)
+* **Lab Run Command:**
+    ```bash
+    astrona run --git git@github.com:astrona-io/ATS011.git -c sections/section-000/capstone/labs/lab-01
     ```
 
 ---
 
 ## Ready for Assessment?
 
-Test your understanding of the policy object itself before moving on to Section 010:
+Test your theoretical knowledge with the section quiz. It is a graded quiz with a pass score of 70 percent:
 
-* **[Take the Section 000 Knowledge Check Quiz](./quiz.md)**
+* **[Take the Section 000 Knowledge Check Quiz](./quiz.yaml)**

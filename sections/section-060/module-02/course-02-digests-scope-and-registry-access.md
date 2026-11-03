@@ -123,6 +123,21 @@ Neither is wrong; the choice is a stated risk posture. What *is* wrong is not ch
 > - **Leaving `failurePolicy` unconsidered on a registry-dependent rule.** One setting turns a registry outage into a cluster outage; the other turns it into an unverified deploy.
 > - **Relying on `required` to make verification optional.** It did not behave that way in testing.
 
-## Section recap
+## Your mission: Attestors and Digests Lab
 
-`mutateDigest` is what resolves a tag to the digest verification needs, so turning it off makes a rule stricter by demanding the submitter pin one. `skipImageReferences` is the field that demonstrably scopes a rule, and a skipped image is not verified at all. Private registries need `imageRegistryCredentials` because Kyverno verifies as itself rather than as the kubelet. And because verification is a live external call inside the admission path, the webhook's `failurePolicy` decides whether a registry outage becomes a cluster outage or a silent gap — a decision to make deliberately rather than inherit.
+You can now read attestor structures, choose between `mutateDigest` and `verifyDigest`, and scope a rule. The mission asks you to write a `verifyImages` policy with the required structure and prove the parts that do not need a signed image.
+
+Pause the playground, start the lab, and submit your work as often as you like:
+
+```sh
+astrona stop ats-011-playground-0602
+astrona run --git ssh://git@github.com/astrona-io/ATS011.git -c sections/section-060/module-02/labs/lab-01
+astrona submit -c sections/section-060/module-02/labs/lab-01
+```
+
+When the lab passes, remove it and return to the playground:
+
+```sh
+astrona destroy ats-011-lab-062
+astrona start ats-011-playground-0602
+```

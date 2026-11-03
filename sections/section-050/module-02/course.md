@@ -22,6 +22,8 @@ The answers are not what most people guess, and one of them can take a cluster's
 1. **[Part 1 — generateExisting and Retroactive Creation](./course-01-generate-existing.md)** — turning a forward-looking rule into one that also backfills, how long that takes, and what it means for a rule that was safe to apply when it only governed new resources.
 2. **[Part 2 — Lifecycle: Policy Deletion and Orphaning](./course-02-lifecycle-and-orphaning.md)** — what happens to downstream resources when the policy is deleted, the `orphanDownstreamOnPolicyDelete` field, and how the generate lifecycle differs from ordinary Kubernetes garbage collection.
 
+The module closes with a summary page and a mission, **Generate Existing Lab**, a graded lab that asks you to write and apply the policies from this module on a live cluster.
+
 ## Learning objectives
 
 After this module you can:

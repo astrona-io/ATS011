@@ -126,6 +126,21 @@ The question that usually settles it: *where does this fact actually live?* Clus
 > - **Caching something that must be current.** A `globalReference` answers with what it last fetched, which is the wrong tool for a live quota check.
 > - **Treating cached or ConfigMap-sourced data as trusted.** Whoever can write it can change what your rules decide.
 
-## Section recap
+## Your mission: Context Entries Lab
 
-`imageRegistry` fetches data the Kubernetes API cannot know, binding an eight-field object whose `registry`, `repository`, `resolvedImage`, and `configData` cover most needs — at the cost of an external network call inside the admission path. `globalReference` reads a `GlobalContextEntry`, which performs an expensive or external lookup on a schedule and caches it, trading freshness for cost. Between the five entry types, the deciding question is where the fact you need actually lives.
+You can now choose the right context entry type and read policy data from a ConfigMap. The mission asks you to write a policy that reads an allowed-values list from a ConfigMap and computes an intermediate value with a `variable` entry.
+
+Pause the playground, start the lab, and submit your work as often as you like:
+
+```sh
+astrona stop ats-011-playground-0702
+astrona run --git ssh://git@github.com/astrona-io/ATS011.git -c sections/section-070/module-02/labs/lab-01
+astrona submit -c sections/section-070/module-02/labs/lab-01
+```
+
+When the lab passes, remove it and return to the playground:
+
+```sh
+astrona destroy ats-011-lab-072
+astrona start ats-011-playground-0702
+```

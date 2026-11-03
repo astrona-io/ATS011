@@ -1,0 +1,47 @@
+metadata:
+  name: "ats-011-lab-073"
+  docs:
+    solution: "solution.md"
+    question: "question.md"
+
+bootstrap:
+  init:
+    - name: "lab-073-setup"
+      description: "Installs Kyverno and waits for its controllers to be ready"
+      type: "file"
+      source: "bootstrap/01-install-kyverno.sh"
+    - name: "lab-073-seed"
+      description: "Creates the fn-lab namespace"
+      type: "file"
+      source: "bootstrap/02-seed.sh"
+
+validation:
+  scripts:
+    - name: "name-format"
+      description: "Pod names must match the pattern with regex_match"
+      type: "file"
+      source: "validation/validate-name-format.sh"
+      hint: "Deny when regex_match('^[a-z]+-[0-9][0-9]$', request.object.metadata.name) equals false. The pattern is the first argument."
+    - name: "owner-team"
+      description: "The owner annotation must start with platform, ignoring case"
+      type: "file"
+      source: "validation/validate-owner-team.sh"
+      hint: "Use to_upper(split(request.object.metadata.annotations.owner || '', '/')[0]) and compare with PLATFORM using NotEquals."
+    - name: "config-decoded"
+      description: "The config annotation must decode to ready"
+      type: "file"
+      source: "validation/validate-config-decoded.sh"
+      hint: "Use base64_decode(request.object.metadata.annotations.config || '') with NotEquals and the value ready."
+    - name: "budget"
+      description: "A Pod may not use more than it requested"
+      type: "file"
+      source: "validation/validate-budget.sh"
+      hint: "Wrap both annotations in to_number(...), subtract used from requested, and deny when the result is LessThan 0."
+    - name: "fresh-approval"
+      description: "An approval older than 24 hours is rejected"
+      type: "file"
+      source: "validation/validate-fresh-approval.sh"
+      hint: "Use time_since('', approved annotation, '') with the DurationGreaterThan operator and the value 24h."
+
+teardown:
+  keepCluster: false

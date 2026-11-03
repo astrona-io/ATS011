@@ -19,6 +19,8 @@ This module covers the two building blocks of every validation rule: the `patter
 2. **[Part 2 — The Pattern Block and What Failure Costs](./course-02-the-pattern-block-and-failure-actions.md)** — describing a shape rather than writing a test, the wildcard and conditional-operator vocabulary, and the separate decision of whether a violation blocks a request or merely lands in a report.
 3. **[Part 3 — anyPattern, foreach & Failure Messages](./course-03-anypattern-foreach-and-messages.md)** — expressing a choice between shapes, validating every element of a list, and writing a message a developer can act on.
 
+The module closes with a summary page and a mission, **Pattern-Based Validation Lab**, a graded lab that asks you to write and apply the policies from this module on a live cluster.
+
 ## Learning objectives
 
 After this module you can:

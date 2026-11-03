@@ -1,0 +1,37 @@
+metadata:
+  name: "ats-011-lab-052"
+  docs:
+    solution: "solution.md"
+    question: "question.md"
+
+bootstrap:
+  init:
+    - name: "lab-052-setup"
+      description: "Installs Kyverno and waits for its controllers to be ready"
+      type: "file"
+      source: "bootstrap/01-install-kyverno.sh"
+    - name: "lab-052-seed"
+      description: "Creates team-a and team-b (tier=standard), scratch, and RBAC so the background controller can manage ConfigMaps"
+      type: "file"
+      source: "bootstrap/02-seed.sh"
+
+validation:
+  scripts:
+    - name: "existing-namespaces-backfilled"
+      description: "team-a and team-b receive the ConfigMap, scratch does not"
+      type: "file"
+      source: "validation/validate-existing-namespaces-backfilled.sh"
+      hint: "Set generate.generateExisting: true and match Namespaces with selector matchLabels tier: standard."
+    - name: "sync-and-orphan-settings"
+      description: "The rule keeps the downstream in sync and orphans it on policy delete"
+      type: "file"
+      source: "validation/validate-sync-and-orphan-settings.sh"
+      hint: "Set synchronize: true and orphanDownstreamOnPolicyDelete: true inside the generate block."
+    - name: "new-namespace-generated"
+      description: "A namespace created later with tier=standard also receives the ConfigMap"
+      type: "file"
+      source: "validation/validate-new-namespace-generated.sh"
+      hint: "The match selector must use the tier label so that new namespaces trigger the rule."
+
+teardown:
+  keepCluster: false

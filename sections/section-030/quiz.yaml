@@ -1,0 +1,197 @@
+# Knowledge check for section 030. Listed in astrona.yaml as a `type: quiz` entry after the capstone lab.
+schema_version: 1
+kind: question_bank
+id: ats011-030
+course_id: ATS011
+exam_code: KCA
+status: draft
+provenance: Original practice material written for this course; not official exam questions.
+scope:
+  type: section
+  id: section-030
+  title: "Background Scans"
+questions:
+  - id: ats011-030-q01
+    type: single_choice
+    difficulty: intermediate
+    learning_objective: "Describe what an Enforce policy does to existing resources"
+    source_readings:
+      - sections/section-030/module-01/course-01-what-background-scans-do.md
+    prompt: "You apply a new `ClusterPolicy` in `Enforce` mode with `background: true` that requires a `team` label. Fifty non-compliant Pods already run. What happens to them when the policy is `Ready`?"
+    options:
+      - id: a
+        text: "They are deleted and recreated by the background controller."
+        explanation: "A scan is read-only and never deletes."
+      - id: b
+        text: "They are blocked and marked as not ready."
+        explanation: "`Enforce` only governs new admission requests."
+      - id: c
+        text: "Nothing is done to them; the background scan records `fail` results in `PolicyReport` objects, and only a later update can trigger an admission block."
+        explanation: "Correct. Resources are not deleted, blocked, modified or re-admitted. `Enforce` governs only new admission requests, and a scan produces reports, never actions."
+      - id: d
+        text: "They are modified to add the missing label."
+        explanation: "A validate scan never modifies a resource."
+    correct_option: c
+    explanation: "Resources are not deleted, blocked, modified or re-admitted. `Enforce` governs only new admission requests, and a scan produces reports, never actions."
+
+  - id: ats011-030-q02
+    type: single_choice
+    difficulty: intermediate
+    learning_objective: "Separate the roles of failure action and the background setting"
+    source_readings:
+      - sections/section-030/module-01/course-01-what-background-scans-do.md
+    prompt: "A colleague says: \"I do not need `background: true`, my policy is `Enforce`, so it is already strict.\" What is wrong with this?"
+    options:
+      - id: a
+        text: "`Enforce` only works if `background` is `true`."
+        explanation: "`Enforce` works at admission regardless of the background setting."
+      - id: b
+        text: "`background` controls how fast admission runs."
+        explanation: "It controls scanning of existing resources."
+      - id: c
+        text: "`Enforce` decides what happens at admission, while `background` decides whether existing resources are evaluated at all; with `background: false` there are no report entries for them."
+        explanation: "Correct. `Enforce` and `background` answer two different questions. An `Enforce` policy with `background: false` is strict about new admissions and blind to every resource that predates it."
+      - id: d
+        text: "Nothing is wrong, because `Enforce` also scans existing resources."
+        explanation: "`Enforce` does not evaluate resources that are not being admitted."
+    correct_option: c
+    explanation: "`Enforce` and `background` answer two different questions. An `Enforce` policy with `background: false` is strict about new admissions and blind to every resource that predates it."
+
+  - id: ats011-030-q03
+    type: single_choice
+    difficulty: advanced
+    learning_objective: "Predict a CREATE precondition during a background scan"
+    source_readings:
+      - sections/section-030/module-01/course-01-what-background-scans-do.md
+      - sections/section-030/module-01/course-02-request-context-and-limits.md
+    prompt: "A rule has a precondition `{{ request.operation }} Equals \"CREATE\"` and `background: true`. Does this precondition ever evaluate to false during a background scan?"
+    options:
+      - id: a
+        text: "No, because a scan has no real request, so Kyverno supplies the fixed value `CREATE` for every resource."
+        explanation: "Correct. The precondition is satisfied unconditionally during a scan, so it filters nothing there even though it filters normally at admission."
+      - id: b
+        text: "Yes, for resources that were created long ago."
+        explanation: "The age of a resource does not change the synthesized operation."
+      - id: c
+        text: "Yes, for resources that were updated recently."
+        explanation: "The scan does not see real operations."
+      - id: d
+        text: "It depends on the interval of the scan."
+        explanation: "The interval does not affect the value."
+    correct_option: a
+    explanation: "The precondition is satisfied unconditionally during a scan, so it filters nothing there even though it filters normally at admission."
+
+  - id: ats011-030-q04
+    type: single_choice
+    difficulty: advanced
+    learning_objective: "Predict an UPDATE precondition during a background scan"
+    source_readings:
+      - sections/section-030/module-01/course-02-request-context-and-limits.md
+    prompt: "The same rule instead checks `{{ request.operation }} Equals \"UPDATE\"`. What does a background scan report for a badly non-compliant resource?"
+    options:
+      - id: a
+        text: "`fail`, because the resource is non-compliant."
+        explanation: "The rule body is never evaluated, so there is nothing to fail."
+      - id: b
+        text: "`pass`, because the precondition is a gate and gates pass by default."
+        explanation: "The result is a skip, not a pass."
+      - id: c
+        text: "An error that stops the scan."
+        explanation: "This is the correct and expected answer, not an error."
+      - id: d
+        text: "`skip` with a message like `preconditions not met`, never `fail`, because the synthesized operation is always `CREATE`."
+        explanation: "Correct. A rule gated this way never produces a real `fail` from a background scan. Only a genuine admission-time `UPDATE` can trigger a real evaluation."
+    correct_option: d
+    explanation: "A rule gated this way never produces a real `fail` from a background scan. Only a genuine admission-time `UPDATE` can trigger a real evaluation."
+
+  - id: ats011-030-q05
+    type: single_choice
+    difficulty: intermediate
+    learning_objective: "Know that userInfo variables are rejected with background enabled"
+    source_readings:
+      - sections/section-030/module-01/course-02-request-context-and-limits.md
+    prompt: "A rule uses `{{ request.userInfo.username }}` in a `deny` condition and `spec.background` is left at its default. What happens on `kubectl apply -f policy.yaml`?"
+    options:
+      - id: a
+        text: "The policy is created, and the rule is skipped during scans."
+        explanation: "Kyverno refuses the policy instead of skipping."
+      - id: b
+        text: "The apply is rejected by the policy-validating webhook, with an error naming the variable and asking you to set `spec.background=false`."
+        explanation: "Correct. `request.userInfo` has no meaningful value during a scan, so Kyverno refuses to let the policy exist with background scanning enabled. You must set `background: false`."
+      - id: c
+        text: "The policy is created and the username resolves to the scanner service account."
+        explanation: "There is no requester to describe during a scan."
+      - id: d
+        text: "The policy is created with `background` switched off automatically."
+        explanation: "Kyverno does not change the setting for you."
+    correct_option: b
+    explanation: "`request.userInfo` has no meaningful value during a scan, so Kyverno refuses to let the policy exist with background scanning enabled. You must set `background: false`."
+
+  - id: ats011-030-q06
+    type: single_choice
+    difficulty: advanced
+    learning_objective: "Split rules by background compatibility"
+    source_readings:
+      - sections/section-030/module-01/course-02-request-context-and-limits.md
+    prompt: "A single `ClusterPolicy` has rule A that only checks `request.object` fields and rule B that checks `request.userInfo.username`. Can you set `spec.background: true` so that A is scanned while B is skipped during scans?"
+    options:
+      - id: a
+        text: "No, because `spec.background` is one switch for the whole policy; put the rules in two policies, one with `background: true` and one with `background: false`."
+        explanation: "Correct. If any rule uses a variable that is not allowed in background mode, the whole policy is rejected when `background: true`."
+      - id: b
+        text: "Yes, because Kyverno skips rules that use disallowed variables during scans."
+        explanation: "The whole policy is rejected at apply time instead."
+      - id: c
+        text: "Yes, if you add a `preconditions` block to rule B."
+        explanation: "Preconditions do not change what the policy validation allows."
+      - id: d
+        text: "No, because `background` can only be set on a `Policy`, not a `ClusterPolicy`."
+        explanation: "It is available on both."
+    correct_option: a
+    explanation: "If any rule uses a variable that is not allowed in background mode, the whole policy is rejected when `background: true`."
+
+  - id: ats011-030-q07
+    type: single_choice
+    difficulty: intermediate
+    learning_objective: "Interpret the scan interval for new policies"
+    source_readings:
+      - sections/section-030/module-01/course-01-what-background-scans-do.md
+    prompt: "The background-scan controllers log a default interval of one hour. You apply a policy and immediately run `kubectl get policyreport -A`, which is empty. Must you wait up to an hour?"
+    options:
+      - id: a
+        text: "Yes, because the first scan only runs at the next hourly tick."
+        explanation: "A new or newly `Ready` policy is reconciled right away."
+      - id: b
+        text: "Yes, because reports are only written when a Pod is restarted."
+        explanation: "Reports do not depend on restarts."
+      - id: c
+        text: "No, because the interval is how often a settled policy is re-swept; the first pass usually runs within seconds to tens of seconds, so check that the policy is `Ready` and the `match` selects the expected resources."
+        explanation: "Correct. Kyverno reconciles a newly created or newly `Ready` policy right away rather than waiting for the next scheduled tick. If the report is still empty after a short poll, look at readiness and `match`."
+      - id: d
+        text: "No, because background scans run synchronously during `kubectl apply`."
+        explanation: "The scan runs in a controller, not inside the apply."
+    correct_option: c
+    explanation: "Kyverno reconciles a newly created or newly `Ready` policy right away rather than waiting for the next scheduled tick. If the report is still empty after a short poll, look at readiness and `match`."
+
+  - id: ats011-030-q08
+    type: single_choice
+    difficulty: beginner
+    learning_objective: "State what a background scan can change"
+    source_readings:
+      - sections/section-030/module-01/course-01-what-background-scans-do.md
+    prompt: "True or false: a background scan can update or delete a non-compliant resource to bring it into line with a policy."
+    options:
+      - id: a
+        text: "True, if the policy is `Enforce`, because the scan then repairs the resource."
+        explanation: "The failure action does not make scans act on resources."
+      - id: b
+        text: "True, because scans delete resources that fail for longer than one hour."
+        explanation: "Scans never delete resources."
+      - id: c
+        text: "True, if the resource was created by a controller."
+        explanation: "The origin of a resource does not matter."
+      - id: d
+        text: "False, because a scan for a `validate` rule is read-only and only writes results to a `PolicyReport` or `ClusterPolicyReport`."
+        explanation: "Correct. A scan never mutates or removes the resource it reports on, whether the policy is `Enforce` or `Audit`. Separate mechanisms, such as `mutate` rules with `mutateExistingOnPolicyUpdate` and cleanup policies, can act on existing resources."
+    correct_option: d
+    explanation: "A scan never mutates or removes the resource it reports on, whether the policy is `Enforce` or `Audit`. Separate mechanisms, such as `mutate` rules with `mutateExistingOnPolicyUpdate` and cleanup policies, can act on existing resources."

@@ -126,3 +126,22 @@ project keeps that demo tag pointing at the same image; treat the specific
 `sha256:` value as an example, and the `@sha256:` *suffix* as the thing that
 matters. That suffix is exactly what a grading script — or a real audit — looks
 for as evidence that verification and pinning both ran.
+
+## Your mission: VerifyImage Rules Lab
+
+You can now write a `verifyImages` rule with attestors, attestations and digest pinning. The mission asks you to write an image verification policy and read the failure it produces.
+
+Pause the playground, start the lab, and submit your work as often as you like:
+
+```sh
+astrona stop ats-011-playground-060
+astrona run --git ssh://git@github.com/astrona-io/ATS011.git -c sections/section-060/module-01/labs/lab-01
+astrona submit -c sections/section-060/module-01/labs/lab-01
+```
+
+When the lab passes, remove it and return to the playground:
+
+```sh
+astrona destroy ats-011-lab-061
+astrona start ats-011-playground-060
+```

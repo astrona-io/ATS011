@@ -20,6 +20,8 @@ This module covers the two shapes a `generate` rule can take: writing a literal 
 1. **[Part 1 — Generating from Literal Data](./course-01-generate-rule-anatomy-and-data.md)** — the `generate` rule shape, targeting `kind: Namespace` as the classic trigger, and `generate.data` for writing a manifest directly into the policy.
 2. **[Part 2 — Cloning Resources and `synchronize`](./course-02-clone-and-synchronize.md)** — `generate.clone` for copying an existing resource, and the exact, empirically-verified behavior of `synchronize: true`: what propagates, what gets reverted, and what does not cascade the way you might assume.
 
+The module closes with a summary page and a mission, **Data-Based Generation Lab**, a graded lab that asks you to write and apply the policies from this module on a live cluster.
+
 ## Learning objectives
 
 After this module you can:

@@ -1,0 +1,42 @@
+metadata:
+  name: "ats-011-lab-053"
+  docs:
+    solution: "solution.md"
+    question: "question.md"
+
+bootstrap:
+  init:
+    - name: "lab-053-setup"
+      description: "Installs Kyverno and waits for its controllers to be ready"
+      type: "file"
+      source: "bootstrap/01-install-kyverno.sh"
+    - name: "lab-053-seed"
+      description: "Creates the shared-config source namespace with ConfigMaps and RBAC so the background controller can manage ConfigMaps"
+      type: "file"
+      source: "bootstrap/02-seed.sh"
+
+validation:
+  scripts:
+    - name: "clonelist-policy-shape"
+      description: "Policy share-config uses cloneList with the right source, kinds and selector"
+      type: "file"
+      source: "validation/validate-clonelist-policy-shape.sh"
+      hint: "Use generate.cloneList with namespace: shared-config, kinds: [v1/ConfigMap] and a selector with matchLabels share: \"true\"."
+    - name: "clonelist-clones-labelled"
+      description: "A namespace labelled needs-shared=true receives the two labelled ConfigMaps but not private-notes"
+      type: "file"
+      source: "validation/validate-clonelist-clones-labelled.sh"
+      hint: "Match Namespaces with the label needs-shared: \"true\" and set generate.namespace to the new namespace name."
+    - name: "foreach-policy-shape"
+      description: "Policy env-configmaps uses generate.foreach"
+      type: "file"
+      source: "validation/validate-foreach-policy-shape.sh"
+      hint: "Put a foreach list under generate in the policy env-configmaps."
+    - name: "foreach-generates-per-element"
+      description: "One ConfigMap per environment is generated and legacy is skipped"
+      type: "file"
+      source: "validation/validate-foreach-generates-per-element.sh"
+      hint: "Split the envs annotation with split(@, ','), name each ConfigMap env-<element>, and add a precondition that skips legacy."
+
+teardown:
+  keepCluster: false

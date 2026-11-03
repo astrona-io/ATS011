@@ -126,6 +126,21 @@ The same reasoning applies to a mutate rule and a validate rule that disagree â€
 > - **Relying on the order of two mutate rules.** Undefined. Make them non-overlapping.
 > - **Expecting a validate rule to catch what a mutate rule fixed.** Mutation runs first, so the validation sees the corrected object.
 
-## Section recap
+## Your mission: Per-Element Mutation Lab
 
-Mutate rules re-run on UPDATE, so any transformation that derives a new value from an old one must be made idempotent or it compounds â€” visibly, silently, and in a way no error reports. A `preconditions` block inside the `foreach` entry provides the per-element guard; `operations: [CREATE]` removes the re-application path where that is appropriate. Ordering between mutate rules is undefined and should be designed away rather than reasoned about.
+You can now patch each list element with `foreach` and make a mutation safe to run repeatedly. The mission asks you to write a `foreach` mutation that prefixes every container image once, even when the rule runs again.
+
+Pause the playground, start the lab, and submit your work as often as you like:
+
+```sh
+astrona stop ats-011-playground-0402
+astrona run --git ssh://git@github.com/astrona-io/ATS011.git -c sections/section-040/module-02/labs/lab-01
+astrona submit -c sections/section-040/module-02/labs/lab-01
+```
+
+When the lab passes, remove it and return to the playground:
+
+```sh
+astrona destroy ats-011-lab-042
+astrona start ats-011-playground-0402
+```

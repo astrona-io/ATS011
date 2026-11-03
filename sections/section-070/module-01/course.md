@@ -20,6 +20,8 @@ This module covers both, in the order you'll actually reach for them: variables 
 1. **[Part 1 — JMESPath, Variables & Built-in Context](./course-01-jmespath-variables-and-context.md)** — the `{{ }}` syntax, where it is and isn't legal, JMESPath basics as Kyverno uses them, and the built-in request variables every policy author reaches for (`request.operation`, `request.userInfo`, `request.object` vs. `request.oldObject`).
 2. **[Part 2 — context.apiCall & Live Cluster Data](./course-02-apicall-and-live-cluster-data.md)** — the `context.apiCall` block, its exact field shape, a real quota-style policy built from a live Pod count instead of a hardcoded number, and what happens — verified, not guessed — when the API call itself fails.
 
+The module closes with a summary page and a mission, **Live Pod-Quota Lab (context.apiCall)**, a graded lab that asks you to write and apply the policies from this module on a live cluster.
+
 ## Learning objectives
 
 After this module you can:

@@ -18,6 +18,8 @@ This module covers the mechanism that closes that gap: `spec.background`, the fi
 1. **[Part 1 — What Background Scanning Actually Does](./course-01-what-background-scans-do.md)** -- the difference between admission-time enforcement and periodic re-evaluation, and how results surface as `PolicyReport` / `ClusterPolicyReport` objects.
 2. **[Part 2 — Request Context and the Limits of a Scan](./course-02-request-context-and-limits.md)** -- why a rule that depends on `request.operation` or `request.userInfo` behaves differently once there's no live admission request behind it, and when to reach for `spec.background: false`.
 
+The module closes with a summary page and a mission, **Background Scanning Lab**, a graded lab that asks you to write and apply the policies from this module on a live cluster.
+
 ## Learning objectives
 
 After this module you can:

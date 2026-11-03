@@ -18,6 +18,8 @@ This module covers the two mechanisms that do that rewriting, and one guarantee 
 1. **[Part 1 — patchStrategicMerge and Ordering](./course-01-patchstrategicmerge-mechanics.md)** — how `mutate.patchStrategicMerge` merges a patch fragment into an incoming resource using Kubernetes' own strategic-merge-patch rules (not plain JSON patch), the `(name)` anchor that makes a patch reach every element of a list instead of just the first, what actually happens when the incoming resource already sets a conflicting value, and the guarantee that every mutate rule on the cluster finishes before any validate rule ever runs.
 2. **[Part 2 — Mutating Existing Resources](./course-02-mutating-existing-resources.md)** — `mutate.mutateExistingOnPolicyUpdate` and `mutate.targets`, which let a mutate rule reach backward and patch resources that already exist, triggered by the *policy* being created or updated rather than by a new admission request to the resource itself — plus the RBAC grant this requires in practice, and the real, occasionally surprising limits on what an already-existing resource can have changed on it.
 
+The module closes with a summary page and a mission, **Mutation Rules Lab**, a graded lab that asks you to write and apply the policies from this module on a live cluster.
+
 ## Learning objectives
 
 After this module you can:

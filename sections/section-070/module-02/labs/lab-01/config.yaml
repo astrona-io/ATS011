@@ -1,0 +1,37 @@
+metadata:
+  name: "ats-011-lab-072"
+  docs:
+    solution: "solution.md"
+    question: "question.md"
+
+bootstrap:
+  init:
+    - name: "lab-072-setup"
+      description: "Installs Kyverno and waits for its controllers to be ready"
+      type: "file"
+      source: "bootstrap/01-install-kyverno.sh"
+    - name: "lab-072-seed"
+      description: "Creates policy-config with the limits ConfigMap and the ctx-lab namespace"
+      type: "file"
+      source: "bootstrap/02-seed.sh"
+
+validation:
+  scripts:
+    - name: "context-structure"
+      description: "The rule has a configMap entry and a variable entry"
+      type: "file"
+      source: "validation/validate-context-structure.sh"
+      hint: "Add context entries cm (configMap) and limit (variable with jmesPath)."
+    - name: "limit-enforced"
+      description: "Deployments above the ConfigMap limit are rejected"
+      type: "file"
+      source: "validation/validate-limit-enforced.sh"
+      hint: "Deny with key request.object.spec.replicas, operator GreaterThan, value {{ limit }}."
+    - name: "limit-follows-configmap"
+      description: "Changing the ConfigMap changes the outcome"
+      type: "file"
+      source: "validation/validate-limit-follows-configmap.sh"
+      hint: "Read the limit from the ConfigMap in the rule context, not a literal in the deny condition."
+
+teardown:
+  keepCluster: false

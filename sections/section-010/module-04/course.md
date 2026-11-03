@@ -29,6 +29,8 @@ Two lines, and the rule enforces the whole profile. The interesting work is not 
 1. **[Part 1 — Profiles, Levels, and Versions](./course-01-podsecurity-profiles-and-levels.md)** — what the Pod Security Standards are, what each of the three levels forbids, the `level` and `version` fields, and reading the multi-part violation message a PSS failure produces.
 2. **[Part 2 — Excluding Controls, and PSS Versus PSA](./course-02-excluding-controls-and-psa.md)** — relaxing one control with `exclude` instead of dropping a level, scoping an exclusion to specific images or field values, and where Kyverno's `podSecurity` fits alongside Kubernetes' built-in Pod Security Admission.
 
+The module closes with a summary page and a mission, **podSecurity Lab**, a graded lab that asks you to write and apply the policies from this module on a live cluster.
+
 ## Learning objectives
 
 After this module you can:

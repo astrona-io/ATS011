@@ -1,0 +1,32 @@
+metadata:
+  name: "ats-011-lab-001"
+  docs:
+    solution: "solution.md"
+    question: "question.md"
+
+bootstrap:
+  init:
+    - name: "lab-001-setup"
+      description: "Installs Kyverno and waits for its controllers to be ready"
+      type: "file"
+      source: "bootstrap/01-install-kyverno.sh"
+    - name: "lab-001-seed"
+      description: "Creates the staging, production and sandbox namespaces"
+      type: "file"
+      source: "bootstrap/02-seed.sh"
+
+validation:
+  scripts:
+    - name: "namespaced-policy-enforces"
+      description: "The namespaced Policy rejects an unowned ConfigMap in staging only"
+      type: "file"
+      source: "validation/validate-namespaced-policy-enforces.sh"
+      hint: "Create kind Policy (not ClusterPolicy) in namespace staging with an Enforce pattern on metadata.labels.owner: '?*'."
+    - name: "overrides-enforce-production"
+      description: "The ClusterPolicy audits everywhere and enforces in production"
+      type: "file"
+      source: "validation/validate-overrides-enforce-production.sh"
+      hint: "Set validationFailureAction Audit and an override with action Enforce and namespaces [production]."
+
+teardown:
+  keepCluster: false

@@ -1,0 +1,243 @@
+# Knowledge check for section 100. Listed in astrona.yaml as a `type: quiz` entry after the capstone lab.
+schema_version: 1
+kind: question_bank
+id: ats011-100
+course_id: ATS011
+exam_code: KCA
+status: draft
+provenance: Original practice material written for this course; not official exam questions.
+scope:
+  type: section
+  id: section-100
+  title: "Cleanup Policies"
+questions:
+
+  - id: ats011-100-q01
+    type: single_choice
+    difficulty: beginner
+    learning_objective: "Contrast CleanupPolicy structure with ClusterPolicy"
+    source_readings:
+      - sections/section-100/module-01/course-01-schedules-matching-and-rbac.md
+    prompt: "Structurally, what does a `CleanupPolicy` have that a `ClusterPolicy` does not, and what does it lack?"
+    options:
+      - id: a
+        text: "It has `validationFailureAction` and a `rules` array of delete rules."
+        explanation: "It has no rules array or failure action."
+      - id: b
+        text: "It has a required cron `schedule` and exposes the candidate as `target`, but lacks `rules`, `validate`, `mutate`, `generate`, and `verifyImages`, and is run by the cleanup controller rather than at admission."
+        explanation: "Correct. The policy is the rule, and the action is always deletion."
+      - id: c
+        text: "It has a `deleteAfter` field and lacks `match`."
+        explanation: "It uses `match` like other policies."
+      - id: d
+        text: "It has the same structure, plus an `action: delete` field."
+        explanation: "The structure differs entirely."
+    correct_option: b
+    explanation: "The policy is the rule, and the action is always deletion."
+
+  - id: ats011-100-q02
+    type: single_choice
+    difficulty: advanced
+    learning_objective: "Diagnose a cleanup controller permission rejection"
+    source_readings:
+      - sections/section-100/module-01/course-01-schedules-matching-and-rbac.md
+    prompt: "A well-formed `ClusterCleanupPolicy` targeting Pods, applied by `cluster-admin`, is rejected with `cleanup controller has no permission to delete kind Pod`. Whose permissions are the problem and how do you fix it?"
+    options:
+      - id: a
+        text: "Yours; ask for a stronger role."
+        explanation: "You are already `cluster-admin`."
+      - id: b
+        text: "The API server's; restart it with an admission flag."
+        explanation: "The API server is not the issue."
+      - id: c
+        text: "The admission controller's; label a role for it."
+        explanation: "The cleanup controller does the deleting."
+      - id: d
+        text: "The `kyverno-cleanup-controller` service account's, fixed with a `ClusterRole` labelled `rbac.kyverno.io/aggregate-to-cleanup-controller: \"true\"` granting `get`, `list`, `watch`, and `delete`."
+        explanation: "Correct. Kyverno checks this at apply time rather than letting a policy silently delete nothing."
+    correct_option: d
+    explanation: "Kyverno checks this at apply time rather than letting a policy silently delete nothing."
+
+  - id: ats011-100-q03
+    type: single_choice
+    difficulty: advanced
+    learning_objective: "Fix two mistakes in a cleanup grant"
+    source_readings:
+      - sections/section-100/module-01/course-01-schedules-matching-and-rbac.md
+    prompt: "A grant `ClusterRole` has the aggregation label and `verbs: [\"delete\"]` on `resources: [\"Pod\"]`, yet the policy is still rejected. What are the two mistakes?"
+    options:
+      - id: a
+        text: "The resource must be the plural lowercase `pods`, and `delete` alone is not enough since the controller must also `get`, `list`, and `watch`."
+        explanation: "Correct. The Kind spelling belongs in the policy's `match`."
+      - id: b
+        text: "The label must be on the policy, and the verb must be `deletecollection`."
+        explanation: "The label belongs on the ClusterRole."
+      - id: c
+        text: "The resource must be `Pods` with a capital letter, and the role must be a namespaced `Role`."
+        explanation: "RBAC uses lowercase plural names and a ClusterRole is needed."
+      - id: d
+        text: "The `apiGroups` must be `apps`, and `delete` must be `*`."
+        explanation: "Pods are in the core group, and a wildcard is not required."
+    correct_option: a
+    explanation: "The Kind spelling belongs in the policy's `match`."
+
+  - id: ats011-100-q04
+    type: single_choice
+    difficulty: intermediate
+    learning_objective: "Predict when a scheduled cleanup deletes a Pod"
+    source_readings:
+      - sections/section-100/module-01/course-01-schedules-matching-and-rbac.md
+    prompt: "A `ClusterCleanupPolicy` has `schedule: \"* * * * *\"`, and a matching Pod is created at 15:26:40. When is it deleted?"
+    options:
+      - id: a
+        text: "At 15:27:40, 60 seconds after creation."
+        explanation: "The sweep is not relative to creation."
+      - id: b
+        text: "Immediately, since the policy runs on creation."
+        explanation: "It is a periodic sweep, not a trigger."
+      - id: c
+        text: "At the next cron boundary, 15:27:00, since each tick lists and deletes matches, so deletion can be up to a minute late."
+        explanation: "Correct. `status.lastExecutionTime` lands on a cron boundary."
+      - id: d
+        text: "At the next hour boundary."
+        explanation: "The schedule sets the cadence."
+    correct_option: c
+    explanation: "`status.lastExecutionTime` lands on a cron boundary."
+
+  - id: ats011-100-q05
+    type: single_choice
+    difficulty: intermediate
+    learning_objective: "Place a status condition against target"
+    source_readings:
+      - sections/section-100/module-01/course-02-conditions-ttl-and-deletion-semantics.md
+    prompt: "You want to clean up only Pods whose `status.phase` is `Succeeded`. Can `match` express that, and if not where does it go?"
+    options:
+      - id: a
+        text: "Yes, with `match.resources.phase`."
+        explanation: "`match` has no phase selector."
+      - id: b
+        text: "No, and it goes in `preconditions` written against `request.object`."
+        explanation: "There is no admission request in a sweep."
+      - id: c
+        text: "Yes, with an annotation selector."
+        explanation: "The phase is not an annotation."
+      - id: d
+        text: "No, because `match` selects on kind, namespace, name, and labels, so it goes in `spec.conditions` against `target`, as `{{ target.status.phase }}`."
+        explanation: "Correct. `request.object` has nothing to resolve during a sweep."
+    correct_option: d
+    explanation: "`request.object` has nothing to resolve during a sweep."
+
+  - id: ats011-100-q06
+    type: single_choice
+    difficulty: intermediate
+    learning_objective: "Keep match narrow and conditions small"
+    source_readings:
+      - sections/section-100/module-01/course-01-schedules-matching-and-rbac.md
+    prompt: "Why is it bad practice to leave `match` as bare `kinds: [Pod]` cluster-wide and do all filtering in `conditions`, even though the result is correct?"
+    options:
+      - id: a
+        text: "The result is not actually correct in that case."
+        explanation: "The result is correct, only costlier."
+      - id: b
+        text: "`conditions` are ignored when `match` is bare."
+        explanation: "They are evaluated."
+      - id: c
+        text: "`match` is evaluated in the API server, so a bare one is rejected."
+        explanation: "It is accepted."
+      - id: d
+        text: "`match` becomes the selector for listing candidates, while `conditions` run per resource afterwards, so a wide `match` makes every tick list and evaluate every Pod."
+        explanation: "Correct. Push kind, namespace, name, and label filters into `match`."
+    correct_option: d
+    explanation: "Push kind, namespace, name, and label filters into `match`."
+
+  - id: ats011-100-q07
+    type: single_choice
+    difficulty: advanced
+    learning_objective: "Diagnose a TTL label that never deletes"
+    source_readings:
+      - sections/section-100/module-01/course-02-conditions-ttl-and-deletion-semantics.md
+    prompt: "A debug Pod is labelled `cleanup.kyverno.io/ttl=30s` on a cluster with no `CleanupPolicy` and no cleanup RBAC. What happens, and how do you diagnose it?"
+    options:
+      - id: a
+        text: "The Pod is rejected at admission with a permission error."
+        explanation: "The label webhook only logs the problem."
+      - id: b
+        text: "The Pod is deleted anyway, because TTL needs no permission."
+        explanation: "TTL needs the same delete permission."
+      - id: c
+        text: "The Pod is admitted and never deleted, with the only trace in the cleanup controller log, found with `kubectl -n kyverno logs deploy/kyverno-cleanup-controller | grep 'required permissions'`."
+        explanation: "Correct. A policy fails loudly at apply time while a TTL label fails silently forever."
+      - id: d
+        text: "The Pod gets an event explaining the missing grant."
+        explanation: "No event or status is written."
+    correct_option: c
+    explanation: "A policy fails loudly at apply time while a TTL label fails silently forever."
+
+  - id: ats011-100-q08
+    type: single_choice
+    difficulty: intermediate
+    learning_objective: "State the accepted TTL values and timing"
+    source_readings:
+      - sections/section-100/module-01/course-02-conditions-ttl-and-deletion-semantics.md
+    prompt: "What values does `cleanup.kyverno.io/ttl` accept, and what is the timing guarantee?"
+    options:
+      - id: a
+        text: "A duration from `creationTimestamp` such as `30s` or `2h`, or an RFC 3339 timestamp, with deletion on the TTL controller's reconciliation sweep, one minute by default."
+        explanation: "Correct. This is separate from any policy's cron schedule."
+      - id: b
+        text: "Only a duration, with deletion exactly at expiry."
+        explanation: "Absolute timestamps are also accepted, and deletion is not exact."
+      - id: c
+        text: "Only a cron expression, evaluated per Pod."
+        explanation: "The label does not take cron."
+      - id: d
+        text: "A duration or timestamp, with deletion at the next policy `schedule`."
+        explanation: "The TTL controller has its own interval."
+    correct_option: a
+    explanation: "This is separate from any policy's cron schedule."
+
+  - id: ats011-100-q09
+    type: single_choice
+    difficulty: intermediate
+    learning_objective: "Predict Orphan propagation on Jobs"
+    source_readings:
+      - sections/section-100/module-01/course-02-conditions-ttl-and-deletion-semantics.md
+    prompt: "A `ClusterCleanupPolicy` deletes `Job` resources with `deletionPropagationPolicy: Orphan`. What happens to the Pods those Jobs created?"
+    options:
+      - id: a
+        text: "They are deleted first, then the Job."
+        explanation: "That is `Foreground`."
+      - id: b
+        text: "They are deleted by the garbage collector afterwards."
+        explanation: "That is `Background`."
+      - id: c
+        text: "They are paused until a new Job adopts them."
+        explanation: "Nothing adopts them."
+      - id: d
+        text: "They are left behind ownerless and keep running, since `Orphan` deletes the owner without collecting its dependents."
+        explanation: "Correct. `Background` or `Foreground` is usually what you want for a kind that owns other resources."
+    correct_option: d
+    explanation: "`Background` or `Foreground` is usually what you want for a kind that owns other resources."
+
+  - id: ats011-100-q10
+    type: single_choice
+    difficulty: intermediate
+    learning_objective: "Treat the deprecation warning on CleanupPolicy correctly"
+    source_readings:
+      - sections/section-100/module-01/course-02-conditions-ttl-and-deletion-semantics.md
+    prompt: "Applying a `ClusterCleanupPolicy` on v1.19.1 prints a deprecation warning that points to `DeletingPolicy`. Should you write `DeletingPolicy` for the KCA?"
+    options:
+      - id: a
+        text: "Yes, because the old kind no longer works."
+        explanation: "It remains fully functional."
+      - id: b
+        text: "Yes, because the exam only covers CEL policies."
+        explanation: "The Writing Policies domain expects the classic kinds."
+      - id: c
+        text: "No, because `CleanupPolicy` and `ClusterCleanupPolicy` stay fully functional, while `DeletingPolicy` shares cron scheduling, selection, and the delete permission and differs mainly by using CEL."
+        explanation: "Correct. The warning signposts a direction, as with `ClusterPolicy`."
+      - id: d
+        text: "No, because `DeletingPolicy` needs no RBAC grant and cannot be compared."
+        explanation: "It still needs delete permission."
+    correct_option: c
+    explanation: "The warning signposts a direction, as with `ClusterPolicy`."

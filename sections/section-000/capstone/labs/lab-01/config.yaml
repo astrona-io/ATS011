@@ -1,0 +1,37 @@
+metadata:
+  name: "ats-011-lab-000"
+  docs:
+    solution: "solution.md"
+    question: "question.md"
+
+bootstrap:
+  init:
+    - name: "lab-000-setup"
+      description: "Installs Kyverno and waits for its controllers to be ready"
+      type: "file"
+      source: "bootstrap/01-install-kyverno.sh"
+    - name: "lab-000-seed"
+      description: "Creates the apps and legacy namespaces"
+      type: "file"
+      source: "bootstrap/02-seed.sh"
+
+validation:
+  scripts:
+    - name: "mutate-then-validate"
+      description: "A ConfigMap without managed-by is admitted with the label added"
+      type: "file"
+      source: "validation/validate-mutate-then-validate.sh"
+      hint: "Mutate runs before validate. Add the label in a mutate rule and require it in a validate rule."
+    - name: "owner-required"
+      description: "A ConfigMap without owner is rejected in apps"
+      type: "file"
+      source: "validation/validate-owner-required.sh"
+      hint: "Add a validate rule with pattern metadata.labels.owner: '?*'."
+    - name: "exclude-and-precondition"
+      description: "legacy is excluded and the skip annotation skips the owner rule"
+      type: "file"
+      source: "validation/validate-exclude-and-precondition.sh"
+      hint: "Use exclude for the namespace and preconditions for the annotation."
+
+teardown:
+  keepCluster: false

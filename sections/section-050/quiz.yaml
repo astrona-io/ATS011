@@ -1,0 +1,452 @@
+# Knowledge check for section 050. Listed in astrona.yaml as a `type: quiz` entry after the capstone lab.
+schema_version: 1
+kind: question_bank
+id: ats011-050
+course_id: ATS011
+exam_code: KCA
+status: draft
+provenance: Original practice material written for this course; not official exam questions.
+scope:
+  type: section
+  id: section-050
+  title: "Generation Rules"
+questions:
+
+  - id: ats011-050-q01
+    type: single_choice
+    difficulty: beginner
+    learning_objective: "Recognise that generation is asynchronous"
+    source_readings:
+      - sections/section-050/module-01/course-01-generate-rule-anatomy-and-data.md
+    prompt: "A `ClusterPolicy` has a `generate` rule matching `kind: Namespace`. You run `kubectl create ns team-a`, it returns instantly, and an immediate `kubectl get networkpolicy -n team-a` shows nothing. Did the rule fail?"
+    options:
+      - id: a
+        text: "Yes, because the NetworkPolicy must exist before the Namespace create returns."
+        explanation: "The create returns once the Namespace is admitted, not when generation finishes."
+      - id: b
+        text: "Not necessarily, because generation runs in the background controller and usually finishes within a few seconds."
+        explanation: "Correct. Poll for the generated resource with a short timeout instead of checking once."
+      - id: c
+        text: "Yes, because generate rules run in the admission controller and would have blocked the create."
+        explanation: "Generation does not run in the admission path."
+      - id: d
+        text: "Not necessarily, but only if `synchronize: true` is set."
+        explanation: "Asynchrony does not depend on `synchronize`."
+    correct_option: b
+    explanation: "Poll for the generated resource with a short timeout instead of checking once."
+
+  - id: ats011-050-q02
+    type: single_choice
+    difficulty: intermediate
+    learning_objective: "Contrast generate.data with generate.clone"
+    source_readings:
+      - sections/section-050/module-01/course-01-generate-rule-anatomy-and-data.md
+    prompt: "What is the difference in job between `generate.data` and `generate.clone`?"
+    options:
+      - id: a
+        text: "`data` is for cluster-scoped resources and `clone` for namespaced ones."
+        explanation: "Scope does not separate them."
+      - id: b
+        text: "`data` is generated once, while `clone` is always kept in sync."
+        explanation: "Synchronisation is a separate setting."
+      - id: c
+        text: "They are mutually exclusive ways to supply content: `data` is a literal manifest in the policy, `clone` copies an existing source resource."
+        explanation: "Correct. A single `generate` block uses one or the other, never both."
+      - id: d
+        text: "They can be combined, with `data` overriding fields of the `clone` source."
+        explanation: "They cannot be combined in one block."
+    correct_option: c
+    explanation: "A single `generate` block uses one or the other, never both."
+
+  - id: ats011-050-q03
+    type: single_choice
+    difficulty: beginner
+    learning_objective: "Use the trigger's name as the destination namespace"
+    source_readings:
+      - sections/section-050/module-01/course-01-generate-rule-anatomy-and-data.md
+    prompt: "In a `generate` rule that targets `kind: Namespace`, what is `\"{{request.object.metadata.name}}\"` typically used for?"
+    options:
+      - id: a
+        text: "It names the generated resource after the policy."
+        explanation: "It refers to the trigger, not the policy."
+      - id: b
+        text: "It selects the source resource to clone."
+        explanation: "The clone source is named separately."
+      - id: c
+        text: "It filters which Namespaces the rule matches."
+        explanation: "Variables are not supported in `match`."
+      - id: d
+        text: "It sets `generate.namespace`, so each new Namespace receives its own copy instead of one hardcoded destination."
+        explanation: "Correct. `request.object` is the trigger Namespace that was just created."
+    correct_option: d
+    explanation: "`request.object` is the trigger Namespace that was just created."
+
+  - id: ats011-050-q04
+    type: single_choice
+    difficulty: intermediate
+    learning_objective: "Predict propagation of source edits under synchronize"
+    source_readings:
+      - sections/section-050/module-01/course-02-clone-and-synchronize.md
+    prompt: "With `synchronize: true` on a `generate.clone` rule, you edit the source resource after several clones exist. What happens to those clones?"
+    options:
+      - id: a
+        text: "They update automatically with no new trigger event, even in namespaces nobody touched."
+        explanation: "Correct. Patching a source ConfigMap propagated to an existing clone within a few seconds."
+      - id: b
+        text: "Nothing, because clones are one-time copies."
+        explanation: "That describes `synchronize: false`."
+      - id: c
+        text: "Only clones created after the edit receive it."
+        explanation: "Existing clones are included."
+      - id: d
+        text: "The clones are deleted and must be regenerated by recreating each namespace."
+        explanation: "They are updated in place."
+    correct_option: a
+    explanation: "Patching a source ConfigMap propagated to an existing clone within a few seconds."
+
+  - id: ats011-050-q05
+    type: single_choice
+    difficulty: intermediate
+    learning_objective: "Predict drift handling on a synchronized clone"
+    source_readings:
+      - sections/section-050/module-01/course-02-clone-and-synchronize.md
+    prompt: "With `synchronize: true`, someone edits a generated clone directly with `kubectl edit`. What happens?"
+    options:
+      - id: a
+        text: "The API server rejects the write, because generated resources are read-only."
+        explanation: "No rule blocks the write."
+      - id: b
+        text: "The edit sticks, because Kyverno only reacts to changes of the source."
+        explanation: "Kyverno also detects drift on the clone."
+      - id: c
+        text: "The clone is deleted and recreated from the source after a minute."
+        explanation: "It is overwritten, not deleted."
+      - id: d
+        text: "The write is accepted, then the background controller silently reverts it to match the source within seconds."
+        explanation: "Correct. `synchronize: true` means Kyverno owns the clone's content going forward."
+    correct_option: d
+    explanation: "`synchronize: true` means Kyverno owns the clone's content going forward."
+
+  - id: ats011-050-q06
+    type: single_choice
+    difficulty: intermediate
+    learning_objective: "Predict recreation after a direct delete"
+    source_readings:
+      - sections/section-050/module-01/course-02-clone-and-synchronize.md
+    prompt: "True or false: with `synchronize: true`, deleting the generated clone directly while leaving its namespace alone makes it disappear permanently."
+    options:
+      - id: a
+        text: "False, because Kyverno recreates it from the source, typically within seconds."
+        explanation: "Correct. This is the cleanest proof that `synchronize: true` is active. With `synchronize: false` a direct delete is permanent."
+      - id: b
+        text: "True, because the clone is a normal object that the owner may remove."
+        explanation: "With `synchronize: true` Kyverno keeps it present."
+      - id: c
+        text: "True, but it returns the next time the Namespace is updated."
+        explanation: "Recreation does not wait for a Namespace update."
+      - id: d
+        text: "False, but only if the source resource is deleted at the same time."
+        explanation: "The source is not involved in the recreation."
+    correct_option: a
+    explanation: "This is the cleanest proof that `synchronize: true` is active. With `synchronize: false` a direct delete is permanent."
+
+  - id: ats011-050-q07
+    type: single_choice
+    difficulty: advanced
+    learning_objective: "Reject the ownerReference explanation of synchronize"
+    source_readings:
+      - sections/section-050/module-01/course-02-clone-and-synchronize.md
+    prompt: "True or false: `synchronize: true` works by setting a Kubernetes `ownerReference` from the generated resource to its trigger, so deleting the trigger cascades through garbage collection."
+    options:
+      - id: a
+        text: "True, because that is the only way Kubernetes links two objects."
+        explanation: "Kyverno uses its own tracking."
+      - id: b
+        text: "True for clones, false for resources created with `data`."
+        explanation: "Neither form uses `ownerReferences`."
+      - id: c
+        text: "False, because generated resources are linked only through Kubernetes finalizers."
+        explanation: "Finalizers are not the mechanism."
+      - id: d
+        text: "False, because `ownerReferences` stay empty and Kyverno links resources through `generate.kyverno.io/*` labels and an internal `UpdateRequest`."
+        explanation: "Correct. A generated resource vanishes with a deleted Namespace only because the namespace controller wipes everything inside it, with or without Kyverno."
+    correct_option: d
+    explanation: "A generated resource vanishes with a deleted Namespace only because the namespace controller wipes everything inside it, with or without Kyverno."
+
+  - id: ats011-050-q08
+    type: single_choice
+    difficulty: intermediate
+    learning_objective: "Choose data or clone and the synchronize setting for a fixed quota"
+    source_readings:
+      - sections/section-050/module-01/course-01-generate-rule-anatomy-and-data.md
+      - sections/section-050/module-01/course-02-clone-and-synchronize.md
+    prompt: "Every namespace must get a `ResourceQuota` with the same fixed limits, and teams must not be able to override their copy. Which approach fits best?"
+    options:
+      - id: a
+        text: "`generate.clone` with `synchronize: false`, so teams cannot change the source."
+        explanation: "Without synchronization, edits to the copy would stick."
+      - id: b
+        text: "`generate.data` with `synchronize: true`, because the content is fixed and edits or deletes are reverted."
+        explanation: "Correct. There is no existing source to copy, and `clone` only makes sense for an object that already exists elsewhere."
+      - id: c
+        text: "`generate.data` with `synchronize: false`, because data blocks cannot be edited."
+        explanation: "Generated objects can be edited when not synchronized."
+      - id: d
+        text: "`generate.clone` with `synchronize: true`, after creating a source quota in each namespace."
+        explanation: "That needs a source per namespace and defeats the purpose."
+    correct_option: b
+    explanation: "There is no existing source to copy, and `clone` only makes sense for an object that already exists elsewhere."
+
+  - id: ats011-050-q09
+    type: single_choice
+    difficulty: intermediate
+    learning_objective: "Predict the coverage of a rule without generateExisting"
+    source_readings:
+      - sections/section-050/module-02/course-01-generate-existing.md
+    prompt: "A generate rule that creates a default-deny `NetworkPolicy` per namespace is applied to a cluster with fifty existing namespaces. How many are protected?"
+    options:
+      - id: a
+        text: "All fifty, because Kyverno scans the cluster when a policy is applied."
+        explanation: "It does not scan without the setting."
+      - id: b
+        text: "Only namespaces that receive any later update."
+        explanation: "Updates do not trigger a purely forward-looking rule."
+      - id: c
+        text: "None, unless `generateExisting: true` is set, because the rule fires only when a Namespace is created."
+        explanation: "Correct. Existing namespaces are never triggers, so the gap stays open."
+      - id: d
+        text: "Only the `default` namespace."
+        explanation: "The default namespace is not special-cased."
+    correct_option: c
+    explanation: "Existing namespaces are never triggers, so the gap stays open."
+
+  - id: ats011-050-q10
+    type: single_choice
+    difficulty: intermediate
+    learning_objective: "Name the common idea behind the three background switches"
+    source_readings:
+      - sections/section-050/module-02/course-01-generate-existing.md
+    prompt: "`generateExisting`, `spec.background`, and `mutateExistingOnPolicyUpdate` are three field names. What single idea sits behind all of them?"
+    options:
+      - id: a
+        text: "Each controls how many times a rule may run per resource."
+        explanation: "It is not about a run count."
+      - id: b
+        text: "Each selects which Kubernetes API version the rule uses."
+        explanation: "API versions are unrelated."
+      - id: c
+        text: "Each turns on audit reporting for that rule type."
+        explanation: "Reporting is a different feature."
+      - id: d
+        text: "Each answers whether the rule also applies to what already exists, through a background path with different permissions from admission."
+        explanation: "Correct. That is why the background forms can need RBAC that the admission forms do not."
+    correct_option: d
+    explanation: "That is why the background forms can need RBAC that the admission forms do not."
+
+  - id: ats011-050-q11
+    type: single_choice
+    difficulty: advanced
+    learning_objective: "Distinguish generateExisting from synchronize"
+    source_readings:
+      - sections/section-050/module-02/course-01-generate-existing.md
+      - sections/section-050/module-02/course-02-lifecycle-and-orphaning.md
+    prompt: "How do `generateExisting` and `synchronize` differ?"
+    options:
+      - id: a
+        text: "They are the same setting under two names."
+        explanation: "They are independent."
+      - id: b
+        text: "`generateExisting` is about reaching resources that already exist, while `synchronize` is about keeping generated resources in step with their source afterwards."
+        explanation: "Correct. A one-time backfill that teams may customise is `generateExisting: true` with `synchronize: false`."
+      - id: c
+        text: "`generateExisting` keeps clones updated, while `synchronize` backfills old namespaces."
+        explanation: "The roles are reversed."
+      - id: d
+        text: "`synchronize` requires `generateExisting`, and neither works alone."
+        explanation: "Each works without the other."
+    correct_option: b
+    explanation: "A one-time backfill that teams may customise is `generateExisting: true` with `synchronize: false`."
+
+  - id: ats011-050-q12
+    type: single_choice
+    difficulty: advanced
+    learning_objective: "Predict what deleting a policy does to generated resources"
+    source_readings:
+      - sections/section-050/module-02/course-02-lifecycle-and-orphaning.md
+    prompt: "You delete a `ClusterPolicy` whose generate rule created a default-deny `NetworkPolicy` in fifty namespaces. What happens to those NetworkPolicies?"
+    options:
+      - id: a
+        text: "They stay, because they are independent objects once created."
+        explanation: "By default they are removed."
+      - id: b
+        text: "They stay, but stop being synchronized."
+        explanation: "By default they are deleted, not just released."
+      - id: c
+        text: "They are deleted within seconds, and `orphanDownstreamOnPolicyDelete: true` reverses this."
+        explanation: "Correct. Deleting one policy object removed baseline isolation from every namespace it had generated into."
+      - id: d
+        text: "They are deleted only in namespaces that were created after the policy."
+        explanation: "Deletion covers all generated resources."
+    correct_option: c
+    explanation: "Deleting one policy object removed baseline isolation from every namespace it had generated into."
+
+  - id: ats011-050-q13
+    type: single_choice
+    difficulty: intermediate
+    learning_objective: "Decide which generated resources should be orphaned on policy deletion"
+    source_readings:
+      - sections/section-050/module-02/course-02-lifecycle-and-orphaning.md
+    prompt: "For which kind of generated resource is the default deletion behaviour wrong?"
+    options:
+      - id: a
+        text: "A generated ConfigMap of policy-derived settings."
+        explanation: "The default suits resources that only make sense with the policy."
+      - id: b
+        text: "Any resource generated from a `clone` source."
+        explanation: "The source type does not decide this."
+      - id: c
+        text: "Safety controls such as a default-deny `NetworkPolicy`, `ResourceQuota`, `LimitRange`, or `PodDisruptionBudget`."
+        explanation: "Correct. A stale one still does its job, while a deleted one does nothing."
+      - id: d
+        text: "Any resource in a namespace that has a `ResourceQuota`."
+        explanation: "Quota presence is irrelevant."
+    correct_option: c
+    explanation: "A stale one still does its job, while a deleted one does nothing."
+
+  - id: ats011-050-q14
+    type: single_choice
+    difficulty: advanced
+    learning_objective: "Explain why generated-resource cleanup is not garbage collection"
+    source_readings:
+      - sections/section-050/module-02/course-02-lifecycle-and-orphaning.md
+    prompt: "Why does Kubernetes' garbage collector not handle cleanup of generated resources, and why does it matter?"
+    options:
+      - id: a
+        text: "The garbage collector is disabled on clusters that run Kyverno."
+        explanation: "It runs normally."
+      - id: b
+        text: "Generated resources are cluster-scoped, which the collector ignores."
+        explanation: "Scope is not the cause."
+      - id: c
+        text: "Kyverno deletes resources on a timer, so the collector never sees them."
+        explanation: "Deletion is triggered by policy events, not a timer."
+      - id: d
+        text: "Generated resources have no `ownerReferences`, so Kyverno itself removes what it knows it created, which is why the behaviour is configurable."
+        explanation: "Correct. An `ownerReference` link would offer no such switch."
+    correct_option: d
+    explanation: "An `ownerReference` link would offer no such switch."
+
+  - id: ats011-050-q15
+    type: single_choice
+    difficulty: advanced
+    learning_objective: "Find other causes of generated resources disappearing"
+    source_readings:
+      - sections/section-050/module-02/course-02-lifecycle-and-orphaning.md
+    prompt: "Under `synchronize: true`, what else besides deleting the policy can make a generated resource disappear?"
+    options:
+      - id: a
+        text: "The source resource being edited."
+        explanation: "Editing the source updates clones."
+      - id: b
+        text: "The generated resource's age passing a default TTL."
+        explanation: "There is no default TTL."
+      - id: c
+        text: "The cluster being upgraded."
+        explanation: "Upgrades do not remove them."
+      - id: d
+        text: "The trigger ceasing to match, for instance a namespace relabelled so `match` no longer selects it."
+        explanation: "Correct. The generated set tracks the matching triggers in both directions, so narrowing `match` destroys resources."
+    correct_option: d
+    explanation: "The generated set tracks the matching triggers in both directions, so narrowing `match` destroys resources."
+
+  - id: ats011-050-q16
+    type: single_choice
+    difficulty: intermediate
+    learning_objective: "Distinguish the two namespace fields in a cloneList rule"
+    source_readings:
+      - sections/section-050/module-03/course-01-clonelist.md
+    prompt: "In a rule with `generate.namespace: \"{{ request.object.metadata.name }}\"` and `cloneList.namespace: shared-config`, what do the two fields mean?"
+    options:
+      - id: a
+        text: "Both name the source namespace, and the second one is a fallback."
+        explanation: "They are two different fields with different jobs."
+      - id: b
+        text: "`generate.namespace` is the source and `cloneList.namespace` is the destination."
+        explanation: "This is reversed."
+      - id: c
+        text: "`generate.namespace` is the destination of the copies and `cloneList.namespace` is the source where Kyverno looks."
+        explanation: "Correct. They are two different fields with the same name, and mixing them up is a listed pitfall."
+      - id: d
+        text: "Both name the destination, and the source is found from the `kinds` list."
+        explanation: "The source namespace is `cloneList.namespace`."
+    correct_option: c
+    explanation: "They are two different fields with the same name, and mixing them up is a listed pitfall."
+
+  - id: ats011-050-q17
+    type: single_choice
+    difficulty: intermediate
+    learning_objective: "Predict what cloneList copies when no selector is given"
+    source_readings:
+      - sections/section-050/module-03/course-01-clonelist.md
+    prompt: "A `cloneList` names `kinds: [v1/ConfigMap, v1/Secret]` and has no `selector`. What does Kyverno clone?"
+    options:
+      - id: a
+        text: "Every object of the listed kinds in the source namespace, including ones never meant to be shared."
+        explanation: "Correct. The selector is optional and only limits the set. Omitting it by accident clones everything of those kinds."
+      - id: b
+        text: "Nothing, because a selector is required."
+        explanation: "The selector is optional."
+      - id: c
+        text: "Only the objects that carry the label `share: \"true\"`."
+        explanation: "That label filter exists only when you write the selector."
+      - id: d
+        text: "Only the first object of each kind."
+        explanation: "There is no such limit."
+    correct_option: a
+    explanation: "The selector is optional and only limits the set. Omitting it by accident clones everything of those kinds."
+
+  - id: ats011-050-q18
+    type: single_choice
+    difficulty: advanced
+    learning_objective: "Place synchronize correctly in a generate foreach rule"
+    source_readings:
+      - sections/section-050/module-03/course-02-generate-foreach.md
+    prompt: "Where do `synchronize` and `generateExisting` belong in a rule that uses `generate.foreach`?"
+    options:
+      - id: a
+        text: "Inside each foreach entry, next to `kind` and `name`."
+        explanation: "Putting `synchronize` inside the entry is a listed pitfall."
+      - id: b
+        text: "Under `match`, next to `resources`."
+        explanation: "They are generate fields, not match fields."
+      - id: c
+        text: "Under `context`, as a variable."
+        explanation: "They are not context variables."
+      - id: d
+        text: "At the `generate` level, beside `foreach`."
+        explanation: "Correct. The generate fields such as `apiVersion`, `kind` and `name` sit in the entry, but `synchronize`, `generateExisting` and `orphanDownstreamOnPolicyDelete` stay beside `foreach`."
+    correct_option: d
+    explanation: "The generate fields such as `apiVersion`, `kind` and `name` sit in the entry, but `synchronize`, `generateExisting` and `orphanDownstreamOnPolicyDelete` stay beside `foreach`."
+
+  - id: ats011-050-q19
+    type: single_choice
+    difficulty: advanced
+    learning_objective: "Trace the result of a foreach with a precondition"
+    source_readings:
+      - sections/section-050/module-03/course-02-generate-foreach.md
+    prompt: "The `list` splits the annotation `envs: \"dev,test,legacy\"`, and a precondition skips the element `legacy`. Each entry generates a ConfigMap named `env-{{ env }}`. Which ConfigMaps exist afterwards?"
+    options:
+      - id: a
+        text: "`env-dev`, `env-test` and `env-legacy`."
+        explanation: "The precondition is checked once per element, and `legacy` fails it."
+      - id: b
+        text: "`env-dev` and `env-test` only."
+        explanation: "Correct. Preconditions run per element, an element that fails is skipped, and the loop moves on."
+      - id: c
+        text: "None, because one failed precondition stops the whole loop."
+        explanation: "A failed element is skipped, and the loop continues."
+      - id: d
+        text: "Only `env-legacy`, because the precondition selects the element that matches."
+        explanation: "The operator is `NotEquals`, so it keeps the others."
+    correct_option: b
+    explanation: "Preconditions run per element, an element that fails is skipped, and the loop moves on."

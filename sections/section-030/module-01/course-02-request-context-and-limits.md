@@ -123,3 +123,22 @@ With `background: false`, this policy applies cleanly. It still validates every 
 ## The scan interval
 
 The 1-hour default mentioned in Part 1 is configurable -- it lives in the Kyverno install's ConfigMap / controller flags as `backgroundScanInterval`, and cluster operators can tune it shorter (more current reports, more load on the API server and the reports-controller) or longer. What it controls precisely is the *recurring* full re-sweep of every matching resource against every background-enabled policy. It has no bearing on the first scan after a brand-new policy becomes `Ready`, which -- as Part 1's timing note showed -- tends to happen far sooner than an hour, because Kyverno reconciles newly-applied policies against the cluster immediately rather than waiting for the next scheduled tick.
+
+## Your mission: Background Scanning Lab
+
+You can now read policy reports and predict what a background scan reports for a given rule. The mission asks you to create a policy that scans existing resources and read the resulting report entries.
+
+Pause the playground, start the lab, and submit your work as often as you like:
+
+```sh
+astrona stop ats-011-playground-030
+astrona run --git ssh://git@github.com/astrona-io/ATS011.git -c sections/section-030/module-01/labs/lab-01
+astrona submit -c sections/section-030/module-01/labs/lab-01
+```
+
+When the lab passes, remove it and return to the playground:
+
+```sh
+astrona destroy ats-011-lab-031
+astrona start ats-011-playground-030
+```

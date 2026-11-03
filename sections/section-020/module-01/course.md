@@ -18,6 +18,8 @@ This module covers the `preconditions` block itself — its shape, its operators
 1. **[Part 1 — The Preconditions Block and Its Operators](./course-01-preconditions-and-operators.md)** — the `preconditions.all`/`any` shape, the full operator vocabulary (`Equals`, `NotEquals`, `AnyIn`/`AllIn`/`AnyNotIn`/`AllNotIn`, numeric and duration comparisons), and referencing `request.operation` and `request.object` fields inside a `key`.
 2. **[Part 2 — Preconditions vs. match/exclude, and all vs. any](./course-02-preconditions-vs-match.md)** — where `match`/`exclude`'s vocabulary genuinely runs out (and where it surprisingly doesn't), and the difference in behavior between `preconditions.all` (AND) and `preconditions.any` (OR).
 
+The module closes with a summary page and a mission, **Preconditions Lab**, a graded lab that asks you to write and apply the policies from this module on a live cluster.
+
 ## Learning objectives
 
 After this module you can:

@@ -1,0 +1,1265 @@
+# Final domain quiz for the KCA Writing Policies domain. Closed-book simulator; listed in astrona.yaml as the final quiz.
+schema_version: 1
+kind: question_bank
+id: ats011-final
+course_id: ATS011
+exam_code: KCA
+status: draft
+provenance: Original practice material written for this course; not official exam questions.
+scope:
+  type: domain
+  id: writing-policies
+  title: "Writing Policies"
+questions:
+
+  - id: ats011-final-q01
+    type: single_choice
+    difficulty: beginner
+    learning_objective: "Predict how the ?* wildcard treats empty and absent values"
+    source_readings:
+      - sections/section-010/module-01/course-01-the-clusterpolicy-object.md
+      - sections/section-010/module-01/course-02-the-pattern-block-and-failure-actions.md
+      - sections/section-000/module-01/course-01-policy-objects-and-rule-anatomy.md
+      - sections/section-000/module-01/course-02-failure-actions-and-rollout.md
+      - sections/section-000/module-01/course-03-rule-ordering-and-exceptions.md
+    prompt: "A `validate.pattern` requires `metadata.labels.team: \"?*\"`. One Pod is submitted with `labels: {team: \"\"}` and another with no `labels` key at all. What happens?"
+    options:
+      - id: a
+        text: "Both are rejected: `?*` needs at least one character, and an absent `labels` map cannot satisfy the path."
+        explanation: "`?*` means one character followed by anything, so an empty string fails; a missing parent map also fails the pattern path. Plain `*` would be the weaker check an empty string can satisfy."
+      - id: b
+        text: "Only the empty-string Pod is rejected; the Pod without `labels` is skipped because there is nothing to check."
+        explanation: "An absent parent does not make the rule skip; the pattern path is unsatisfied and the resource fails."
+      - id: c
+        text: "Both are admitted, because `?*` matches any value including an empty one."
+        explanation: "`?` requires exactly one character, so an empty value cannot match."
+      - id: d
+        text: "Only the Pod without `labels` is rejected; an empty string counts as present."
+        explanation: "An empty string fails `?*` because there is no first character."
+    correct_option: a
+    explanation: "`?*` means one character followed by anything, so an empty string fails; a missing parent map also fails the pattern path. Plain `*` would be the weaker check an empty string can satisfy."
+
+  - id: ats011-final-q02
+    type: single_choice
+    difficulty: intermediate
+    learning_objective: "Split a rule between match and preconditions"
+    source_readings:
+      - sections/section-020/module-01/course-01-preconditions-and-operators.md
+      - sections/section-020/module-01/course-02-preconditions-vs-match.md
+    prompt: "A rule must apply only when the request is an UPDATE and the resource already carries the label `env=prod`. How should the conditions be divided?"
+    options:
+      - id: a
+        text: "Put both in `match`, because `match` can evaluate any JMESPath expression."
+        explanation: "`match` selects by identity; it does not evaluate arbitrary JMESPath over the request."
+      - id: b
+        text: "Put the operation test in a label selector and the label in `preconditions`."
+        explanation: "Operations are not labels; that division reverses what each block is for."
+      - id: c
+        text: "Put the label selector in `match` and the operation test in `preconditions` as `{{ request.operation }}` Equals UPDATE."
+        explanation: "`match` selects on resource identity such as kind, name, namespace and labels, while `preconditions` evaluates JMESPath over the request and the resource's field values."
+      - id: d
+        text: "Put both in `preconditions`, because `match` cannot see labels at all."
+        explanation: "`match` can select on labels, and doing so is the idiomatic, cheaper place for it."
+    correct_option: c
+    explanation: "`match` selects on resource identity such as kind, name, namespace and labels, while `preconditions` evaluates JMESPath over the request and the resource's field values."
+
+  - id: ats011-final-q03
+    type: single_choice
+    difficulty: intermediate
+    learning_objective: "Explain request-only context in a background scan"
+    source_readings:
+      - sections/section-030/module-01/course-01-what-background-scans-do.md
+      - sections/section-030/module-01/course-02-request-context-and-limits.md
+    prompt: "A policy has `background: true` and a rule whose preconditions read `{{ request.userInfo.username }}`. What is the consequence during a background scan?"
+    options:
+      - id: a
+        text: "Kyverno substitutes the username of the policy's creator."
+        explanation: "Kyverno never invents a user for a scan."
+      - id: b
+        text: "There is no admission request during a scan, so the variable cannot resolve and the rule is skipped or errors rather than being evaluated."
+        explanation: "Request-only context such as `request.userInfo`, `request.operation` and `request.roles` exists only at admission time; background scans have no requester to read."
+      - id: c
+        text: "The scan evaluates the rule normally because stored resources record who created them."
+        explanation: "Stored resources do not carry the request's user info as request context."
+      - id: d
+        text: "The `background` setting overrides the precondition, which is ignored."
+        explanation: "Preconditions are not ignored; the rule simply cannot be meaningfully evaluated."
+    correct_option: b
+    explanation: "Request-only context such as `request.userInfo`, `request.operation` and `request.roles` exists only at admission time; background scans have no requester to read."
+
+  - id: ats011-final-q04
+    type: single_choice
+    difficulty: beginner
+    learning_objective: "Contrast Audit and Enforce and locate the Audit result"
+    source_readings:
+      - sections/section-010/module-01/course-01-the-clusterpolicy-object.md
+      - sections/section-010/module-01/course-02-the-pattern-block-and-failure-actions.md
+      - sections/section-030/module-01/course-01-what-background-scans-do.md
+      - sections/section-030/module-01/course-02-request-context-and-limits.md
+      - sections/section-000/module-01/course-01-policy-objects-and-rule-anatomy.md
+      - sections/section-000/module-01/course-02-failure-actions-and-rollout.md
+      - sections/section-000/module-01/course-03-rule-ordering-and-exceptions.md
+    prompt: "What is the observable difference between `validationFailureAction: Audit` and `Enforce`, and where is the result of Audit read?"
+    options:
+      - id: a
+        text: "Audit rejects the request silently; Enforce rejects it with a message."
+        explanation: "Audit never rejects."
+      - id: b
+        text: "Audit deletes the offending resource later; Enforce only logs it."
+        explanation: "Neither mode deletes resources after admission."
+      - id: c
+        text: "Audit writes the result to the Pod's events; Enforce writes it to a PolicyReport."
+        explanation: "Both reports and events are not swapped this way; reports belong to Audit findings."
+      - id: d
+        text: "Enforce rejects the request; Audit admits it and records the violation in a PolicyReport or ClusterPolicyReport."
+        explanation: "Audit is the safe posture for rolling out a policy on a live cluster, and its findings are read with `kubectl get policyreport -A`. Enforce is what actually prevents creation."
+    correct_option: d
+    explanation: "Audit is the safe posture for rolling out a policy on a live cluster, and its findings are read with `kubectl get policyreport -A`. Enforce is what actually prevents creation."
+
+  - id: ats011-final-q05
+    type: single_choice
+    difficulty: intermediate
+    learning_objective: "Predict an unnamed list entry in patchStrategicMerge"
+    source_readings:
+      - sections/section-040/module-01/course-01-patchstrategicmerge-mechanics.md
+      - sections/section-040/module-01/course-02-mutating-existing-resources.md
+    prompt: "A `patchStrategicMerge` fragment lists `containers: [{imagePullPolicy: IfNotPresent}]` with no `name`. It is applied to a Pod with two containers. What happens?"
+    options:
+      - id: a
+        text: "Both containers receive the setting, because a missing name acts as a wildcard."
+        explanation: "Only the `(name)` anchor gives wildcard behaviour."
+      - id: b
+        text: "The Pod is rejected: the entry matches no container by merge key and is inserted as a nameless container."
+        explanation: "Strategic merge reconciles containers by `name`; a missing name is not a silent no-op. Use the `(name): \"*\"` anchor to mean every container."
+      - id: c
+        text: "Only the first container is patched, because lists merge by position."
+        explanation: "Containers merge by the `name` key, not by index."
+      - id: d
+        text: "The fragment is silently ignored and the Pod is admitted unchanged."
+        explanation: "It is inserted as a new element rather than ignored."
+    correct_option: b
+    explanation: "Strategic merge reconciles containers by `name`; a missing name is not a silent no-op. Use the `(name): \"*\"` anchor to mean every container."
+
+  - id: ats011-final-q06
+    type: single_choice
+    difficulty: intermediate
+    learning_objective: "Escape a slash in a JSON Pointer"
+    source_readings:
+      - sections/section-080/module-01/course-01-json-patch-operations.md
+      - sections/section-080/module-01/course-02-pointer-escaping-and-missing-paths.md
+      - sections/section-080/module-01/course-03-guarded-removal-and-safe-patches.md
+    prompt: "Which JSON Pointer targets the annotation `policy.example.com/reviewed`?"
+    options:
+      - id: a
+        text: "`/metadata/annotations/policy.example.com~1reviewed`"
+        explanation: "RFC 6901 treats a literal `/` as a path separator, so the slash in the key is written `~1`, and `~` is written `~0`. Dots and dashes need no escaping."
+      - id: b
+        text: "`/metadata/annotations/policy.example.com/reviewed`"
+        explanation: "The raw slash splits the key into extra path segments."
+      - id: c
+        text: "`/metadata/annotations/policy.example.com~0reviewed`"
+        explanation: "`~0` escapes a tilde, not a slash."
+      - id: d
+        text: "`/metadata/annotations/policy~1example~1com~1reviewed`"
+        explanation: "Dots do not need escaping; only the slash does."
+    correct_option: a
+    explanation: "RFC 6901 treats a literal `/` as a path separator, so the slash in the key is written `~1`, and `~` is written `~0`. Dots and dashes need no escaping."
+
+  - id: ats011-final-q07
+    type: single_choice
+    difficulty: advanced
+    learning_objective: "Compare add, remove and replace on a missing path"
+    source_readings:
+      - sections/section-080/module-01/course-01-json-patch-operations.md
+      - sections/section-080/module-01/course-02-pointer-escaping-and-missing-paths.md
+      - sections/section-080/module-01/course-03-guarded-removal-and-safe-patches.md
+    prompt: "On Kyverno v1.19.1, three JSON Patch rules target a path that does not exist: one `add`, one `remove`, one `replace`. What is the outcome?"
+    options:
+      - id: a
+        text: "All three succeed, creating the path if it is missing."
+        explanation: "Only `add` creates the path."
+      - id: b
+        text: "`add` and `replace` succeed; `remove` rejects the request."
+        explanation: "`replace` is the one that rejects and `remove` is a no-op."
+      - id: c
+        text: "All three are silent no-ops because the path does not exist."
+        explanation: "`add` creates it and `replace` fails the request."
+      - id: d
+        text: "`add` creates the path, `remove` is a silent no-op, and `replace` rejects the whole request."
+        explanation: "The safe design rule is that an unconditional `add` needs no guard, while `remove` and `replace` should be gated by a precondition that the field exists."
+    correct_option: d
+    explanation: "The safe design rule is that an unconditional `add` needs no guard, while `remove` and `replace` should be gated by a precondition that the field exists."
+
+  - id: ats011-final-q08
+    type: single_choice
+    difficulty: intermediate
+    learning_objective: "State what mutateExistingOnPolicyUpdate adds"
+    source_readings:
+      - sections/section-040/module-01/course-01-patchstrategicmerge-mechanics.md
+      - sections/section-040/module-01/course-02-mutating-existing-resources.md
+    prompt: "What does `mutateExistingOnPolicyUpdate: true` with a `targets` block do that an ordinary mutate rule cannot?"
+    options:
+      - id: a
+        text: "It makes the API server re-admit every resource through the webhook once."
+        explanation: "The patching is done by the background controller, not by re-admission."
+      - id: b
+        text: "It lets a mutate rule run after validate rules."
+        explanation: "It does not change rule-type ordering."
+      - id: c
+        text: "It makes the background controller patch resources that already existed before the policy was applied."
+        explanation: "An ordinary mutate rule only sees resources passing through admission. Patching existing targets also requires the background controller to hold RBAC to update the target kind."
+      - id: d
+        text: "It allows mutate rules to run without any RBAC."
+        explanation: "Updating targets needs explicit RBAC for the background controller."
+    correct_option: c
+    explanation: "An ordinary mutate rule only sees resources passing through admission. Patching existing targets also requires the background controller to hold RBAC to update the target kind."
+
+  - id: ats011-final-q09
+    type: single_choice
+    difficulty: intermediate
+    learning_objective: "Predict synchronize behaviour on edits and deletes"
+    source_readings:
+      - sections/section-050/module-01/course-01-generate-rule-anatomy-and-data.md
+      - sections/section-050/module-01/course-02-clone-and-synchronize.md
+    prompt: "A generate rule with `synchronize: true` creates a ConfigMap in each new Namespace. An operator edits one generated ConfigMap by hand, then deletes another. What happens?"
+    options:
+      - id: a
+        text: "The edit persists and the deletion is permanent."
+        explanation: "That is the `synchronize: false` behaviour."
+      - id: b
+        text: "The edit is reverted but the deleted ConfigMap stays deleted."
+        explanation: "Deletion is also self-healed."
+      - id: c
+        text: "The edit is reverted and the deleted ConfigMap is recreated."
+        explanation: "With synchronize, generated resources are continuously reconciled against their source. With `synchronize: false` the resource is created once and left alone."
+      - id: d
+        text: "Both are blocked by the admission webhook."
+        explanation: "Kyverno reconciles after the fact rather than blocking."
+    correct_option: c
+    explanation: "With synchronize, generated resources are continuously reconciled against their source. With `synchronize: false` the resource is created once and left alone."
+
+  - id: ats011-final-q10
+    type: single_choice
+    difficulty: intermediate
+    learning_objective: "Explain digest pinning with mutateDigest"
+    source_readings:
+      - sections/section-060/module-01/course-01-signature-verification-and-attestors.md
+      - sections/section-060/module-01/course-02-attestations-and-digest-pinning.md
+    prompt: "A `verifyImages` rule has `mutateDigest: true`. A Pod references `registry.example.com/app:v1.2`. What is persisted, and why does it matter?"
+    options:
+      - id: a
+        text: "The reference is left as is; the digest is only recorded in a report."
+        explanation: "`mutateDigest` rewrites the spec."
+      - id: b
+        text: "The image is replaced with a copy stored in the cluster."
+        explanation: "Kyverno does not copy images; it rewrites the reference."
+      - id: c
+        text: "The tag is dropped and the digest check happens only at pull time."
+        explanation: "The digest is pinned at admission."
+      - id: d
+        text: "The tag gains the resolved digest, so the kubelet pulls exactly the bytes that were verified."
+        explanation: "A tag is a mutable pointer; pinning the digest closes the window in which a republished tag could swap the image after verification."
+    correct_option: d
+    explanation: "A tag is a mutable pointer; pinning the digest closes the window in which a republished tag could swap the image after verification."
+
+  - id: ats011-final-q11
+    type: single_choice
+    difficulty: intermediate
+    learning_objective: "Pick the mechanism for live cluster data"
+    source_readings:
+      - sections/section-070/module-01/course-01-jmespath-variables-and-context.md
+      - sections/section-070/module-01/course-02-apicall-and-live-cluster-data.md
+    prompt: "A rule must decide based on how many Pods already exist in the requesting namespace. Which mechanism supplies that, and what is unusual about it?"
+    options:
+      - id: a
+        text: "A `context.apiCall`, whose value is fetched from live cluster state at evaluation time and needs read permission."
+        explanation: "Because the value is not stored in the policy, the same unchanged policy can reach different verdicts on different days."
+      - id: b
+        text: "A `ConfigMap` context, whose value is baked into the policy when applied."
+        explanation: "A ConfigMap is a stored lookup, not a live API query."
+      - id: c
+        text: "The `images` variable, which counts Pods in the request."
+        explanation: "`images` describes container images in the request."
+      - id: d
+        text: "The `request.object` variable, which holds the namespace Pod list."
+        explanation: "`request.object` is the incoming resource only."
+    correct_option: a
+    explanation: "Because the value is not stored in the policy, the same unchanged policy can reach different verdicts on different days."
+
+  - id: ats011-final-q12
+    type: single_choice
+    difficulty: intermediate
+    learning_objective: "Explain quoting and the empty fallback in JMESPath"
+    source_readings:
+      - sections/section-070/module-01/course-01-jmespath-variables-and-context.md
+      - sections/section-070/module-01/course-02-apicall-and-live-cluster-data.md
+      - sections/section-080/module-01/course-01-json-patch-operations.md
+      - sections/section-080/module-01/course-02-pointer-escaping-and-missing-paths.md
+      - sections/section-080/module-01/course-03-guarded-removal-and-safe-patches.md
+    prompt: "Why is `{{ request.object.metadata.annotations.\"example.com/owner\" || '' }}` written with both double quotes and `|| ''`?"
+    options:
+      - id: a
+        text: "The quotes escape the dot and `|| ''` makes the value optional in the schema."
+        explanation: "Quotes handle the slash, and the fallback is runtime behaviour, not schema."
+      - id: b
+        text: "The quotes protect the slash in the key, and `|| ''` avoids a substitution error when annotations are missing."
+        explanation: "A bare unresolved variable is an error, not an empty value; comparing the fallback against an empty string with NotEquals is the standard key-exists idiom."
+      - id: c
+        text: "Both are decorative; Kyverno resolves the expression identically without them."
+        explanation: "Without them the slash is syntax and the missing map errors."
+      - id: d
+        text: "The quotes mark a string literal and `|| ''` joins two annotations."
+        explanation: "`||` is an or-fallback, not concatenation."
+    correct_option: b
+    explanation: "A bare unresolved variable is an error, not an empty value; comparing the fallback against an empty string with NotEquals is the standard key-exists idiom."
+
+  - id: ats011-final-q13
+    type: single_choice
+    difficulty: intermediate
+    learning_objective: "Predict autogen when match names a non-Pod kind"
+    source_readings:
+      - sections/section-090/module-01/course-01-what-autogen-generates.md
+      - sections/section-090/module-01/course-02-controlling-autogen-scope.md
+      - sections/section-090/module-01/course-03-when-autogen-declines.md
+    prompt: "A rule's `match.any` lists `kinds: [Pod, Namespace]` in a single entry. How many autogenerated rules does Kyverno produce?"
+    options:
+      - id: a
+        text: "One, covering Deployments only."
+        explanation: "No controller rules are produced at all."
+      - id: b
+        text: "Seven, one per controller kind, ignoring Namespace."
+        explanation: "Autogen does not ignore the extra kind; it declines."
+      - id: c
+        text: "Two: one for Pod and one for Namespace."
+        explanation: "Autogen does not split a mixed entry."
+      - id: d
+        text: "None: autogen declines when any match or exclude entry names a kind other than Pod."
+        explanation: "Kyverno will not produce a partial rewrite; two single-kind rules are needed for a Pod check and a Namespace check."
+    correct_option: d
+    explanation: "Kyverno will not produce a partial rewrite; two single-kind rules are needed for a Pod check and a Namespace check."
+
+  - id: ats011-final-q14
+    type: single_choice
+    difficulty: intermediate
+    learning_objective: "Compare autogen path rewrites"
+    source_readings:
+      - sections/section-090/module-01/course-01-what-autogen-generates.md
+      - sections/section-090/module-01/course-02-controlling-autogen-scope.md
+      - sections/section-090/module-01/course-03-when-autogen-declines.md
+    prompt: "A Pod-only rule checks `metadata.labels.team`. What are the rewritten paths for a Deployment and for a CronJob?"
+    options:
+      - id: a
+        text: "Both use `spec.template.metadata.labels.team`."
+        explanation: "A CronJob nests its Pod template under a Job template."
+      - id: b
+        text: "Deployment: `spec.template.metadata.labels.team`; CronJob: `spec.jobTemplate.spec.template.metadata.labels.team`."
+        explanation: "Six controller kinds share the `spec.template` shape and one generated rule; a CronJob nests its template deeper and gets its own rule."
+      - id: c
+        text: "Both use `spec.jobTemplate.spec.template.metadata.labels.team`."
+        explanation: "Only CronJob uses that path."
+      - id: d
+        text: "Deployment keeps `metadata.labels.team`; CronJob uses `spec.metadata.labels.team`."
+        explanation: "The Pod template is always nested under a template key."
+    correct_option: b
+    explanation: "Six controller kinds share the `spec.template` shape and one generated rule; a CronJob nests its template deeper and gets its own rule."
+
+  - id: ats011-final-q15
+    type: single_choice
+    difficulty: advanced
+    learning_objective: "Trace what happens to a Job when autogen is scoped away"
+    source_readings:
+      - sections/section-090/module-01/course-01-what-autogen-generates.md
+      - sections/section-090/module-01/course-02-controlling-autogen-scope.md
+      - sections/section-090/module-01/course-03-when-autogen-declines.md
+    prompt: "Autogen is scoped to Deployment with the `pod-policies.kyverno.io/autogen-controllers` annotation, excluding Job. A non-compliant Job is submitted. What happens?"
+    options:
+      - id: a
+        text: "The Job is rejected at submission by the Pod rule."
+        explanation: "No rule was generated for Job, so the Job object itself is admitted."
+      - id: b
+        text: "The Job and its Pods are both admitted, since the Pod rule only applies to bare Pods."
+        explanation: "The Job controller's Pods are Pod submissions and are checked."
+      - id: c
+        text: "The Job object is admitted, but its Pods are rejected by the original Pod rule, so the Job keeps failing."
+        explanation: "Scoping narrows which controller objects get a generated rule; it never narrows what the original Pod rule matches, so FailedCreate events repeat."
+      - id: d
+        text: "The Job runs once and then the policy deletes it."
+        explanation: "Validate rules do not delete resources."
+    correct_option: c
+    explanation: "Scoping narrows which controller objects get a generated rule; it never narrows what the original Pod rule matches, so FailedCreate events repeat."
+
+  - id: ats011-final-q16
+    type: single_choice
+    difficulty: advanced
+    learning_objective: "Diagnose a pre-nested pattern under autogen"
+    source_readings:
+      - sections/section-090/module-01/course-01-what-autogen-generates.md
+      - sections/section-090/module-01/course-02-controlling-autogen-scope.md
+      - sections/section-090/module-01/course-03-when-autogen-declines.md
+    prompt: "A Pod-only rule already nests its pattern under `spec.template`, anticipating a Deployment. Autogen fires. What does the generated rule check?"
+    options:
+      - id: a
+        text: "A path such as `spec.template.spec.template...` that exists on nothing, so the rule is silently useless."
+        explanation: "Autogen applies a fixed mechanical rewrite and does not interpret the pattern; write the Pod rule in the Pod's native shape."
+      - id: b
+        text: "The correct Deployment path, since autogen detects existing nesting."
+        explanation: "Autogen does not detect or skip existing nesting."
+      - id: c
+        text: "Nothing, because autogen declines when the pattern mentions `template`."
+        explanation: "It still generates; the result is just wrong."
+      - id: d
+        text: "The same pattern as written, applied to every controller."
+        explanation: "The pattern is wrapped one level deeper."
+    correct_option: a
+    explanation: "Autogen applies a fixed mechanical rewrite and does not interpret the pattern; write the Pod rule in the Pod's native shape."
+
+  - id: ats011-final-q17
+    type: single_choice
+    difficulty: intermediate
+    learning_objective: "Identify whose RBAC a cleanup policy needs"
+    source_readings:
+      - sections/section-100/module-01/course-01-schedules-matching-and-rbac.md
+      - sections/section-100/module-01/course-02-conditions-ttl-and-deletion-semantics.md
+    prompt: "A well-formed ClusterCleanupPolicy for Pods is rejected with `cleanup controller has no permission to delete kind Pod`, even for a cluster-admin. What fixes it?"
+    options:
+      - id: a
+        text: "Create a ClusterRole labelled `rbac.kyverno.io/aggregate-to-cleanup-controller: \"true\"` granting get, list, watch and delete on `pods`."
+        explanation: "The cleanup controller's own ServiceAccount needs permission, not the author; the webhook checks this at apply time rather than letting the policy delete nothing."
+      - id: b
+        text: "Bind cluster-admin to the user who applies the policy."
+        explanation: "The user already has it; the controller's identity is the one checked."
+      - id: c
+        text: "Grant only `delete` on `Pod` using the singular kind name."
+        explanation: "All four verbs on the lowercase plural resource are needed."
+      - id: d
+        text: "Set `background: true` on the policy."
+        explanation: "That field does not affect cleanup permissions."
+    correct_option: a
+    explanation: "The cleanup controller's own ServiceAccount needs permission, not the author; the webhook checks this at apply time rather than letting the policy delete nothing."
+
+  - id: ats011-final-q18
+    type: single_choice
+    difficulty: intermediate
+    learning_objective: "Predict cleanup timing against a cron schedule"
+    source_readings:
+      - sections/section-100/module-01/course-01-schedules-matching-and-rbac.md
+      - sections/section-100/module-01/course-02-conditions-ttl-and-deletion-semantics.md
+    prompt: "A cleanup policy has `schedule: \"* * * * *\"`. A matching Pod is created at 15:26:40. When is it deleted?"
+    options:
+      - id: a
+        text: "Exactly 60 seconds later, at 15:27:40."
+        explanation: "The sweep runs on cron boundaries, not relative to creation."
+      - id: b
+        text: "Immediately, because the cleanup webhook watches creations."
+        explanation: "Cleanup is a scheduled sweep."
+      - id: c
+        text: "At 15:26:50, because the controller polls every ten seconds."
+        explanation: "Cron's finest granularity is one minute."
+      - id: d
+        text: "At the next cron boundary, 15:27:00, and no timing tighter than up to a minute late is possible."
+        explanation: "Cleanup is a periodic sweep that lists and deletes on each tick, not a trigger; one minute is cron's finest granularity."
+    correct_option: d
+    explanation: "Cleanup is a periodic sweep that lists and deletes on each tick, not a trigger; one minute is cron's finest granularity."
+
+  - id: ats011-final-q19
+    type: single_choice
+    difficulty: intermediate
+    learning_objective: "Place a status test in a cleanup policy"
+    source_readings:
+      - sections/section-100/module-01/course-01-schedules-matching-and-rbac.md
+      - sections/section-100/module-01/course-02-conditions-ttl-and-deletion-semantics.md
+    prompt: "To clean up only Pods whose `status.phase` is `Succeeded`, where does the test go and what is it written against?"
+    options:
+      - id: a
+        text: "In `match.selector`, written against `request.object`."
+        explanation: "Selectors do not read status fields, and no request exists during a sweep."
+      - id: b
+        text: "In `spec.conditions`, written against `target`, such as `{{ target.status.phase }}`."
+        explanation: "`match` selects only on kind, namespace, name and labels, and there is no admission request during a sweep, so `request.object` does not exist."
+      - id: c
+        text: "In `spec.conditions`, written against `request.object`."
+        explanation: "There is no request in a sweep; use `target`."
+      - id: d
+        text: "In `match.resources.kinds` as `Pod/Succeeded`."
+        explanation: "Kinds select resource types, not phases."
+    correct_option: b
+    explanation: "`match` selects only on kind, namespace, name and labels, and there is no admission request during a sweep, so `request.object` does not exist."
+
+  - id: ats011-final-q20
+    type: single_choice
+    difficulty: advanced
+    learning_objective: "Compare a TTL label failure with a policy failure"
+    source_readings:
+      - sections/section-100/module-01/course-01-schedules-matching-and-rbac.md
+      - sections/section-100/module-01/course-02-conditions-ttl-and-deletion-semantics.md
+    prompt: "A Pod is labelled `cleanup.kyverno.io/ttl=30s` on a cluster where the cleanup controller has no delete RBAC. What happens?"
+    options:
+      - id: a
+        text: "The Pod is rejected at admission with a permission error."
+        explanation: "The TTL label webhook only logs the problem."
+      - id: b
+        text: "The Pod is deleted anyway because TTL labels bypass RBAC."
+        explanation: "The same delete permission is required."
+      - id: c
+        text: "The Pod is admitted and silently never deleted; only a cleanup-controller log line shows the missing permission."
+        explanation: "A policy fails loudly at apply time, but the TTL label webhook only logs, so nothing appears on the Pod as an error, event or status."
+      - id: d
+        text: "An event on the Pod reports the missing permission."
+        explanation: "No event or status is written."
+    correct_option: c
+    explanation: "A policy fails loudly at apply time, but the TTL label webhook only logs, so nothing appears on the Pod as an error, event or status."
+
+  - id: ats011-final-q21
+    type: single_choice
+    difficulty: intermediate
+    learning_objective: "Predict deletionPropagationPolicy Orphan"
+    source_readings:
+      - sections/section-100/module-01/course-01-schedules-matching-and-rbac.md
+      - sections/section-100/module-01/course-02-conditions-ttl-and-deletion-semantics.md
+    prompt: "A cleanup policy deletes Job resources with `deletionPropagationPolicy: Orphan`. What happens to the Pods those Jobs created?"
+    options:
+      - id: a
+        text: "They are deleted immediately, before the Job."
+        explanation: "That describes Foreground."
+      - id: b
+        text: "They are deleted afterwards by the garbage collector."
+        explanation: "That describes Background."
+      - id: c
+        text: "They are left behind without an owner and keep running."
+        explanation: "Orphan deletes the owner without garbage-collecting dependents; Background or Foreground is usually right for kinds that own other resources."
+      - id: d
+        text: "They are paused until a new Job adopts them."
+        explanation: "Kubernetes does not re-adopt them automatically."
+    correct_option: c
+    explanation: "Orphan deletes the owner without garbage-collecting dependents; Background or Foreground is usually right for kinds that own other resources."
+
+  - id: ats011-final-q22
+    type: single_choice
+    difficulty: intermediate
+    learning_objective: "Name a requirement a pattern cannot express"
+    source_readings:
+      - sections/section-110/module-01/course-01-cel-as-a-language.md
+      - sections/section-110/module-01/course-02-writing-validate-cel-safely.md
+    prompt: "Which requirement can `validate.pattern` not express, and why?"
+    options:
+      - id: a
+        text: "Comparing a resource to its own previous state, such as replicas only ever increasing, because a pattern describes one resource."
+        explanation: "A pattern has no access to the old object. CEL can write `oldObject == null ? true : object.spec.replicas >= oldObject.spec.replicas`."
+      - id: b
+        text: "Requiring a label to be present, because patterns cannot check keys."
+        explanation: "Label presence is a basic pattern check."
+      - id: c
+        text: "Requiring a string to start with a prefix, because patterns lack wildcards."
+        explanation: "Patterns support wildcards."
+      - id: d
+        text: "Requiring a field to be non-empty, because `?*` is unsupported."
+        explanation: "`?*` is the standard non-empty check."
+    correct_option: a
+    explanation: "A pattern has no access to the old object. CEL can write `oldObject == null ? true : object.spec.replicas >= oldObject.spec.replicas`."
+
+  - id: ats011-final-q23
+    type: single_choice
+    difficulty: advanced
+    learning_objective: "Diagnose an unguarded CEL field access"
+    source_readings:
+      - sections/section-110/module-01/course-01-cel-as-a-language.md
+      - sections/section-110/module-01/course-02-writing-validate-cel-safely.md
+    prompt: "`object.spec.containers.all(c, c.resources.limits['memory'] != '')` runs under Enforce and a Pod with no `resources` is rejected. Why is calling that working wrong?"
+    options:
+      - id: a
+        text: "The rule evaluated to false and the message was hidden by Audit."
+        explanation: "Under Enforce the failure was an evaluation error."
+      - id: b
+        text: "The rule works; an absent block is treated as a violation by design."
+        explanation: "A broken and a working rule look the same only while every test is non-compliant."
+      - id: c
+        text: "Kyverno refused to create the policy, so the rejection came from another policy."
+        explanation: "Kyverno created the policy and warned."
+      - id: d
+        text: "The expression errored with `no such key: limits` rather than evaluating to false, so the rule failed closed and the custom message never appeared."
+        explanation: "Kyverno type-checked the expression at apply time and warned about the undefined field. The fix is `has(c.resources) && has(c.resources.limits) && 'memory' in c.resources.limits`."
+    correct_option: d
+    explanation: "Kyverno type-checked the expression at apply time and warned about the undefined field. The fix is `has(c.resources) && has(c.resources.limits) && 'memory' in c.resources.limits`."
+
+  - id: ats011-final-q24
+    type: single_choice
+    difficulty: advanced
+    learning_objective: "Trace a stuck Terminating namespace to a CEL rule"
+    source_readings:
+      - sections/section-110/module-01/course-01-cel-as-a-language.md
+      - sections/section-110/module-01/course-02-writing-validate-cel-safely.md
+    prompt: "A CEL rule matches Pods with no `operations` restriction and reads `object.spec.containers`. A namespace becomes stuck Terminating. What is the chain, and would `has()` guards have prevented it?"
+    options:
+      - id: a
+        text: "The rule denies CREATE; adding `has()` guards would have prevented it."
+        explanation: "The failure is on DELETE and on `object` itself."
+      - id: b
+        text: "The rule matches DELETE, where `object` is null and the error denies the delete; `has()` guards would not help because `object` itself fails first. Restrict to CREATE and UPDATE."
+        explanation: "Namespace deletion removes its contents; if Pod deletes are denied the namespace never terminates."
+      - id: c
+        text: "Namespaces cannot terminate while any ValidatingPolicy exists."
+        explanation: "The cause is the unrestricted operations."
+      - id: d
+        text: "The API server caches the Pod, and `has()` clears the cache."
+        explanation: "No cache is involved."
+    correct_option: b
+    explanation: "Namespace deletion removes its contents; if Pod deletes are denied the namespace never terminates."
+
+  - id: ats011-final-q25
+    type: single_choice
+    difficulty: intermediate
+    learning_objective: "Evaluate all() over an empty list"
+    source_readings:
+      - sections/section-110/module-01/course-01-cel-as-a-language.md
+      - sections/section-110/module-01/course-02-writing-validate-cel-safely.md
+    prompt: "What does `object.spec.containers.all(c, <predicate>)` evaluate to when the list is empty, and what follows?"
+    options:
+      - id: a
+        text: "True, vacuously, so the rule asserts nothing about a resource with no containers."
+        explanation: "If emptiness itself is a violation, add a separate `size(object.spec.containers) > 0` check; `all()` will never catch it."
+      - id: b
+        text: "False, so empty lists are always rejected."
+        explanation: "Universal quantification over an empty set is true."
+      - id: c
+        text: "An evaluation error, so the rule fails closed."
+        explanation: "It is a defined result, not an error."
+      - id: d
+        text: "Null, so the rule is skipped."
+        explanation: "The result is a boolean."
+    correct_option: a
+    explanation: "If emptiness itself is a violation, add a separate `size(object.spec.containers) > 0` check; `all()` will never catch it."
+
+  - id: ats011-final-q26
+    type: single_choice
+    difficulty: intermediate
+    learning_objective: "Contrast matchConditions with validations"
+    source_readings:
+      - sections/section-110/module-01/course-03-the-validatingpolicy-type.md
+      - sections/section-110/module-01/course-04-autogen-and-native-admission-policies.md
+    prompt: "In a ValidatingPolicy, what differs between a `matchCondition` that is false and a `validation` that is false?"
+    options:
+      - id: a
+        text: "Both mean the request is denied; only the message differs."
+        explanation: "A false matchCondition never denies."
+      - id: b
+        text: "A false validation skips the request; a false matchCondition denies it."
+        explanation: "The meanings are reversed."
+      - id: c
+        text: "A false matchCondition means the policy does not apply and the request is skipped; a false validation means non-compliant."
+        explanation: "Exemptions belong in matchConditions, which also let the webhook be registered narrowly."
+      - id: d
+        text: "A false matchCondition produces an audit warning only."
+        explanation: "It produces no result at all."
+    correct_option: c
+    explanation: "Exemptions belong in matchConditions, which also let the webhook be registered narrowly."
+
+  - id: ats011-final-q27
+    type: single_choice
+    difficulty: advanced
+    learning_objective: "Spot errors in a ValidatingPolicy header"
+    source_readings:
+      - sections/section-110/module-01/course-03-the-validatingpolicy-type.md
+      - sections/section-110/module-01/course-04-autogen-and-native-admission-policies.md
+    prompt: "A ValidatingPolicy has `resourceRules` with `resources: [\"Pod\"]`, `operations: [\"CREATE\"]` and `validationActions: [Enforce]`. Which statement lists the problems?"
+    options:
+      - id: a
+        text: "There are no problems; this is a correct policy."
+        explanation: "All three fields are wrong."
+      - id: b
+        text: "`Pod` should be the lowercase plural `pods`, UPDATE is missing, and `Enforce` is not valid vocabulary here (use Deny, Audit or Warn)."
+        explanation: "Without UPDATE a compliant Pod can be edited into non-compliance; Deny and Warn cannot be combined."
+      - id: c
+        text: "Only `resources` is wrong; `Enforce` and the operations are valid."
+        explanation: "`Enforce` is ClusterPolicy vocabulary."
+      - id: d
+        text: "Only the operations are wrong; `Pod` and `Enforce` are valid."
+        explanation: "The resource must be the plural name and the action vocabulary differs."
+    correct_option: b
+    explanation: "Without UPDATE a compliant Pod can be edited into non-compliance; Deny and Warn cannot be combined."
+
+  - id: ats011-final-q28
+    type: single_choice
+    difficulty: advanced
+    learning_objective: "Identify the enforcer of a native admission rejection"
+    source_readings:
+      - sections/section-110/module-01/course-03-the-validatingpolicy-type.md
+      - sections/section-110/module-01/course-04-autogen-and-native-admission-policies.md
+    prompt: "A rejection reads `ValidatingAdmissionPolicy 'vpol-pod-baseline' with binding 'vpol-pod-baseline-binding' denied request`. What enforced it and what was given up?"
+    options:
+      - id: a
+        text: "Kyverno's validating webhook; nothing was given up."
+        explanation: "No webhook is named in this message."
+      - id: b
+        text: "Kyverno's CEL webhook; only message customisation was given up."
+        explanation: "That webhook has a different name in its message."
+      - id: c
+        text: "A PolicyException; audit reports were given up."
+        explanation: "A PolicyException does not deny requests."
+      - id: d
+        text: "The API server, through a generated ValidatingAdmissionPolicy; live cluster data, registry lookups, mutation and generation are given up."
+        explanation: "It comes from `spec.autogen.validatingAdmissionPolicy.enabled: true` and cannot fail because a webhook is unreachable."
+    correct_option: d
+    explanation: "It comes from `spec.autogen.validatingAdmissionPolicy.enabled: true` and cannot fail because a webhook is unreachable."
+
+  - id: ats011-final-q29
+    type: single_choice
+    difficulty: advanced
+    learning_objective: "Match rejection text to the enforcer"
+    source_readings:
+      - sections/section-010/module-01/course-01-the-clusterpolicy-object.md
+      - sections/section-010/module-01/course-02-the-pattern-block-and-failure-actions.md
+      - sections/section-110/module-01/course-03-the-validatingpolicy-type.md
+      - sections/section-110/module-01/course-04-autogen-and-native-admission-policies.md
+    prompt: "Three first lines: (1) `admission webhook \"validate.kyverno.svc-fail\" denied the request`; (2) `admission webhook \"vpol.validate.kyverno.svc-fail\" denied the request`; (3) `ValidatingAdmissionPolicy ... with binding ... denied request`. Which mapping is correct?"
+    options:
+      - id: a
+        text: "(1) a ValidatingPolicy, (2) a ClusterPolicy, (3) a PolicyException."
+        explanation: "The two webhook names are swapped and a PolicyException does not deny."
+      - id: b
+        text: "(1) a ClusterPolicy via Kyverno's validating webhook, (2) a ValidatingPolicy via Kyverno's CEL webhook, (3) a generated native policy enforced by the API server."
+        explanation: "The webhook name or its absence identifies what was in the request path."
+      - id: c
+        text: "All three are the same webhook with different policy names."
+        explanation: "The names identify different enforcement paths."
+      - id: d
+        text: "(1) the API server, (2) Kyverno's CEL webhook, (3) a ClusterPolicy."
+        explanation: "(1) and (3) are swapped."
+    correct_option: b
+    explanation: "The webhook name or its absence identifies what was in the request path."
+
+  - id: ats011-final-q30
+    type: single_choice
+    difficulty: intermediate
+    learning_objective: "Reconcile deprecation warnings with exam scope"
+    source_readings:
+      - sections/section-100/module-01/course-01-schedules-matching-and-rbac.md
+      - sections/section-100/module-01/course-02-conditions-ttl-and-deletion-semantics.md
+      - sections/section-110/module-02/course-01-mutating-and-generating-policies.md
+      - sections/section-110/module-02/course-02-imagevalidating-and-deletingpolicy.md
+    prompt: "On Kyverno v1.19.1 every ClusterPolicy and ClusterCleanupPolicy prints a deprecation warning. What should be authored for the KCA?"
+    options:
+      - id: a
+        text: "Keep authoring ClusterPolicy and ClusterCleanupPolicy while being able to read the newer typed policies."
+        explanation: "Both remain fully functional and examined; the warning signposts the API direction toward one kind per job rather than announcing removal."
+      - id: b
+        text: "Only the newer types, because the old ones no longer work."
+        explanation: "They are still fully functional."
+      - id: c
+        text: "Disable the warnings and ignore the newer types."
+        explanation: "Knowing the newer types is part of professional practice."
+      - id: d
+        text: "Convert everything to Pod Security Admission."
+        explanation: "That is a different feature."
+    correct_option: a
+    explanation: "Both remain fully functional and examined; the warning signposts the API direction toward one kind per job rather than announcing removal."
+
+  - id: ats011-final-q31
+    type: single_choice
+    difficulty: intermediate
+    learning_objective: "Scope a namespaced Policy"
+    source_readings:
+      - sections/section-000/module-01/course-01-policy-objects-and-rule-anatomy.md
+      - sections/section-000/module-01/course-02-failure-actions-and-rollout.md
+      - sections/section-000/module-01/course-03-rule-ordering-and-exceptions.md
+    prompt: "A namespaced `Policy` in `team-staging` has a rule matching `kinds: [Pod]` with no namespace restriction. Which Pods does it govern?"
+    options:
+      - id: a
+        text: "Pods in every namespace, because the match has no namespace."
+        explanation: "The match cannot widen the object's scope."
+      - id: b
+        text: "No Pods, because a Policy must name a namespace in match."
+        explanation: "The policy's own namespace applies implicitly."
+      - id: c
+        text: "Pods in team-staging and in kube-system."
+        explanation: "No other namespace is included."
+      - id: d
+        text: "Only Pods in team-staging, because scope comes from the policy object and is fixed before any rule runs."
+        explanation: "A namespaced policy can never govern cluster-scoped resources, so a generate rule triggered by Namespace creation must be a ClusterPolicy."
+    correct_option: d
+    explanation: "A namespaced policy can never govern cluster-scoped resources, so a generate rule triggered by Namespace creation must be a ClusterPolicy."
+
+  - id: ats011-final-q32
+    type: single_choice
+    difficulty: intermediate
+    learning_objective: "Choose the field for per-namespace enforcement"
+    source_readings:
+      - sections/section-000/module-01/course-01-policy-objects-and-rule-anatomy.md
+      - sections/section-000/module-01/course-02-failure-actions-and-rollout.md
+      - sections/section-000/module-01/course-03-rule-ordering-and-exceptions.md
+    prompt: "A single policy must enforce in `team-prod` and only audit elsewhere. Which field does that and why is it useful?"
+    options:
+      - id: a
+        text: "`background: false`, which limits scans to production."
+        explanation: "`background` controls scans, not actions."
+      - id: b
+        text: "`exclude.namespaces`, which removes everything except team-prod."
+        explanation: "Excluding would skip checks rather than audit them."
+      - id: c
+        text: "`validationFailureActionOverrides` with a default of Audit and an Enforce override listing team-prod."
+        explanation: "It inverts the rollout: enforce in one namespace, learn, then widen the list; namespaces accept globs such as `team-*`."
+      - id: d
+        text: "Two separate ClusterPolicies named with a prod suffix."
+        explanation: "One policy can do it with an override."
+    correct_option: c
+    explanation: "It inverts the rollout: enforce in one namespace, learn, then widen the list; namespaces accept globs such as `team-*`."
+
+  - id: ats011-final-q33
+    type: single_choice
+    difficulty: advanced
+    learning_objective: "Interpret an error with mixed failure actions"
+    source_readings:
+      - sections/section-000/module-01/course-01-policy-objects-and-rule-anatomy.md
+      - sections/section-000/module-01/course-02-failure-actions-and-rollout.md
+      - sections/section-000/module-01/course-03-rule-ordering-and-exceptions.md
+    prompt: "A policy has one validate rule with `failureAction: Enforce` and one with `Audit`. A Pod violates both. What does the kubectl error show?"
+    options:
+      - id: a
+        text: "Both rules, with the audited one marked as a warning."
+        explanation: "Audit failures are not in the error."
+      - id: b
+        text: "Only the audited rule, since it ran first."
+        explanation: "The enforced rule blocks the request."
+      - id: c
+        text: "Only the enforced rule; the audited failure goes to the PolicyReport."
+        explanation: "A rejection lists the rules that blocked the request, so diagnosing from the error alone gives a filtered view."
+      - id: d
+        text: "No rule names; the error is generic."
+        explanation: "The blocking rule is named."
+    correct_option: c
+    explanation: "A rejection lists the rules that blocked the request, so diagnosing from the error alone gives a filtered view."
+
+  - id: ats011-final-q34
+    type: single_choice
+    difficulty: intermediate
+    learning_objective: "Convert a requirement into deny polarity"
+    source_readings:
+      - sections/section-010/module-02/course-01-deny-rules-and-the-inversion.md
+      - sections/section-010/module-02/course-02-condition-operator-vocabulary.md
+    prompt: "How is \"a Deployment may have at most 3 replicas\" written as a `deny` condition?"
+    options:
+      - id: a
+        text: "`{{ request.object.spec.replicas }}` LessThanOrEquals 3"
+        explanation: "That is the requirement, not the failure condition."
+      - id: b
+        text: "`{{ request.object.spec.replicas }}` Equals 3"
+        explanation: "Four or more replicas would be admitted."
+      - id: c
+        text: "`{{ request.object.spec.replicas }}` LessThan 3"
+        explanation: "That rejects compliant Deployments."
+      - id: d
+        text: "`{{ request.object.spec.replicas }}` GreaterThan 3, because deny conditions describe what must be true to fail."
+        explanation: "Writing the requirement itself (LessThanOrEquals 3) rejects every compliant Deployment and admits oversized ones."
+    correct_option: d
+    explanation: "Writing the requirement itself (LessThanOrEquals 3) rejects every compliant Deployment and admits oversized ones."
+
+  - id: ats011-final-q35
+    type: single_choice
+    difficulty: intermediate
+    learning_objective: "Compare any and all under deny"
+    source_readings:
+      - sections/section-010/module-02/course-01-deny-rules-and-the-inversion.md
+      - sections/section-010/module-02/course-02-condition-operator-vocabulary.md
+    prompt: "Under deny polarity, which of `conditions.any` and `conditions.all` rejects more readily?"
+    options:
+      - id: a
+        text: "`any`, because one true condition is enough to reject while `all` needs every condition true."
+        explanation: "This reads backwards from `match.any`; choosing `all` where `any` was meant rejects less than intended without any error."
+      - id: b
+        text: "`all`, because it checks every condition."
+        explanation: "It rejects only when every condition is true."
+      - id: c
+        text: "They are identical under deny."
+        explanation: "They differ in how many true conditions reject."
+      - id: d
+        text: "Neither; deny ignores both keys."
+        explanation: "Both keys are valid under deny."
+    correct_option: a
+    explanation: "This reads backwards from `match.any`; choosing `all` where `any` was meant rejects less than intended without any error."
+
+  - id: ats011-final-q36
+    type: single_choice
+    difficulty: advanced
+    learning_objective: "Read a conditional anchor"
+    source_readings:
+      - sections/section-010/module-03/course-01-conditional-and-equality-anchors.md
+      - sections/section-010/module-03/course-02-existence-negation-and-global-anchors.md
+    prompt: "A pattern has `(image): \"*:latest\"` beside `imagePullPolicy: Always`. A container runs `nginx:1.27` with `imagePullPolicy: IfNotPresent`. What is the verdict?"
+    options:
+      - id: a
+        text: "Rejected, because `IfNotPresent` differs from `Always`."
+        explanation: "The sibling is only checked when the anchor matches."
+      - id: b
+        text: "Admitted, because the anchor does not match so its sibling fields are never examined."
+        explanation: "The anchored field is the if, not a requirement: it selects `:latest` images rather than demanding them."
+      - id: c
+        text: "Rejected, because the image is not `:latest`."
+        explanation: "The anchor does not require `:latest`."
+      - id: d
+        text: "An error, because an anchor needs an else branch."
+        explanation: "Anchors have no else branch."
+    correct_option: b
+    explanation: "The anchored field is the if, not a requirement: it selects `:latest` images rather than demanding them."
+
+  - id: ats011-final-q37
+    type: single_choice
+    difficulty: advanced
+    learning_objective: "Compare existence, foreach and positional list checks"
+    source_readings:
+      - sections/section-010/module-03/course-01-conditional-and-equality-anchors.md
+      - sections/section-010/module-03/course-02-existence-negation-and-global-anchors.md
+    prompt: "A Pod has two containers and only the second defines `readinessProbe`. What are the verdicts under `^(containers)`, a `foreach`, and a plain positional list pattern?"
+    options:
+      - id: a
+        text: "All three admit it, since one container has a probe."
+        explanation: "Only the existence anchor admits."
+      - id: b
+        text: "All three reject it, since one container lacks a probe."
+        explanation: "The existence anchor needs only one match."
+      - id: c
+        text: "The existence anchor and foreach admit; the positional pattern rejects."
+        explanation: "`foreach` rejects because it checks every element."
+      - id: d
+        text: "The existence anchor admits it, `foreach` rejects it, and the positional pattern rejects it."
+        explanation: "`^()` needs at least one match; `foreach` checks every element; a plain list pattern checks index 0, which lacks a probe."
+    correct_option: d
+    explanation: "`^()` needs at least one match; `foreach` checks every element; a plain list pattern checks index 0, which lacks a probe."
+
+  - id: ats011-final-q38
+    type: single_choice
+    difficulty: intermediate
+    learning_objective: "Pick the Pod Security level and exemption method"
+    source_readings:
+      - sections/section-010/module-04/course-01-podsecurity-profiles-and-levels.md
+      - sections/section-010/module-04/course-02-excluding-controls-and-psa.md
+    prompt: "Which Pod Security level requires fields rather than only forbidding configurations, and how is one control exempted?"
+    options:
+      - id: a
+        text: "`baseline`; exempt a control by lowering the namespace to privileged."
+        explanation: "Baseline mostly forbids; privileged is far too broad."
+      - id: b
+        text: "`restricted`; exempt one control with `podSecurity.exclude` and a `controlName`, optionally narrowed by images."
+        explanation: "`restricted` requires runAsNonRoot, no privilege escalation, dropped capabilities and a seccomp profile. Lowering the namespace to baseline trades one exemption for many."
+      - id: c
+        text: "`privileged`; exempt a control with a PolicyException."
+        explanation: "Privileged imposes no requirements."
+      - id: d
+        text: "`baseline`; exempt a control by deleting the policy."
+        explanation: "That removes all protection."
+    correct_option: b
+    explanation: "`restricted` requires runAsNonRoot, no privilege escalation, dropped capabilities and a seccomp profile. Lowering the namespace to baseline trades one exemption for many."
+
+  - id: ats011-final-q39
+    type: single_choice
+    difficulty: advanced
+    learning_objective: "Fix a non-idempotent mutate rule"
+    source_readings:
+      - sections/section-040/module-02/course-01-foreach-in-mutate.md
+      - sections/section-040/module-02/course-02-idempotency-and-rule-interaction.md
+    prompt: "A rule prefixes every container image with a mirror hostname. A Pod is created correctly, then someone adds an unrelated label. What is the image now and what are the fixes?"
+    options:
+      - id: a
+        text: "It is unchanged, because Kyverno detects the prior mutation."
+        explanation: "Kyverno does not track that."
+      - id: b
+        text: "The Pod is rejected because the image changed."
+        explanation: "Rejection is not caused by the double prefix."
+      - id: c
+        text: "It becomes doubly prefixed; add a precondition inside the foreach entry that skips already-prefixed images and limit `match` to CREATE."
+        explanation: "The UPDATE re-ran the transformation on an already transformed value; mutateExistingOnPolicyUpdate can also re-run rules unprompted."
+      - id: d
+        text: "The prefix is removed and re-added once."
+        explanation: "Mutation is not self-correcting."
+    correct_option: c
+    explanation: "The UPDATE re-ran the transformation on an already transformed value; mutateExistingOnPolicyUpdate can also re-run rules unprompted."
+
+  - id: ats011-final-q40
+    type: single_choice
+    difficulty: advanced
+    learning_objective: "Predict deletion of a generating policy"
+    source_readings:
+      - sections/section-050/module-02/course-01-generate-existing.md
+      - sections/section-050/module-02/course-02-lifecycle-and-orphaning.md
+    prompt: "A ClusterPolicy's generate rule created a default-deny NetworkPolicy in fifty namespaces. The policy is deleted. What happens and which field changes it?"
+    options:
+      - id: a
+        text: "All fifty NetworkPolicies are deleted; `orphanDownstreamOnPolicyDelete: true` keeps them."
+        explanation: "Generated resources carry no ownerReferences; Kyverno tracks them by labels and UpdateRequests, so the behaviour is a field."
+      - id: b
+        text: "They remain, because generated resources are independent."
+        explanation: "Without the field they are deleted."
+      - id: c
+        text: "They are deleted by Kubernetes garbage collection through owner references."
+        explanation: "No owner references exist."
+      - id: d
+        text: "They remain until the namespaces are deleted."
+        explanation: "The policy deletion removes them."
+    correct_option: a
+    explanation: "Generated resources carry no ownerReferences; Kyverno tracks them by labels and UpdateRequests, so the behaviour is a field."
+
+  - id: ats011-final-q41
+    type: single_choice
+    difficulty: intermediate
+    learning_objective: "Reason about cloneList selector and namespace fields"
+    source_readings:
+      - sections/section-050/module-03/course-01-clonelist.md
+      - sections/section-050/module-03/course-02-generate-foreach.md
+    prompt: "A rule uses `generate.cloneList` with `namespace: shared-config`, kinds `v1/ConfigMap` and `v1/Secret`, and no selector. What is true?"
+    options:
+      - id: a
+        text: "Every ConfigMap and Secret in shared-config is cloned, because the selector is the opt-in filter."
+        explanation: "Here `cloneList.namespace` is the source while `generate.namespace` is the destination, so an unfiltered source namespace becomes a broadcast channel."
+      - id: b
+        text: "Nothing is cloned until a selector is added."
+        explanation: "Without a selector everything of those kinds is cloned."
+      - id: c
+        text: "Only objects named in the policy are cloned."
+        explanation: "`cloneList` names a namespace and kinds, not objects."
+      - id: d
+        text: "Objects are cloned out of the new namespace into shared-config."
+        explanation: "`cloneList.namespace` is the source."
+    correct_option: a
+    explanation: "Here `cloneList.namespace` is the source while `generate.namespace` is the destination, so an unfiltered source namespace becomes a broadcast channel."
+
+  - id: ats011-final-q42
+    type: single_choice
+    difficulty: advanced
+    learning_objective: "Read a generate foreach with per-element preconditions"
+    source_readings:
+      - sections/section-050/module-03/course-01-clonelist.md
+      - sections/section-050/module-03/course-02-generate-foreach.md
+    prompt: "A Namespace annotated `envs: \"dev,test,legacy\"` triggers a generate foreach over `split(@, ',')` with a precondition skipping `legacy`. Which ConfigMaps are made?"
+    options:
+      - id: a
+        text: "Three, one for every element including legacy."
+        explanation: "The precondition skips legacy."
+      - id: b
+        text: "None, because a precondition on one element fails the whole loop."
+        explanation: "Each element is evaluated independently."
+      - id: c
+        text: "One ConfigMap containing the three names."
+        explanation: "`foreach` creates one resource per element."
+      - id: d
+        text: "One per element except `legacy`, because preconditions run for each element and failing ones are skipped."
+        explanation: "`element` is the current item; `synchronize` stays at the generate level beside `foreach`."
+    correct_option: d
+    explanation: "`element` is the current item; `synchronize` stays at the generate level beside `foreach`."
+
+  - id: ats011-final-q43
+    type: single_choice
+    difficulty: intermediate
+    learning_objective: "Distinguish the key from the name field in images"
+    source_readings:
+      - sections/section-060/module-03/course-01-the-images-variable.md
+      - sections/section-060/module-03/course-02-image-extractors.md
+    prompt: "A Pod container named `api` runs `ghcr.io/example/team/web:1.4`. How is its image read from the `images` variable?"
+    options:
+      - id: a
+        text: "Under `images.containers.web`, keyed by the image name."
+        explanation: "Entries are keyed by the container name."
+      - id: b
+        text: "Under `images.containers.api`, with `name` equal to `web`, because the key is the container name and the `name` field is the last path segment."
+        explanation: "A digest-pinned image has an empty `tag`, so a latest-tag check does not trip on it."
+      - id: c
+        text: "Under `images.api.web`, keyed by registry."
+        explanation: "Entries sit inside a group such as `containers`."
+      - id: d
+        text: "Only through `request.object.spec`, because `images` is unparsed."
+        explanation: "Kyverno parses images into the variable."
+    correct_option: b
+    explanation: "A digest-pinned image has an empty `tag`, so a latest-tag check does not trip on it."
+
+  - id: ats011-final-q44
+    type: single_choice
+    difficulty: intermediate
+    learning_objective: "Choose the tool for a custom resource image"
+    source_readings:
+      - sections/section-060/module-03/course-01-the-images-variable.md
+      - sections/section-060/module-03/course-02-image-extractors.md
+    prompt: "A rule must check an image stored at `/spec/source/registry/url` in a custom resource with a `docker://` prefix. What is needed?"
+    options:
+      - id: a
+        text: "Nothing; the `images` variable covers every resource kind."
+        explanation: "Only Pods and pod controllers are covered by default."
+      - id: b
+        text: "A `verifyImages` rule alone, which discovers images itself."
+        explanation: "It needs to know where the images are."
+      - id: c
+        text: "An `imageExtractors` entry for that kind with the path and a `jmesPath` such as `trim_prefix(@, 'docker://')`."
+        explanation: "Kyverno only knows images in Pods and pod controllers by default; a missing or wrong path returns nothing so the rule checks nothing."
+      - id: d
+        text: "An autogen annotation naming the custom kind."
+        explanation: "Autogen concerns pod controllers."
+    correct_option: c
+    explanation: "Kyverno only knows images in Pods and pod controllers by default; a missing or wrong path returns nothing so the rule checks nothing."
+
+  - id: ats011-final-q45
+    type: single_choice
+    difficulty: intermediate
+    learning_objective: "Apply the rule-type ordering"
+    source_readings:
+      - sections/section-000/module-01/course-01-policy-objects-and-rule-anatomy.md
+      - sections/section-000/module-01/course-02-failure-actions-and-rollout.md
+      - sections/section-000/module-01/course-03-rule-ordering-and-exceptions.md
+    prompt: "A validating policy named `aa-validate` requires a team label. A mutating policy named `zz-mutate` adds the label by default. A Pod without the label is submitted. What happens?"
+    options:
+      - id: a
+        text: "It is rejected, because `aa-validate` sorts first by name."
+        explanation: "Policy names do not decide order."
+      - id: b
+        text: "It is rejected, because validate always runs first."
+        explanation: "Mutate runs first."
+      - id: c
+        text: "It is admitted, because all mutate rules finish before any validate rule runs, regardless of policy name."
+        explanation: "Ordering is by rule type: mutate, then validate, then generate asynchronously."
+      - id: d
+        text: "It is admitted only if the policies share one file."
+        explanation: "File layout does not matter."
+    correct_option: c
+    explanation: "Ordering is by rule type: mutate, then validate, then generate asynchronously."
+
+  - id: ats011-final-q46
+    type: single_choice
+    difficulty: advanced
+    learning_objective: "Choose among exclude, preconditions and PolicyException"
+    source_readings:
+      - sections/section-000/module-01/course-01-policy-objects-and-rule-anatomy.md
+      - sections/section-000/module-01/course-02-failure-actions-and-rollout.md
+      - sections/section-000/module-01/course-03-rule-ordering-and-exceptions.md
+      - sections/section-020/module-01/course-01-preconditions-and-operators.md
+      - sections/section-020/module-01/course-02-preconditions-vs-match.md
+    prompt: "An application team needs a reviewed exemption for one workload without anyone editing a cluster-wide policy. Which mechanism fits?"
+    options:
+      - id: a
+        text: "A PolicyException object granted to that workload."
+        explanation: "`exclude` is a permanent carve-out written by the policy author and `preconditions` gate on resource data; neither lets a team request an exemption through review."
+      - id: b
+        text: "`exclude` inside the policy rule, edited by the platform team."
+        explanation: "That requires editing the policy."
+      - id: c
+        text: "`preconditions` on a label the team sets."
+        explanation: "That lets anyone self-exempt by label and changes the policy."
+      - id: d
+        text: "Switching the policy to Audit."
+        explanation: "That loosens it for everyone."
+    correct_option: a
+    explanation: "`exclude` is a permanent carve-out written by the policy author and `preconditions` gate on resource data; neither lets a team request an exemption through review."
+
+  - id: ats011-final-q47
+    type: single_choice
+    difficulty: intermediate
+    learning_objective: "Check every list element in an assertion tree"
+    source_readings:
+      - sections/section-010/module-05/course-01-assertion-trees.md
+      - sections/section-010/module-05/course-03-summary.md
+    prompt: "A `validate.assert` tree must reject a Pod if any container image ends in `:latest`. How is each container checked?"
+    options:
+      - id: a
+        text: "Write `containers` as a plain key and test `(ends_with(image, ':latest')): false` beneath it."
+        explanation: "A plain key hands the whole list to the next node, not each element."
+      - id: b
+        text: "Use `->containers` so each container is bound to a variable."
+        explanation: "`->name` stores a computed result; it does not iterate."
+      - id: c
+        text: "Use `oldObject` and compare the images before and after."
+        explanation: "`oldObject` is the pre-update resource and does not iterate containers."
+      - id: d
+        text: "Prefix the list key with the `~.` modifier and test `(ends_with(image, ':latest')): false` on each element."
+        explanation: "Without `~.` the next node receives the whole list rather than one container. Parenthesised keys are JMESPath expressions compared with the leaf value."
+    correct_option: d
+    explanation: "Without `~.` the next node receives the whole list rather than one container. Parenthesised keys are JMESPath expressions compared with the leaf value."
+
+  - id: ats011-final-q48
+    type: single_choice
+    difficulty: advanced
+    learning_objective: "Explain ignoreFields in validate.manifests"
+    source_readings:
+      - sections/section-010/module-05/course-02-validating-signed-manifests.md
+      - sections/section-010/module-05/course-03-summary.md
+    prompt: "A signed Deployment manifest is rejected after a HorizontalPodAutoscaler changes `spec.replicas`. How does `validate.manifests` handle this legitimately?"
+    options:
+      - id: a
+        text: "Remove the signature requirement from the policy for Deployments."
+        explanation: "That removes the protection entirely."
+      - id: b
+        text: "List `spec.replicas` under `ignoreFields` for kind Deployment, keeping the list as short as possible."
+        explanation: "Controllers and the API server change fields after signing; every ignored field is one an attacker can also change without breaking the signature."
+      - id: c
+        text: "Set `count: 0` on the attestor so any change is accepted."
+        explanation: "`count` is the number of signers required, not a tolerance."
+      - id: d
+        text: "Sign the manifest again from inside the cluster after each change."
+        explanation: "Signing happens outside the cluster in the delivery pipeline."
+    correct_option: b
+    explanation: "Controllers and the API server change fields after signing; every ignored field is one an attacker can also change without breaking the signature."
+
+  - id: ats011-final-q49
+    type: single_choice
+    difficulty: intermediate
+    learning_objective: "Choose the anchor for a default value"
+    source_readings:
+      - sections/section-040/module-03/course-01-add-if-not-present-anchor.md
+      - sections/section-040/module-03/course-02-conditional-anchors-in-mutation.md
+    prompt: "A mutate rule must add `team: platform` only when a Pod has no `team` label, without overwriting `team: payments`. Which fragment does that?"
+    options:
+      - id: a
+        text: "`labels: {+(team): platform}`, the add-if-not-present anchor around the key."
+        explanation: "A plain `team: platform` overwrites the owner's value. A conditional anchor `(team)` is an if that selects, not a default writer."
+      - id: b
+        text: "`labels: {team: platform}`"
+        explanation: "A plain value overwrites whatever the owner set."
+      - id: c
+        text: "`labels: {(team): platform}`"
+        explanation: "A conditional anchor only selects elements where the value matches; it does not add a missing key."
+      - id: d
+        text: "`labels: {=(team): platform}`"
+        explanation: "That is not the add-if-not-present anchor; `+()` is."
+    correct_option: a
+    explanation: "A plain `team: platform` overwrites the owner's value. A conditional anchor `(team)` is an if that selects, not a default writer."
+
+  - id: ats011-final-q50
+    type: single_choice
+    difficulty: intermediate
+    learning_objective: "Select a subset of containers in a mutation"
+    source_readings:
+      - sections/section-040/module-03/course-02-conditional-anchors-in-mutation.md
+      - sections/section-040/module-03/course-03-summary.md
+    prompt: "A mutate rule has `containers: [{(name): \"sidecar-*\", securityContext: {readOnlyRootFilesystem: true}}]`. A Pod has containers `app` and `sidecar-log`. What is patched?"
+    options:
+      - id: a
+        text: "Both containers, because wildcards in anchors are ignored."
+        explanation: "Wildcards narrow the selection."
+      - id: b
+        text: "Only `app`, because the anchor excludes matching names."
+        explanation: "The anchor selects matches rather than excluding them."
+      - id: c
+        text: "Only `sidecar-log`, because the anchor is evaluated first and the plain fields apply only where it matches."
+        explanation: "`(name): \"*\"` is the widest form of the same filter; wildcards `*` and `?` select subsets."
+      - id: d
+        text: "Neither, because conditional anchors work only in validate rules."
+        explanation: "They are supported in patchStrategicMerge."
+    correct_option: c
+    explanation: "`(name): \"*\"` is the widest form of the same filter; wildcards `*` and `?` select subsets."
+
+  - id: ats011-final-q51
+    type: single_choice
+    difficulty: advanced
+    learning_objective: "Use time and number functions correctly"
+    source_readings:
+      - sections/section-070/module-03/course-01-string-and-number-functions.md
+      - sections/section-070/module-03/course-02-collections-time-and-encoding-functions.md
+    prompt: "A rule denies a resource whose `approved` annotation is more than 24 hours old. Which expression and operator are right?"
+    options:
+      - id: a
+        text: "`time_since(...)` with the numeric `GreaterThan` operator and value `24`."
+        explanation: "A duration string is not a number; use the duration operators."
+      - id: b
+        text: "`time_since('', annotation || '', '')` with the `DurationGreaterThan` operator and value `24h`."
+        explanation: "time_since returns a duration string such as `48h0m33s`, which needs the duration operators; annotation values are strings, so numeric functions need `to_number()` first."
+      - id: c
+        text: "`time_now()` with `Equals` and the annotation value."
+        explanation: "That compares equality and gives no elapsed time."
+      - id: d
+        text: "`items(annotations, 'key', 'value')` with `DurationGreaterThan`."
+        explanation: "`items` reshapes a map and measures no time."
+    correct_option: b
+    explanation: "time_since returns a duration string such as `48h0m33s`, which needs the duration operators; annotation values are strings, so numeric functions need `to_number()` first."

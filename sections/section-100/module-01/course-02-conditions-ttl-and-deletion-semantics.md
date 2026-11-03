@@ -148,6 +148,21 @@ Two practical points. First: the deprecation is a signpost, not a removal — `C
 >
 > **Assuming a namespaced `CleanupPolicy` can reach outside its namespace.** It cannot, regardless of what its `match` block says. Cluster-wide sweeps need `ClusterCleanupPolicy`.
 
-## Section recap
+## Your mission: Cleanup Policies Lab
 
-`conditions` filters candidates that `match` could not, using the same operator syntax you already know against the `target` variable. The `cleanup.kyverno.io/ttl` label handles the one-off case without a policy, at the cost of expressiveness and with a silent failure mode when RBAC is missing. `deletionPropagationPolicy` decides what happens to dependents. And the deprecation warning pointing at `DeletingPolicy` describes where the API is going, not a reason to avoid the policy type the exam asks about.
+You can now write cleanup policies and choose between a policy and the TTL label. The mission asks you to write a cleanup policy that deletes matching resources on a schedule and grant the permission it needs.
+
+Pause the playground, start the lab, and submit your work as often as you like:
+
+```sh
+astrona stop ats-011-playground-100
+astrona run --git ssh://git@github.com/astrona-io/ATS011.git -c sections/section-100/module-01/labs/lab-01
+astrona submit -c sections/section-100/module-01/labs/lab-01
+```
+
+When the lab passes, remove it and return to the playground:
+
+```sh
+astrona destroy ats-011-lab-101
+astrona start ats-011-playground-100
+```

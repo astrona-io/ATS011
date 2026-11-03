@@ -20,6 +20,8 @@ Each of those is a field on the rule you already know. This module is about the 
 1. **[Part 1 — Attestor Structures and Trust Material](./course-01-attestor-structures.md)** — the `attestors` list and its `count`, how multiple attestor blocks compose into an AND while entries inside one compose into an M-of-N, and the three kinds of trust material an entry can carry: a public key, a certificate, and a keyless identity.
 2. **[Part 2 — Digests, Scope, and Registry Access](./course-02-digests-scope-and-registry-access.md)** — `mutateDigest` versus `verifyDigest`, narrowing with `skipImageReferences`, making verification advisory with `required`, supplying registry credentials, and what a rule does when the registry cannot be reached at all.
 
+The module closes with a summary page and a mission, **Attestors and Digests Lab**, a graded lab that asks you to write and apply the policies from this module on a live cluster.
+
 ## Learning objectives
 
 After this module you can:

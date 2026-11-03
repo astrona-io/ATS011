@@ -155,6 +155,21 @@ The decisive question is usually: *is this a statement about shape, or a stateme
 > - **Assuming `^()` means "the first element".** It means any one of them, and a compliant element at the end of a long list satisfies it.
 > - **Forgetting that all of these skip rather than fail.** A rule whose anchors never match is a rule that never ran.
 
-## Section recap
+## Your mission: Validation Anchors Lab
 
-`^()` requires at least one list element to match, which is the shape neither a positional pattern nor a `foreach` provides. `X()` forbids a key outright and ignores its value. `<()` gates the whole rule on a condition, letting the condition and the requirement live in different branches of the resource. Between anchors and `deny` conditions, the deciding question is whether the requirement is about shape or about values.
+You can now choose the right anchor for a conditional, optional, existence, negation or whole-rule requirement. The mission asks you to write one policy that uses a conditional anchor, an equality anchor, a negation anchor and an existence anchor on Pods.
+
+Pause the playground, start the lab, and submit your work as often as you like:
+
+```sh
+astrona stop ats-011-playground-0103
+astrona run --git ssh://git@github.com/astrona-io/ATS011.git -c sections/section-010/module-03/labs/lab-01
+astrona submit -c sections/section-010/module-03/labs/lab-01
+```
+
+When the lab passes, remove it and return to the playground:
+
+```sh
+astrona destroy ats-011-lab-013
+astrona start ats-011-playground-0103
+```

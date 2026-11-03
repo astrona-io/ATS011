@@ -1,0 +1,244 @@
+# Knowledge check for section 080. Listed in astrona.yaml as a `type: quiz` entry after the capstone lab.
+schema_version: 1
+kind: question_bank
+id: ats011-080
+course_id: ATS011
+exam_code: KCA
+status: draft
+provenance: Original practice material written for this course; not official exam questions.
+scope:
+  type: section
+  id: section-080
+  title: "JSON Patches"
+questions:
+
+  - id: ats011-080-q01
+    type: single_choice
+    difficulty: intermediate
+    learning_objective: "Choose JSON Patch for deleting a key"
+    source_readings:
+      - sections/section-080/module-01/course-01-json-patch-operations.md
+    prompt: "You need a `mutate` rule that deletes an annotation from incoming Pods. Why is `patchStrategicMerge` a poor fit, and what does `patchesJson6902` offer?"
+    options:
+      - id: a
+        text: "Strategic merge cannot touch annotations, while JSON Patch can edit any metadata."
+        explanation: "Strategic merge can write annotations."
+      - id: b
+        text: "Strategic merge describes the desired shape and cannot naturally express absence, while JSON Patch has `op: remove` aimed at an exact pointer path."
+        explanation: "Correct. Deletion, index-based array targeting, and list appending are the jobs that push you to JSON Patch."
+      - id: c
+        text: "Strategic merge deletes the annotation but leaves the key as null, which JSON Patch avoids."
+        explanation: "Writing an empty value sets it to empty, not null, and is not deletion."
+      - id: d
+        text: "JSON Patch is faster, because it skips admission webhooks."
+        explanation: "Both run in the same mutating webhook."
+    correct_option: b
+    explanation: "Deletion, index-based array targeting, and list appending are the jobs that push you to JSON Patch."
+
+  - id: ats011-080-q02
+    type: single_choice
+    difficulty: advanced
+    learning_objective: "Understand the append token and a missing parent"
+    source_readings:
+      - sections/section-080/module-01/course-01-json-patch-operations.md
+    prompt: "What does `/spec/containers/0/env/-` address, and what happens if the first container has no `env` array?"
+    options:
+      - id: a
+        text: "The last existing `env` entry, and the patch fails when `env` is absent."
+        explanation: "`-` addresses one past the end."
+      - id: b
+        text: "Every `env` entry, and the patch creates the array if needed."
+        explanation: "A pointer cannot address several entries."
+      - id: c
+        text: "The first `env` entry, and the patch skips when `env` is missing."
+        explanation: "`-` is the append position, not the first."
+      - id: d
+        text: "The position one past the end of `env`, and on v1.19.1 a missing array is created with your value as its only element."
+        explanation: "Correct. Strict RFC 6902 would fail, so treat this leniency as observed behaviour rather than a portable guarantee."
+    correct_option: d
+    explanation: "Strict RFC 6902 would fail, so treat this leniency as observed behaviour rather than a portable guarantee."
+
+  - id: ats011-080-q03
+    type: single_choice
+    difficulty: intermediate
+    learning_objective: "Escape a slash in an annotation key"
+    source_readings:
+      - sections/section-080/module-01/course-02-pointer-escaping-and-missing-paths.md
+    prompt: "A rule targets the annotation `policy.example.com/reviewed` with the path `/metadata/annotations/policy.example.com/reviewed`. What is wrong?"
+    options:
+      - id: a
+        text: "Dots in the key must be escaped as `~2`."
+        explanation: "Dots are ordinary characters."
+      - id: b
+        text: "The path must start with `metadata`, without a leading slash."
+        explanation: "A pointer starts with a slash."
+      - id: c
+        text: "The `/` in the key is read as a path separator, and RFC 6901 requires `~1`, giving `/metadata/annotations/policy.example.com~1reviewed`."
+        explanation: "Correct. A literal `~` is written `~0`, and dashes, dots, and colons need nothing."
+      - id: d
+        text: "Nothing is wrong, since keys with slashes are accepted."
+        explanation: "The path resolves to a nested structure that does not exist."
+    correct_option: c
+    explanation: "A literal `~` is written `~0`, and dashes, dots, and colons need nothing."
+
+  - id: ats011-080-q04
+    type: single_choice
+    difficulty: intermediate
+    learning_objective: "Predict add on an existing annotation"
+    source_readings:
+      - sections/section-080/module-01/course-02-pointer-escaping-and-missing-paths.md
+    prompt: "A rule does `op: add` on `/metadata/annotations/policy.example.com~1reviewed` with value `\"true\"`, and a Pod arrives with that annotation set to `\"false\"`. What happens, and is a precondition needed?"
+    options:
+      - id: a
+        text: "The request fails because the key exists, so a precondition is needed."
+        explanation: "`add` replaces an existing member."
+      - id: b
+        text: "The value stays `\"false\"` because `add` never overwrites."
+        explanation: "It overwrites."
+      - id: c
+        text: "The value becomes `\"true\"`, and since `add` also creates a missing parent map, no precondition is needed."
+        explanation: "Correct. An unconditional `add` is safe on every resource."
+      - id: d
+        text: "Both values are stored in a list."
+        explanation: "Annotations hold single strings."
+    correct_option: c
+    explanation: "An unconditional `add` is safe on every resource."
+
+  - id: ats011-080-q05
+    type: single_choice
+    difficulty: advanced
+    learning_objective: "Compare remove and replace on a missing path"
+    source_readings:
+      - sections/section-080/module-01/course-02-pointer-escaping-and-missing-paths.md
+    prompt: "Two rules differ only in the operation, `remove` versus `replace` on the same annotation path. A Pod without that annotation arrives. What happens on v1.19.1?"
+    options:
+      - id: a
+        text: "Both are silent no-ops."
+        explanation: "Only `remove` is."
+      - id: b
+        text: "Both reject the request."
+        explanation: "`remove` is not rejected."
+      - id: c
+        text: "`replace` is a no-op and `remove` rejects it."
+        explanation: "This reverses the behaviour."
+      - id: d
+        text: "`remove` is a silent no-op, while `replace` rejects the request with `replace operation does not apply: doc is missing path`."
+        explanation: "Correct. The two operations differ on missing paths, so never write a destructive rule that depends on one."
+    correct_option: d
+    explanation: "The two operations differ on missing paths, so never write a destructive rule that depends on one."
+
+  - id: ats011-080-q06
+    type: single_choice
+    difficulty: advanced
+    learning_objective: "Estimate the blast radius of an unguarded replace"
+    source_readings:
+      - sections/section-080/module-01/course-03-guarded-removal-and-safe-patches.md
+    prompt: "You apply a cluster-wide `mutate` rule with an unguarded `op: replace` on a path most Pods lack. What is the blast radius, and what should you have done first?"
+    options:
+      - id: a
+        text: "Only the Pods that lack the path fail, and the others are unaffected, so no precaution was needed."
+        explanation: "Every Pod lacking it is rejected, which may be nearly all."
+      - id: b
+        text: "Existing Pods are restarted, so you should have drained the nodes first."
+        explanation: "Existing Pods are untouched by admission."
+      - id: c
+        text: "Pod admission breaks cluster-wide until the policy is fixed, so test with a narrow `match` and widen it after the pointer resolves."
+        explanation: "Correct. A kind-only match with nothing narrowing it applies to nearly every Pod."
+      - id: d
+        text: "The policy is rejected at apply time, so nothing happens."
+        explanation: "The policy is accepted."
+    correct_option: c
+    explanation: "A kind-only match with nothing narrowing it applies to nearly every Pod."
+
+  - id: ats011-080-q07
+    type: single_choice
+    difficulty: advanced
+    learning_objective: "Read the two syntaxes in a guarded removal"
+    source_readings:
+      - sections/section-080/module-01/course-03-guarded-removal-and-safe-patches.md
+    prompt: "A precondition key is `{{ request.object.metadata.annotations.\"legacy/unmanaged-scanner\" || '' }}`, while the patch path uses `legacy~1unmanaged-scanner`. Why the quotes, the `|| ''`, and two spellings?"
+    options:
+      - id: a
+        text: "The spellings are a mistake and one must be fixed to match the other."
+        explanation: "Both are correct for their syntax."
+      - id: b
+        text: "The quotes escape the key for JSON Pointer, and `|| ''` creates the annotation if missing."
+        explanation: "The quotes are JMESPath, and the fallback only supplies an empty string."
+      - id: c
+        text: "The `|| ''` is needed only for CREATE, and `~1` only for UPDATE."
+        explanation: "Neither depends on the operation."
+      - id: d
+        text: "The quotes are JMESPath quoting for a key with `/`, `|| ''` turns an absent value into an empty string for the comparison, and `~1` is the JSON Pointer escape for the patch path."
+        explanation: "Correct. One key, two syntaxes, one rule."
+    correct_option: d
+    explanation: "One key, two syntaxes, one rule."
+
+  - id: ats011-080-q08
+    type: single_choice
+    difficulty: intermediate
+    learning_objective: "Know that a pointer has no wildcard"
+    source_readings:
+      - sections/section-080/module-01/course-01-json-patch-operations.md
+    prompt: "Can one JSON Pointer such as `/spec/containers/*/image` apply an operation to every container?"
+    options:
+      - id: a
+        text: "Yes, because `*` matches every index."
+        explanation: "Pointers have no wildcards."
+      - id: b
+        text: "Yes, but only for the `image` field."
+        explanation: "No field is special."
+      - id: c
+        text: "No, because a pointer walks to exactly one location, so use `patchStrategicMerge` with the `(name)` anchor, `foreach`, or one operation per known index."
+        explanation: "Correct. Per-index operations rarely work at admission, when the container count is unknown."
+      - id: d
+        text: "No, but a filter such as `[?name]` is accepted instead."
+        explanation: "Pointers have no filters."
+    correct_option: c
+    explanation: "Per-index operations rarely work at admission, when the container count is unknown."
+
+  - id: ats011-080-q09
+    type: single_choice
+    difficulty: advanced
+    learning_objective: "Account for array shifts in an ordered patch"
+    source_readings:
+      - sections/section-080/module-01/course-01-json-patch-operations.md
+      - sections/section-080/module-01/course-03-guarded-removal-and-safe-patches.md
+    prompt: "A patch list adds a new element at `/spec/containers/0`, then has a second operation that targets `/spec/containers/1`. Which container does the second operation hit?"
+    options:
+      - id: a
+        text: "The second container as originally submitted."
+        explanation: "The first operation shifted the array."
+      - id: b
+        text: "The new element, since it is now first."
+        explanation: "The new element is at index 0."
+      - id: c
+        text: "The container originally at index 0, because the insert shifted everything down and operations apply in order to the modified document."
+        explanation: "Correct. Ordering in `patchesJson6902` is semantic, not cosmetic."
+      - id: d
+        text: "Nothing, because indices reset after every operation."
+        explanation: "Indices do not reset."
+    correct_option: c
+    explanation: "Ordering in `patchesJson6902` is semantic, not cosmetic."
+
+  - id: ats011-080-q10
+    type: single_choice
+    difficulty: advanced
+    learning_objective: "Separate kyverno-json from patchesJson6902"
+    source_readings:
+      - sections/section-080/module-01/course-01-json-patch-operations.md
+    prompt: "A study guide points at `kyverno-json` for the \"JSON Patches\" competency. What is it, and is it what `mutate.patchesJson6902` does?"
+    options:
+      - id: a
+        text: "It is the same feature under a different name."
+        explanation: "They are unrelated."
+      - id: b
+        text: "It is the CLI form of `patchesJson6902`, run against live clusters."
+        explanation: "It does not patch live clusters."
+      - id: c
+        text: "It is an older name for strategic merge."
+        explanation: "It has no relation to strategic merge."
+      - id: d
+        text: "No, because `kyverno-json` is a separate project that applies Kyverno-style policies to any JSON or YAML payload with no cluster, and `patchesJson6902` is an RFC 6902 patch rule inside a `ClusterPolicy`."
+        explanation: "Correct. The names collide, and the course reads the competency as `patchesJson6902`."
+    correct_option: d
+    explanation: "The names collide, and the course reads the competency as `patchesJson6902`."

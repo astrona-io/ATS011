@@ -122,3 +122,22 @@ and the two halves are indistinguishable from the outside — both just produce
 silence. If you need to know *why* a rule stayed quiet, the reports are where a
 `skip` result is recorded; the admission response tells you nothing, because
 from the requester's point of view nothing happened.
+
+## Your mission: Preconditions Lab
+
+You can now gate a rule with `preconditions` and choose between `preconditions` and `match`. The mission asks you to write a policy that runs a rule only for the right operation and the right resource values.
+
+Pause the playground, start the lab, and submit your work as often as you like:
+
+```sh
+astrona stop ats-011-playground-020
+astrona run --git ssh://git@github.com/astrona-io/ATS011.git -c sections/section-020/module-01/labs/lab-01
+astrona submit -c sections/section-020/module-01/labs/lab-01
+```
+
+When the lab passes, remove it and return to the playground:
+
+```sh
+astrona destroy ats-011-lab-021
+astrona start ats-011-playground-020
+```

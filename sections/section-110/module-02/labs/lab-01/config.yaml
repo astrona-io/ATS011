@@ -1,0 +1,32 @@
+metadata:
+  name: "ats-011-lab-112"
+  docs:
+    solution: "solution.md"
+    question: "question.md"
+
+bootstrap:
+  init:
+    - name: "lab-112-setup"
+      description: "Installs Kyverno and waits for its controllers to be ready"
+      type: "file"
+      source: "bootstrap/01-install-kyverno.sh"
+    - name: "lab-112-seed"
+      description: "Creates the cel-lab namespace"
+      type: "file"
+      source: "bootstrap/02-seed.sh"
+
+validation:
+  scripts:
+    - name: "mutating-policy-works"
+      description: "A Pod created in cel-lab carries the managed-by label"
+      type: "file"
+      source: "validation/validate-mutating-policy-works.sh"
+      hint: "Use kind MutatingPolicy, patchType ApplyConfiguration and Object{ metadata: Object.metadata{ labels: {...} } }."
+    - name: "deleting-policy-shape"
+      description: "The DeletingPolicy has a schedule and a guarded CEL condition on object"
+      type: "file"
+      source: "validation/validate-deleting-policy-shape.sh"
+      hint: "Use kind DeletingPolicy, schedule, matchConstraints and conditions[].expression that reads object."
+
+teardown:
+  keepCluster: false

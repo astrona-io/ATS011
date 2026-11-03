@@ -104,6 +104,21 @@ doc is missing path: /metadata/annotations/legacy~1unmanaged-scanner: missing va
 >
 > **Reasoning about array indices without accounting for earlier operations.** Operations apply in order against a document that the previous operations already changed. An `add` that inserts at index 0 shifts every later index by one.
 
-## Section recap
+## Your mission: JSON Patches Lab
 
-An unconditional `add` is safe by construction — it creates what is missing and overwrites what is present — so it needs no guard. Anything destructive should be gated behind a `preconditions` check that the target actually exists, which makes the rule behave identically whether the underlying operation is lenient or strict, and keeps it correct if someone later swaps `remove` for `replace`. Note that the same annotation key is spelled two different ways in such a rule: quoted for JMESPath in the precondition, `~1`-escaped for the JSON Pointer in the patch.
+You can now write `patchesJson6902` rules with correct pointers and guard destructive operations. The mission asks you to write a JSON patch that adds, replaces and removes fields safely.
+
+Pause the playground, start the lab, and submit your work as often as you like:
+
+```sh
+astrona stop ats-011-playground-080
+astrona run --git ssh://git@github.com/astrona-io/ATS011.git -c sections/section-080/module-01/labs/lab-01
+astrona submit -c sections/section-080/module-01/labs/lab-01
+```
+
+When the lab passes, remove it and return to the playground:
+
+```sh
+astrona destroy ats-011-lab-081
+astrona start ats-011-playground-080
+```

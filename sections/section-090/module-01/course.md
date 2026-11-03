@@ -21,6 +21,8 @@ This module covers exactly what autogen produces and how to control it.
 2. **[Part 2 — Controlling Autogen's Scope](./course-02-controlling-autogen-scope.md)** — the `pod-policies.kyverno.io/autogen-controllers` annotation, disabling generation entirely with `none`, and why narrowing the scope is not the same as granting an exemption.
 3. **[Part 3 — When Autogen Declines, and When It Gets It Wrong](./course-03-when-autogen-declines.md)** — the multi-kind `match` that produces nothing at all, the pattern that produces a confidently useless rule, why declining is the safer of Kyverno's options, and how to check rather than assume.
 
+The module closes with a summary page and a mission, **Autogen Rules Lab**, a graded lab that asks you to write and apply the policies from this module on a live cluster.
+
 ## Learning objectives
 
 After this module you can:

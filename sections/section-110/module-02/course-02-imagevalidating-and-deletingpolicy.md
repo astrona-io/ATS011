@@ -121,6 +121,21 @@ For a real cluster, the honest position is that this family is newer and still m
 > - **Expecting `status.lastExecutionTime` on a `DeletingPolicy`.** It was empty after a verified sweep.
 > - **Expecting the new cleanup kind to need less RBAC.** Same controller, same aggregating `ClusterRole` requirement.
 
-## Section recap
+## Your mission: CEL-Native Policy Family Lab
 
-`ImageValidatingPolicy` decomposes a `verifyImages` entry into top-level fields, names its attestors instead of indexing them, and makes `cosign` versus `notary` an explicit backend choice. `DeletingPolicy` is `ClusterCleanupPolicy` with CEL conditions — same cron schedule, same cleanup controller, same RBAC requirement — differing in that its expressions read `object` rather than `target`, and that it reported no `status` after a verified sweep. The `apiVersion` alone tells you which family a policy belongs to.
+You can now recognise the five kinds of the CEL-native policy family and write a `MutatingPolicy`. The mission asks you to write a `MutatingPolicy` and a `DeletingPolicy` and prove what they do.
+
+Pause the playground, start the lab, and submit your work as often as you like:
+
+```sh
+astrona stop ats-011-playground-1102
+astrona run --git ssh://git@github.com/astrona-io/ATS011.git -c sections/section-110/module-02/labs/lab-01
+astrona submit -c sections/section-110/module-02/labs/lab-01
+```
+
+When the lab passes, remove it and return to the playground:
+
+```sh
+astrona destroy ats-011-lab-112
+astrona start ats-011-playground-1102
+```

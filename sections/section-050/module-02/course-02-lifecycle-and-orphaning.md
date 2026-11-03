@@ -111,6 +111,21 @@ The practical consequence: with `synchronize: true`, the set of generated resour
 > - **Narrowing a generate rule's `match` casually.** Under `synchronize: true`, triggers that stop matching lose their downstream.
 > - **Conflating `orphanDownstreamOnPolicyDelete` with `synchronize: false`.** The first governs what happens when the *policy* goes; the second governs whether the downstream is maintained while it stays.
 
-## Section recap
+## Your mission: Generate Existing Lab
 
-Deleting a generate rule's policy deletes the resources it generated, verified on v1.19.1 and the opposite of most people's intuition. `orphanDownstreamOnPolicyDelete: true` reverses that, and is the right choice whenever the downstream is a safety control whose absence is worse than its being unmanaged. None of this runs through Kubernetes garbage collection — Kyverno tracks its own downstreams, which is precisely why the behaviour is a field you can set.
+You can now apply a generate rule to existing resources and decide what happens to generated resources when the policy is deleted. The mission asks you to backfill a generated ConfigMap into existing namespaces and keep it when the policy is deleted.
+
+Pause the playground, start the lab, and submit your work as often as you like:
+
+```sh
+astrona stop ats-011-playground-0502
+astrona run --git ssh://git@github.com/astrona-io/ATS011.git -c sections/section-050/module-02/labs/lab-01
+astrona submit -c sections/section-050/module-02/labs/lab-01
+```
+
+When the lab passes, remove it and return to the playground:
+
+```sh
+astrona destroy ats-011-lab-052
+astrona start ats-011-playground-0502
+```

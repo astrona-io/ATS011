@@ -167,3 +167,22 @@ Getting that choice wrong is not a subtle failure. With `synchronize: true` on a
 resource teams were meant to customise, their edits silently disappear a few
 seconds after they make them — which is an unusually frustrating thing to debug
 from the team's side, because nothing rejected their change.
+
+## Your mission: Data-Based Generation Lab
+
+You can now write a `generate` rule that creates a resource from literal data or by cloning. The mission asks you to generate a default-deny `NetworkPolicy` into every new namespace.
+
+Pause the playground, start the lab, and submit your work as often as you like:
+
+```sh
+astrona stop ats-011-playground-050
+astrona run --git ssh://git@github.com/astrona-io/ATS011.git -c sections/section-050/module-01/labs/lab-01
+astrona submit -c sections/section-050/module-01/labs/lab-01
+```
+
+When the lab passes, remove it and return to the playground:
+
+```sh
+astrona destroy ats-011-lab-051
+astrona start ats-011-playground-050
+```
