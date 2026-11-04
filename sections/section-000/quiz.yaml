@@ -4,7 +4,7 @@ kind: question_bank
 id: ats011-000
 course_id: ATS011
 exam_code: KCA
-status: draft
+status: alpha
 provenance: Original practice material written for this course; not official exam questions.
 scope:
   type: section
