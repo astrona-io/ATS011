@@ -1,3 +1,9 @@
+<p align="center">
+  <a href="https://astrona.io/courses/kyverno-certified-associate-kca">
+    <img src="https://astrona.io/courses/kyverno-certified-associate-kca/domains/ATS011.svg" alt="ATS011: Writing Policies, part of the Kyverno Certified Associate course on Astrona" width="100%">
+  </a>
+</p>
+
 # ATS011 - KCA: Writing Policies
 
 [![Liberapay](https://img.shields.io/badge/Liberapay-Support_Astrona.io-F6C915?logo=liberapay&logoColor=black&style=for-the-badge)](https://liberapay.com/Astrona.io)
